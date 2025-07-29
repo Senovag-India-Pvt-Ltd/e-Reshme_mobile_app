@@ -1,0 +1,52 @@
+.details-row {
+  display: flex;
+  align-items: center;
+  margin-bottom: 15px;
+}
+
+.details-row ion-label {
+  flex: 0 0 30%;
+  margin-right: 10px;
+}
+
+.details-row ion-input {
+  flex: 1;
+}
+
+.search-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 20px;
+}
+
+.fruits-id-label {
+  margin-right: 10px;
+}
+
+.details-card {
+  margin: 20px;
+}
+
+.list-card {
+  margin: 10px;
+}
+
+.list-item {
+  display: flex;
+  align-items: center;
+}
+
+.list-item ion-button {
+  margin-left: 10px;
+}
+
+.list-card ion-card-content {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.list-card ion-text {
+  margin-bottom: 5px;
+}

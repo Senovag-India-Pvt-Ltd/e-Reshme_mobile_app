@@ -1,0 +1,81 @@
+.notification-bar {
+    background-color: #faf7f7;/* Blue background color */
+      color: #ffffff; /* White text color */
+      padding: 10px; /* Adjust padding as needed */
+      border-radius: 8px; /* Rounded corners */
+      width: 100%; /* Full width */
+      box-sizing: border-box; /* Include padding in width */
+      margin-bottom: 20px; /* Margin for spacing */
+      font-size: 16px; /* Font size */
+      font-weight: bold; /* Font weight */
+    }
+  
+  
+    .location-container {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-top: 20px; /* Add margin-top as needed */
+    }
+    
+    .location-container label {
+      margin-right: 10px;
+    }
+    
+    .location-container input[type="text"] {
+      width: 100px; /* Adjust width as needed */
+      font-size: 14px; /* Adjust font size as needed */
+      padding: 5px;
+      border-radius: 12px;
+      border: 3px solid #c1ce0c;
+      color: #090a0a; /* Change text color */
+    }
+    
+    /* Center the Current Location label */
+    .location-label {
+      display: block;
+      text-align: center;
+      font-size: 18px;
+      margin-bottom: 10px;
+      color: #111212;
+    }
+    
+    /* Add margin-right to the latitude input */
+    .location-container input#latitude {
+      margin-right: 10px; /* Adjust margin-right as needed */
+    }
+    
+    /* Media query for smaller screens */
+    @media only screen and (max-width: 600px) {
+      .location-container input[type="text"] {
+        width: 100px; /* Adjust width for smaller screens */
+        color: #0d0d0d; /* Ensure the color applies on smaller screens */
+      }
+    
+      /* Adjust margin-right for latitude input on smaller screens */
+      .location-container input#latitude {
+        margin-right: 5px; /* Adjust margin-right for smaller screens */
+      }
+    }
+    
+    .cld {
+      color: #F5CE00;
+    }
+    
+    .bd {
+      color: #FFFAFA;
+    }
+    
+    /* styles.css or your relevant CSS file */
+  .custom-searchbar {
+    height: 40px !important; /* Set smaller height */
+    font-size: 10px !important; /* Adjust font size */
+    padding: 5px !important; /* Reduce padding */
+    border-radius: 30px; /* Slightly round corners */
+    border: 5px solid #1ea0a4; /* Add subtle border */
+    margin-bottom: 5px; /* Space below the search bar */
+    background-color: #fff; /* White background */
+    color: #333; /* Text color */
+    --box-shadow: none; /* Remove default shadow */
+  }
+  

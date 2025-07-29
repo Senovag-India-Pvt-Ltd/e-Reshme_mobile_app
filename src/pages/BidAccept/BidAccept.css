@@ -1,0 +1,60 @@
+ion-content{
+    --ion-background-color:#fff;
+}
+
+.item-background-color{
+    --ion-item-background:#57e3edd5;
+}
+
+.label-content{
+    font-weight: bold;
+    float: left;
+}
+
+.row-header {
+    color: #fff;
+    background: #6c7ae0;
+}
+
+.first-row { 
+    border: 2px solid rgb(174, 183, 202);
+}
+.next-row {
+    border-left: 2px solid rgb(174, 183, 202);
+    border-right: 2px solid rgb(174, 183, 202);
+    border-bottom: 2px solid rgb(174, 183, 202);
+}
+
+.input-big-font-size{
+    font-size: 30px;
+    text-align: center;
+}
+
+.clr-button-height{
+    height: 50px;
+}
+
+.bid-tool-bar-height{
+    height: 60px !important; 
+}
+
+.content-margin{
+    margin-top: -10px !important;
+}
+
+.content-padding{
+    /* height: 30px; */
+    font-size: 15px;
+}
+
+.col-padding{
+    padding: 0px;
+}
+
+.content-padding .input-wrapper {
+    height:30px !important;
+}
+
+.rate-amount{
+    font-size: 40px !important;
+}

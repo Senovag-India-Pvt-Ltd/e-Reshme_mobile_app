@@ -1,0 +1,22 @@
+.subpage-header {
+    background-color: #f7f8f9;
+  }
+  
+  .subpage-title {
+    color: #ffffff;
+    font-size: 1.2em;
+    font-weight: bold;
+  }
+  
+  .menucolor{
+    color: #ffffff;
+    background: linear-gradient(to right, #36d1dc, #5b86e5);
+  }
+  
+  
+  
+  .subpage-text {
+    color: #333333;
+    font-size: 1.1em;
+  }
+  

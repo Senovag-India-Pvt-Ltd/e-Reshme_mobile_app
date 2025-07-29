@@ -1,0 +1,125 @@
+.notification-bar {
+    background-color: #007bff; /* Blue background color */
+    color: #fff; /* White text color */
+    padding: 10px; /* Adjust padding as needed */
+    border-radius: 8px; /* Rounded corners */
+    width: 100%; /* Full width */
+    box-sizing: border-box; /* Include padding in width */
+    margin-bottom: 20px; /* Margin for spacing */
+    font-size: 16px; /* Font size */
+    font-weight: bold; /* Font weight */
+}
+
+.location-container {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 20px; /* Add margin-top as needed */
+    flex-wrap: wrap; /* Allow wrapping */
+}
+
+.location-container label {
+    margin-right: 10px;
+    font-weight: bold;
+}
+
+.location-container input[type="text"] {
+    width: 150px; /* Adjust width as needed */
+    font-size: 14px; /* Adjust font size as needed */
+    padding: 5px;
+    border-radius: 8px;
+    border: 2px solid #007bff;
+    color: #333; /* Change text color */
+}
+
+/* Center the Current Location label */
+.location-label {
+    display: block;
+    text-align: left;
+    font-size: 18px;
+    margin-bottom: 10px;
+    color: #333;
+    font-weight: bold;
+}
+
+.capture-label {
+    text-align: left;
+    font-size: 14px;
+    color: #666;
+}
+
+/* Add margin-right to the latitude input */
+.location-container input#latitude {
+    margin-right: 10px; /* Adjust margin-right as needed */
+}
+
+/* Media query for smaller screens */
+@media only screen and (max-width: 600px) {
+    .location-container {
+        justify-content: flex-start; /* Align items to the start */
+    }
+
+    .location-container label,
+    .location-container input[type="text"],
+    .location-container input#latitude {
+        margin-bottom: 10px; /* Add margin-bottom for spacing */
+    }
+
+    .location-container input[type="text"] {
+        width: calc(100% - 20px); /* Full width minus padding */
+        color: #333; /* Ensure the color applies on smaller screens */
+    }
+
+    /* Adjust margin-right for latitude input on smaller screens */
+    .location-container input#latitude {
+        margin-right: 0; /* Remove margin-right */
+    }
+}
+
+.cld {
+    color: #007bff;
+}
+
+.bd {
+    color: #ff0000;
+}
+
+/* styles.css or your relevant CSS file */
+.custom-searchbar {
+    height: 40px !important; /* Set smaller height */
+    font-size: 10px !important; /* Adjust font size */
+    padding: 5px !important; /* Reduce padding */
+    border-radius: 30px; /* Slightly round corners */
+    border: 2px solid #007bff; /* Add subtle border */
+    margin-bottom: 5px; /* Space below the search bar */
+    background-color: #fff; /* White background */
+    color: #333; /* Text color */
+    box-shadow: none; /* Remove default shadow */
+}
+
+.capture-coordinates-label {
+    font-size: 16px; /* Increase font size as needed */
+    color: #ff1601; /* Set the text color */
+    font-weight: bold; /* Make sure the text is bold */
+    text-align: center;
+}
+
+ /* Responsive font sizes */
+ @media (max-width: 600px) {
+  .capture-coordinates-label {
+      font-size: 0.9rem; /* Smaller font size for small screens */
+  }
+}
+
+@media (min-width: 601px) and (max-width: 1024px) {
+  .capture-coordinates-label {
+      font-size: 1.1rem; /* Medium font size for medium screens */
+  }
+
+}
+
+@media (min-width: 1025px) {
+  .capture-coordinates-label {
+      font-size: 1.2rem; /* Default font size for large screens */
+  }
+}

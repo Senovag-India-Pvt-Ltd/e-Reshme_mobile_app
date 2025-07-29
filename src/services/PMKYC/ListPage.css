@@ -1,0 +1,89 @@
+.card-container {
+    margin: 0;
+    padding: 0;
+  }
+  
+  .card {
+    border-radius: 10px;
+    background-color: #ebe3e3;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    cursor: pointer;
+    color: #131212; /* Ensure text is visible on gradient background */
+  }
+  
+  .card:hover {
+    transform: scale(1.02);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+  }
+  
+  .card-header {
+    padding: 1rem;
+  }
+  
+  .card-title {
+    font-size: 1.2rem; /* Adjust as needed */
+    font-weight: bold;
+    text-align: center;
+    font-size: 1.2rem; /* Default font size */
+  }
+  
+  .card-content {
+    padding: 1rem;
+    
+    text-align: left;
+    font-size: 1.2rem;
+  }
+  
+  .ion-radio-group {
+    margin: 1rem 0;
+  }
+  
+  .ion-radio-group ion-item {
+    display: flex;
+    align-items: center;
+  }
+  
+  .description-input {
+    margin-top: 1rem;
+  }
+  .font{
+    font-size: medium;
+  }
+
+  /* Responsive font sizes */
+  @media (max-width: 600px) {
+    .card-title {
+        font-size: 1rem; /* Smaller font size for small screens */
+    }
+    .card-content {
+        font-size: 1rem; /* Smaller font size for small screens */
+    }
+}
+
+@media (min-width: 601px) and (max-width: 1024px) {
+    .card-title {
+        font-size: 1.1rem; /* Medium font size for medium screens */
+    }
+    .card-content {
+        font-size: 1.1rem; /* Medium font size for medium screens */
+    }
+}
+
+@media (min-width: 1025px) {
+    .card-title {
+        font-size: 1.2rem; /* Default font size for large screens */
+    }
+    .card-content {
+        font-size: 1.2rem; /* Default font size for large screens */
+    }
+}
+
+/* Toggleable search bar */
+.searchbar {
+  display: none;
+}
+
+.searchbar.show {
+  display: block;
+}

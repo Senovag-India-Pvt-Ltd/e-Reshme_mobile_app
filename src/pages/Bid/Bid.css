@@ -1,0 +1,128 @@
+/* ion-content{
+    --ion-background-color:#fff;
+}
+
+.item-background-color{
+    --ion-item-background:#57e3edd5;
+    text-align: center;
+}
+
+.awarded-label {
+    background-color: green;
+    color: #fff;
+    padding: 5px;
+    text-align: center;
+    font-weight: bold;
+}
+
+.not-awarded-label {
+    background-color: red;
+    color: #fff;
+    padding: 5px;
+    text-align: center;
+    font-weight: bold;
+}
+
+.input-big-font-size{
+    font-size: 30px;
+    text-align: center;
+}
+
+.highest-bid-label{
+    font-size: 30px;
+    text-align: center;
+}
+
+.custom-center {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100%;
+}
+
+.divider-component{
+    /* margin-right: 100px !important;
+    margin-left: 10px !important; */
+    min-height: 0px !important;
+}
+
+.divider-component-for-table{
+    min-height: 0px !important;
+}
+
+.report-section-contents{
+    height: 50px;
+}
+
+.divider-component-for-table{
+    min-height: 10px !important;
+}
+
+.report-contents{
+    text-align: center;
+    font-size: 10px;
+}
+
+.centered-modal{
+    display: flex; 
+     justify-content: center;
+    align-items: center;
+    height: 100vh;
+/* 
+    line-height: 40px;
+    height: 100%;
+    text-align: center; */
+}
+
+.modal-wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+}
+
+.modal-content {
+    width:100%;
+    max-width: 100%; /* Adjust as needed */
+    padding: 20px;
+    border-radius: 10px;
+}
+
+.bid-tool-bar-height{
+    height: 60px !important; 
+}
+
+.report-summary{
+    margin-left: 5px;
+    font-size: 12px;
+}
+
+.report-summary-reeler-balance{
+    margin-left: 5px;
+    height:100px;
+    font-size: 12px;
+}
+
+.re-bid-button{
+    width:55px;
+}
+
+.rep-header-contents{
+    font-size: 10px;
+}
+
+.alert-button-group.sc-ion-alert-md {
+    justify-content: space-around !important;
+}
+
+@media screen and (max-width: 300px) {
+    .label-text.sc-ion-input-md{
+        font-size: 14px !important;
+    }
+
+    .table-header{
+        font-size: 14px !important;
+    }
+
+}
+ */

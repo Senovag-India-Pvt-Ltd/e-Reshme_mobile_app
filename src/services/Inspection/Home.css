@@ -1,0 +1,62 @@
+/* Glowing effect for the logo */
+.logo-round {
+    border-radius: 50%;
+    height: 120px;
+    width: 120px;
+    border: 4px solid #ffffff;
+    box-shadow: 0 0 15px #ffffff, 0 0 30px #ffffff;
+    animation: glow 2s ease-in-out infinite;
+  }
+  
+  @keyframes glow {
+    0%, 100% {
+      box-shadow: 0 0 10px #ffffff, 0 0 20px #ffffff;
+    }
+    50% {
+      box-shadow: 0 0 20px #ffffff, 0 0 40px #ffffff;
+    }
+  }
+  
+.sericulture-text, .karnataka-text {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+  .text-container {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    height: 100%;
+    color: #000000;
+    font-size: 16px; /* Default font size */
+  }
+
+/* Small devices (phones, 600px and down) */
+@media only screen and (max-width: 600px) {
+  .text-container {
+    font-size: 14px;
+  }
+}
+
+/* Medium devices (portrait tablets and large phones, 600px and up) */
+@media only screen and (min-width: 600px) and (max-width: 768px) {
+  .text-container {
+    font-size: 15px;
+  }
+}
+
+/* Large devices (landscape tablets, 768px and up) */
+@media only screen and (min-width: 768px) and (max-width: 992px) {
+  .text-container {
+    font-size: 16px;
+  }
+}
+
+/* Extra large devices (large laptops and desktops, 992px and up) */
+@media only screen and (min-width: 992px) {
+  .text-container {
+    font-size: 18px;
+  }
+}

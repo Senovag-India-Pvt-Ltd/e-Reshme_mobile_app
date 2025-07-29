@@ -1,0 +1,39 @@
+.profile-grid {
+    padding: 16px;
+  }
+  
+  .search-row {
+    align-items: center; 
+    margin-bottom: 16px;
+  }
+  
+  .search-button {
+    background-color: #007bff;
+  }
+  
+  .profile-section-header h2 {
+    background-color: #007bff;
+    color: white;
+    padding: 8px;
+    border-radius: 4px;
+    margin-top: 16px;
+    font-size: 1.2rem;
+    font-weight: bold;
+  }
+  
+  IonItem {
+    --background: white;
+    --padding-start: 12px;
+    --padding-end: 12px;
+    --inner-padding-top: 8px;
+    --inner-padding-bottom: 8px;
+  }
+  
+  IonLabel {
+    font-weight: bold;
+  }
+  
+  IonInput {
+    font-size: 1rem;
+  }
+  

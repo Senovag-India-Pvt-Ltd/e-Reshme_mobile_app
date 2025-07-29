@@ -1,0 +1,77 @@
+.logo-round {
+    width: 120px;
+    border-radius: 50% !important;
+    overflow: hidden;
+    background-color: #fff;
+  }
+  
+  .container {
+    margin: 0 auto;
+    text-align: center;
+    padding: 20px;
+  }
+  
+  .image-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 10vh;
+    /* Optionally, set the height to fill the viewport */
+  }
+  
+  .trapezoid {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 80%;
+    transform: skewY(-5deg);
+    transform-origin: top left;
+    box-shadow: 0 3px 6px rgba(12, 161, 171, 0.751), 0 3px 6px rgba(49, 175, 10, 0.555);
+    background: 	#00b5d1;
+    background-position: top center;
+    background-attachment: fixed;
+  }
+  
+  .error {
+    color: red;
+    margin-top: 10px;
+  }
+  .color{
+    box-shadow: linear-gradient(to right, #43cea2, #185a9d);
+  }
+
+  .custom-icon {
+    color: #ce8243; /* Use a solid color */
+    /* Remove background and background-clip properties */
+  }
+  
+  .custom-button {
+    --background: #43cea2; /* Solid background color */
+    --background-activated: #36a38f; /* Darker shade when active */
+    --background-focused: #36a38f; /* Darker shade when focused */
+    --background-hover: #36a38f; /* Darker shade when hovered */
+    color: white; /* Text color */
+  }
+  
+  /* Alternatively, apply a gradient */
+  .custom-button {
+    --background:#43cea2;
+    color: white;
+  }
+
+
+  .sky {
+    --background: #43ce9d; /* Solid background color */
+    --background-activated: #36a38f; /* Darker shade when active */
+    --background-focused: #36a38f; /* Darker shade when focused */
+    --background-hover: #36a38f; /* Darker shade when hovered */
+    color: white; /* Text color */
+  }
+
+  .sky{
+    background: #7843ce;
+  }
+  
+
+  

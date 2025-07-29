@@ -1,0 +1,13 @@
+/* NotificationBar.css (or your global CSS file) */
+
+.notification-bar {
+  background-color: #dddddd; /* Blue background color */
+  color: #fff; /* White text color */
+  padding: 10px; /* Adjust padding as needed */
+  border-radius: 8px; /* Rounded corners */
+  width: 100%; /* Full width */
+  box-sizing: border-box; /* Include padding in width */
+  margin-bottom: 20px; /* Margin for spacing */
+  font-size: 16px; /* Font size */
+  font-weight: bold; /* Font weight */
+}
