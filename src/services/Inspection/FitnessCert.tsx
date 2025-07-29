@@ -272,7 +272,7 @@ const handleFCClick = (saleAndDisposalId: number) => {
   });
 };
 
-  const handleEdit = async () => { 
+  const handleEdit = async (saleAndDisposalIdParam: number) => { 
     const api = axios.create({
       baseURL: API_URL_ChowkiManagment,
     });
@@ -286,7 +286,7 @@ const handleFCClick = (saleAndDisposalId: number) => {
         {
           farmerId: farmerId,
           fruitsId: searchText,
-          saleAndDisposalId: saleAndDisposalId,
+          saleAndDisposalId: saleAndDisposalIdParam,
           expectedCocoon: inspectionData.expectedCocoon,
           lotTestDetails: inspectionData.lotTestDetails,
           diseaseStatusId: inspectionData.diseaseStatusId,
@@ -311,7 +311,8 @@ const handleFCClick = (saleAndDisposalId: number) => {
         setIsError(false);
         setShowAlert(true);
       } else {
-        setMessage('Failed to add fitness info.');
+        // Show the message from the response if error=1
+        setMessage(fitnessResponse.data.message || 'Failed to add fitness info.');
         setIsError(true);
         setShowAlert(true);
         return; // Exit if there's an error
@@ -371,7 +372,7 @@ const handleFCClick = (saleAndDisposalId: number) => {
       const file = new File([blob], "captured_image.jpg", { type: blob.type });
   
       setSelectedFile(file); // Set the captured image as the selected file to be sent to the API
-      setPreviewImage(image.webPath); // Set preview image for viewing
+      setPreviewImage(image.webPath ?? null); // Set preview image for viewing, fix type error
     } catch (error) {
       console.error('Error capturing image:', error);
     }
@@ -490,60 +491,56 @@ const handleFCClick = (saleAndDisposalId: number) => {
                     <IonInput value={data.fcData.mountName} readonly={true} />
                   </div>
 
-                 
                   <IonCardHeader>
-                  <IonCardTitle>Add FC Details</IonCardTitle>
-                </IonCardHeader>
+                    <IonCardTitle>Add FC Details</IonCardTitle>
+                  </IonCardHeader>
                   <div className="details-row">
                     <IonLabel>Expected Cocoons (in Kgs):</IonLabel>
                     <IonInput 
-                    value={inspectionData.expectedCocoon} 
-                    onIonChange={e => handleChange(e, "expectedCocoon")} />
+                      value={inspectionData.expectedCocoon} 
+                      onIonChange={e => handleChange(e, "expectedCocoon")} />
                   </div>
                   <div className="details-row">
                     <IonLabel>Lot Test Details:</IonLabel>
                     <IonInput 
-                    value={inspectionData.lotTestDetails} 
-                    onIonChange={e => handleChange(e,"lotTestDetails")} />
+                      value={inspectionData.lotTestDetails} 
+                      onIonChange={e => handleChange(e,"lotTestDetails")} />
                   </div>
 
-                    <IonCol size="12">
-              <div className="details-row">
-                <IonLabel>
-                  <b>Select Status:</b>
-                </IonLabel>
-                {fetchError ? (
-                  <p style={{ color: 'red' }}>Failed to fetch Status list. Please try again later.</p>
-                ) : (
-                  <IonSelect
-                    value={inspectionData.diseaseStatusId}
-                    // disabled={!isEditable} // Disable if not editable
-                    placeholder="Select Status"
-                    onIonChange={(e) => handleChange(e,"diseaseStatusId")}
-                  >
-                    <IonSelectOption value="">None</IonSelectOption> {/* Option to deselect */}
-                    {diseaseListData?.map((disease) => (
-                      <IonSelectOption key={disease.diseaseStatusId} value={disease.diseaseStatusId}>
-                        {disease.name}
-                      </IonSelectOption>
-                    ))}
-                  </IonSelect>
-                )}
-              </div>
-            </IonCol>
+                  <IonCol size="12">
+                    <div className="details-row">
+                      <IonLabel>
+                        <b>Select Status:</b>
+                      </IonLabel>
+                      {fetchError ? (
+                        <p style={{ color: 'red' }}>Failed to fetch Status list. Please try again later.</p>
+                      ) : (
+                        <IonSelect
+                          value={inspectionData.diseaseStatusId}
+                          placeholder="Select Status"
+                          onIonChange={(e) => handleChange(e,"diseaseStatusId")}
+                        >
+                          <IonSelectOption value="">None</IonSelectOption>
+                          {diseaseListData?.map((disease) => (
+                            <IonSelectOption key={disease.diseaseStatusId} value={disease.diseaseStatusId}>
+                              {disease.name}
+                            </IonSelectOption>
+                          ))}
+                        </IonSelect>
+                      )}
+                    </div>
+                  </IonCol>
 
                   <div className="details-row">
                     <IonLabel>No of Chandrika:</IonLabel>
                     <IonInput value={inspectionData.noOfChandies} 
-                    onIonChange={e => handleChange(e, "noOfChandies")} />
+                      onIonChange={e => handleChange(e, "noOfChandies")} />
                   </div>
-                  
+
                   <div className="details-row">
                     <IonLabel>Dispatch Date:</IonLabel>
                     <div
-                      onClick={() =>
-                        setShowDispatchDatePicker(true)
-                      }
+                      onClick={() => setShowDispatchDatePicker(true)}
                       className="date-display"
                     >
                       {inspectionData.expectedMarkerDate
@@ -552,62 +549,60 @@ const handleFCClick = (saleAndDisposalId: number) => {
                     </div>
                     {showDispatchDatePicker && (
                       <IonModal isOpen={showDispatchDatePicker} onDidDismiss={() => setShowDispatchDatePicker(false)}>
-                      <IonDatetime
-                        value={inspectionData.expectedMarkerDate || new Date().toISOString()}
-                        onIonChange={(e) => {
-                          handleChange(e, "expectedMarkerDate");
-                          setShowDispatchDatePicker(false);
-                        }}
-                        onIonCancel={() => setShowDispatchDatePicker(false)}
-                      />
-                      <IonButton onClick={() => setShowDispatchDatePicker(false)}>Close</IonButton>
+                        <IonDatetime
+                          value={inspectionData.expectedMarkerDate || new Date().toISOString()}
+                          onIonChange={(e) => {
+                            handleChange(e, "expectedMarkerDate");
+                            setShowDispatchDatePicker(false);
+                          }}
+                          onIonCancel={() => setShowDispatchDatePicker(false)}
+                        />
+                        <IonButton onClick={() => setShowDispatchDatePicker(false)}>Close</IonButton>
                       </IonModal>
                     )}
                   </div>
 
-
-
                   <div className="file-upload-section">
-      <IonLabel>Choose File:</IonLabel>
-      <input type="file" onChange={handleFileChange} /></div>
-      <div>
+                    <IonLabel>Choose File:</IonLabel>
+                    <input type="file" onChange={handleFileChange} />
+                  </div>
+                  <div>
+                    <IonButton onClick={handleCaptureImage} color="primary">
+                      <IonIcon icon={camera} slot="icon-only" />
+                    </IonButton>
 
-      <IonButton onClick={handleCaptureImage} color="primary">
-      <IonIcon icon={camera} slot="icon-only" />
-      </IonButton>
+                    {previewImage && (
+                      <>
+                        <IonButton onClick={() => setIsModalOpen(true)} color="secondary">
+                          <IonIcon icon={eyeSharp} slot="icon-only" />
+                        </IonButton>
+                        <IonModal isOpen={isModalOpen} onDidDismiss={() => setIsModalOpen(false)}>
+                          <IonHeader>
+                            <IonToolbar>
+                              <IonTitle>View File</IonTitle>
+                              <IonButton onClick={() => setIsModalOpen(false)} slot="end" fill="clear">
+                                Close
+                              </IonButton>
+                            </IonToolbar>
+                          </IonHeader>
+                          <IonContent>
+                            <div className="preview-section" style={{ textAlign: 'center', padding: '20px' }}>
+                              <IonImg src={previewImage} alt="Preview" />
+                            </div>
+                          </IonContent>
+                        </IonModal>
+                      </>
+                    )}
 
-      {previewImage && (
-        <>
-          <IonButton onClick={() => setIsModalOpen(true)} color="secondary">
-          <IonIcon icon={eyeSharp} slot="icon-only" />
-          </IonButton>
-          <IonModal isOpen={isModalOpen} onDidDismiss={() => setIsModalOpen(false)}>
-            <IonHeader>
-              <IonToolbar>
-                <IonTitle>View File</IonTitle>
-                <IonButton onClick={() => setIsModalOpen(false)} slot="end" fill="clear">
-                  Close
-                </IonButton>
-              </IonToolbar>
-            </IonHeader>
-            <IonContent>
-              <div className="preview-section" style={{ textAlign: 'center', padding: '20px' }}>
-                <IonImg src={previewImage} alt="Preview" />
-              </div>
-            </IonContent>
-          </IonModal>
-        </>
-      )}
-
-      {selectedFile && (
-        <IonButton onClick={handleClearFile} color="danger">
-          <IonIcon icon={trashSharp} slot="icon-only" />
-        </IonButton>
-      )}
-    </div>
+                    {selectedFile && (
+                      <IonButton onClick={handleClearFile} color="danger">
+                        <IonIcon icon={trashSharp} slot="icon-only" />
+                      </IonButton>
+                    )}
+                  </div>
 
                   {/* <IonButton expand="block">Submit</IonButton> */}
-                  <IonButton expand="full" onClick={handleEdit}>
+                  <IonButton expand="full" onClick={() => handleEdit(data.saleAndDisposalId)} disabled={!selectedFile}>
                     Submit
                   </IonButton>
                 </IonCardContent>
