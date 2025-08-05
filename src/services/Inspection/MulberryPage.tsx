@@ -51,6 +51,8 @@ const MulberryPage: React.FC = () => {
     applicationType: "",
     tsc:"",
   });
+  const [nurseryDate, setNurseryDate] = useState<string>(""); // New state for nursery date
+  const [showNurseryDatePicker, setShowNurseryDatePicker] = useState<boolean>(false); // Picker visibility
 
   const fetchDetails = () => {
     clearField();
@@ -288,7 +290,7 @@ const MulberryPage: React.FC = () => {
             uprootingReason: farmerOtherData.uprootingReason,
             uprootingDate: farmerOtherData.uprootingDate,
             applicationType: farmerOtherData.applicationType,
-            noOfSapplings: farmerOtherData.noOfSapplings,
+            noOfSapplings: farmerOtherData.noOfSaplings,
           }, {
             headers: {
               'Content-Type': 'application/json',
@@ -379,7 +381,7 @@ const MulberryPage: React.FC = () => {
   //             uprootingReason: farmerOtherData.uprootingReason,
   //             uprootingDate: farmerOtherData.uprootingDate,
   //             applicationType: farmerOtherData.applicationType,
-  //             noOfSapplings: farmerOtherData.noOfSapplings,
+  //             noOfSapplings: farmerOtherData.noOfSaplings,
   //           },
   //           {
   //             headers: {
@@ -487,7 +489,7 @@ const MulberryPage: React.FC = () => {
   //             uprootingReason: farmerOtherData.uprootingReason,
   //             uprootingDate: farmerOtherData.uprootingDate,
   //             applicationType: farmerOtherData.applicationType,
-  //             noOfSapplings: farmerOtherData.noOfSapplings,
+  //             noOfSapplings: farmerOtherData.noOfSaplings,
   //           },
   //           {
   //             headers: {
@@ -644,18 +646,15 @@ const handleChanges = (e, fieldName) => {
     ...prevData,
     [fieldName]: value,
   }));
-
-  // Reset both fields first
   setIsUprootingReasonEnabled(false);
   setIsNurseryEnabled(false);
-
-  // Check if the selected application is "Uprooting" or "Nursery" and update accordingly
   if (fieldName === 'applicationType') {
     if (value === 'Uprooting') {
       setIsUprootingReasonEnabled(true); // Enable Uprooting Reason field
     }
     if (value === 'Nursery') {
       setIsNurseryEnabled(true); // Enable Nursery field
+      setNurseryDate(""); // Reset nursery date when switching to Nursery
     }
   }
 };
@@ -674,6 +673,7 @@ const resetFormFields = () => {
     applicationType: '',
     noOfSapplings: '',
   });
+  setNurseryDate(""); // Reset nursery date
   setSelectedFile(null);
   setPreviewImage(null);
   if (fileInputRef.current) {
@@ -815,11 +815,11 @@ const handleSearchInputChange = (e: CustomEvent) => {
 )}</div>
                   <div>{isUprootingReasonEnabled && (
                   <div className="details-row">
-                    <IonLabel>Uprooting Date:</IonLabel>
+                    <IonLabel>
+                      Uprooting Date<span style={{ color: "red" }}>*</span>
+                    </IonLabel>
                     <div
-                      onClick={() =>
-                        isEditable && setShowUprootingDatePicker(true)
-                      }
+                      onClick={() => isEditable && setShowUprootingDatePicker(true)}
                       className="date-display"
                       style={{ cursor: 'pointer' }}
                     >
@@ -843,6 +843,7 @@ const handleSearchInputChange = (e: CustomEvent) => {
                   </div>)}</div>
 
                 <div>{isNurseryEnabled && (
+                  <>
                 <div className="details-row">
                     <IonLabel>Number Of Saplings:</IonLabel>
                     <IonInput
@@ -850,7 +851,40 @@ const handleSearchInputChange = (e: CustomEvent) => {
                       onIonChange={(e) => handleChange(e, "noOfSapplings")}
                       placeholder="Enter Number of noOfSapplings"
                     />
-                  </div>)}</div>
+                  </div>
+                  <div className="details-row">
+                    <IonLabel>
+                      Date<span style={{ color: "red" }}>*</span>
+                    </IonLabel>
+                    <div
+                      onClick={() => isEditable && setShowNurseryDatePicker(true)}
+                      className="date-display"
+                      style={{ cursor: 'pointer' }}
+                    >
+                      {farmerOtherData.extensionDate
+                        ? new Date(farmerOtherData.extensionDate).toLocaleDateString()
+                        : "Select Date"}
+                    </div>
+                    {showNurseryDatePicker && (
+                      <IonModal isOpen={showNurseryDatePicker} onDidDismiss={() => setShowNurseryDatePicker(false)}>
+                      <IonDatetime
+                        value={farmerOtherData.extensionDate || new Date().toISOString()}
+                        onIonChange={(e) => {
+                          const value = (e.target as HTMLInputElement).value;
+                          setNurseryDate(value);
+                          setFarmerOtherData((prev) => ({
+                            ...prev,
+                            extensionDate: value
+                          }));
+                          setShowNurseryDatePicker(false);
+                        }}
+                        onIonCancel={() => setShowNurseryDatePicker(false)}
+                      />
+                      <IonButton onClick={() => setShowNurseryDatePicker(false)}>Close</IonButton>
+                      </IonModal>
+                    )}
+                  </div>
+                  </>)}</div>
 
 
         <IonCol size="12">
@@ -941,7 +975,9 @@ const handleSearchInputChange = (e: CustomEvent) => {
 
                         <div>{!(isUprootingReasonEnabled || isNurseryEnabled )&& (
                     <div className="details-row">
-                    <IonLabel>Extension Date:</IonLabel>
+                    <IonLabel>
+                      Extension Date<span style={{ color: "red" }}>*</span>
+                    </IonLabel>
                     <div
                       onClick={() =>
                         isEditable && setShowHatchingDatePicker(true)
