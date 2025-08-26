@@ -61,7 +61,8 @@ const FitnessPage: React.FC = () => {
     lotTestDetails: '',
     diseaseStatusId: '',
     noOfChandies: '',
-    expectedMarkerDate: '',
+    spunFromDate: '',
+    spunToDate: '',
     fitnessCertificatePath: '',
   });
 
@@ -74,6 +75,8 @@ const FitnessPage: React.FC = () => {
       inputRef.current?.blur(); // Remove focus from input field, but don't trigger fetch
     }
   };
+
+  const [showSpunDatePicker, setShowSpunDatePicker] = useState(false);
 
   interface FCData {
     note: string;
@@ -291,7 +294,8 @@ const handleFCClick = (saleAndDisposalId: number) => {
           lotTestDetails: inspectionData.lotTestDetails,
           diseaseStatusId: inspectionData.diseaseStatusId,
           noOfChandies: inspectionData.noOfChandies,
-          expectedMarkerDate: inspectionData.expectedMarkerDate,
+          spunFromDate: inspectionData.spunFromDate,
+          spunToDate:inspectionData.spunToDate,
           fitnessCertificatePath: inspectionData.fitnessCertificatePath,
         },
         {
@@ -537,8 +541,8 @@ const handleFCClick = (saleAndDisposalId: number) => {
                       onIonChange={e => handleChange(e, "noOfChandies")} />
                   </div>
 
-                  <div className="details-row">
-                    <IonLabel>Dispatch Date:</IonLabel>
+                  {/* <div className="details-row">
+                    <IonLabel>Spun on Date:</IonLabel>
                     <div
                       onClick={() => setShowDispatchDatePicker(true)}
                       className="date-display"
@@ -560,7 +564,69 @@ const handleFCClick = (saleAndDisposalId: number) => {
                         <IonButton onClick={() => setShowDispatchDatePicker(false)}>Close</IonButton>
                       </IonModal>
                     )}
-                  </div>
+                  </div> */}
+
+                  <div className="details-row">
+  <IonLabel>Spun on Date:</IonLabel>
+
+  {/* Expected Marker Date */}
+  <div
+    onClick={() => setShowDispatchDatePicker(true)}
+    className="date-display"
+  >
+    {inspectionData.spunFromDate
+      ? new Date(inspectionData.spunFromDate).toLocaleDateString()
+      : "Select Date"}
+  </div>
+
+  {/* Spun Date */}
+  <div
+    onClick={() => setShowSpunDatePicker(true)}
+    className="date-display"
+    style={{ marginLeft: "1rem" }} // space between dates
+  >
+    {inspectionData.spunToDate
+      ? new Date(inspectionData.spunToDate).toLocaleDateString()
+      : "Select Date"}
+  </div>
+
+  {/* Expected Marker Date Picker */}
+  {showDispatchDatePicker && (
+    <IonModal
+      isOpen={showDispatchDatePicker}
+      onDidDismiss={() => setShowDispatchDatePicker(false)}
+    >
+      <IonDatetime
+        value={inspectionData.spunFromDate || new Date().toISOString()}
+        onIonChange={(e) => {
+          handleChange(e, "spunFromDate");
+          setShowDispatchDatePicker(false);
+        }}
+        onIonCancel={() => setShowDispatchDatePicker(false)}
+      />
+      <IonButton onClick={() => setShowDispatchDatePicker(false)}>Close</IonButton>
+    </IonModal>
+  )}
+
+  {/* Spun Date Picker */}
+  {showSpunDatePicker && (
+    <IonModal
+      isOpen={showSpunDatePicker}
+      onDidDismiss={() => setShowSpunDatePicker(false)}
+    >
+      <IonDatetime
+        value={inspectionData.spunToDate || new Date().toISOString()}
+        onIonChange={(e) => {
+          handleChange(e, "spunToDate");
+          setShowSpunDatePicker(false);
+        }}
+        onIonCancel={() => setShowSpunDatePicker(false)}
+      />
+      <IonButton onClick={() => setShowSpunDatePicker(false)}>Close</IonButton>
+    </IonModal>
+  )}
+</div>
+
 
                   <div className="file-upload-section">
                     <IonLabel>Choose File:</IonLabel>
@@ -602,7 +668,15 @@ const handleFCClick = (saleAndDisposalId: number) => {
                   </div>
 
                   {/* <IonButton expand="block">Submit</IonButton> */}
-                  <IonButton expand="full" onClick={() => handleEdit(data.saleAndDisposalId)} disabled={!selectedFile}>
+                  <IonButton
+                    expand="full"
+                    onClick={() => handleEdit(data.saleAndDisposalId)}
+                    disabled={
+                      !selectedFile ||
+                      !inspectionData.spunFromDate ||
+                      !inspectionData.spunToDate
+                    }
+                  >
                     Submit
                   </IonButton>
                 </IonCardContent>

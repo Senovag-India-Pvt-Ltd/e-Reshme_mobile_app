@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { IonContent, IonPage, IonCard, IonCardContent, IonCardHeader, IonCardTitle, IonCol, IonGrid, IonRow, IonHeader, IonMenuButton, IonTitle, IonToolbar, IonButton, IonIcon, IonLabel, IonButtons, IonSearchbar } from '@ionic/react';
+import { IonContent, IonPage, IonCard, IonCardContent, IonCardHeader, IonCardTitle, IonCol, IonGrid, IonRow, IonHeader, IonMenuButton, IonTitle, IonToolbar, IonButton, IonIcon, IonLabel, IonButtons, IonSearchbar, IonModal } from '@ionic/react';
 import axios from 'axios';
 import { useParams, useHistory } from 'react-router-dom';
 import { API_URL_DBT_ } from '../auth.service';
@@ -50,10 +50,11 @@ const ListPage: React.FC = () => {
   const handleUploadDocumentsClick = (applicationDocumentId: number, approvalStageId: number, subSchemeId: number, financialDelegation: boolean, schemeAmount: number, designationId: number, eligibleAmount: number, designationStep: number) => {
     console.log('Navigating to DocPage with params:', { applicationDocumentId, approvalStageId, subSchemeId, financialDelegation, schemeAmount, designationId, eligibleAmount, designationStep });
     const amountToPass = eligibleAmount || schemeAmount;
+    // Pass applicationFormId as well (same as applicationDocumentId)
     if (financialDelegation) {
-      history.push(`/docu/${applicationDocumentId}/${approvalStageId}/${subSchemeId}?financialDelegation=true&schemeAmount=${amountToPass}&eligibleAmount=${eligibleAmount}&designationId=${designationId}&designationStep=${designationStep}`);
+      history.push(`/docu/${applicationDocumentId}/${approvalStageId}/${subSchemeId}?financialDelegation=true&schemeAmount=${amountToPass}&eligibleAmount=${eligibleAmount}&designationId=${designationId}&designationStep=${designationStep}&applicationFormId=${applicationDocumentId}`);
     } else {
-      history.push(`/docu/${applicationDocumentId}/${approvalStageId}/${subSchemeId}?schemeAmount=${amountToPass}&eligibleAmount=${eligibleAmount}&designationId=${designationId}&designationStep=${designationStep}`);
+      history.push(`/docu/${applicationDocumentId}/${approvalStageId}/${subSchemeId}?schemeAmount=${amountToPass}&eligibleAmount=${eligibleAmount}&designationId=${designationId}&designationStep=${designationStep}&applicationFormId=${applicationDocumentId}`);
     }
   };
 
@@ -123,6 +124,43 @@ const ListPage: React.FC = () => {
                       <IonLabel><IonIcon icon={location} /> <b>District:</b> {item.districtName}</IonLabel><br />
                       <IonLabel><IonIcon icon={pin} /> <b>Taluk:</b> {item.talukName}</IonLabel><br />
                       <IonLabel><IonIcon icon={pinOutline} /> <b>TSC:</b> {item.tscName}</IonLabel><br />
+                      {/* View Image Button and Modal */}
+                      {item.fileName && (
+                        <>
+                          <IonButton color="primary" onClick={() => setViewIndex(index + 10000)}>
+                            View Image
+                          </IonButton>
+                          {viewIndex === index + 10000 && (
+                            <IonModal isOpen={true} onDidDismiss={() => setViewIndex(index)}>
+                              <IonHeader>
+                                <IonToolbar>
+                                  <IonTitle>Image Preview</IonTitle>
+                                  <IonButton slot="end" fill="clear" onClick={() => setViewIndex(index)}>
+                                    Close
+                                  </IonButton>
+                                </IonToolbar>
+                              </IonHeader>
+                              <IonContent>
+                                <div style={{ textAlign: 'center', padding: '20px' }}>
+                                  <img
+                                    src={`https://e-reshme.karnataka.gov.in/dbt/v1/service/downLoadFile?fileName=${item.fileName}`}
+                                    alt="Preview"
+                                    style={{ maxWidth: '100%', maxHeight: '70vh' }}
+                                  />
+                                  <br />
+                                  <IonButton
+                                    color="secondary"
+                                    href={`https://e-reshme.karnataka.gov.in/dbt/v1/service/downLoadFile?fileName=${item.fileName}`}
+                                    target="_blank"
+                                  >
+                                    Download Image
+                                  </IonButton>
+                                </div>
+                              </IonContent>
+                            </IonModal>
+                          )}
+                        </>
+                      )}
                       
 
                      

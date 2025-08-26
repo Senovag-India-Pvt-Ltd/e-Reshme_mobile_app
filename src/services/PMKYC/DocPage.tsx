@@ -42,7 +42,9 @@ const DocPage: React.FC = () => {
     subSchemeId: string;
   }>();
 
+  // Get applicationFormId from query params (fallback to applicationDocumentId)
   const query = new URLSearchParams(window.location.search);
+  const applicationFormId = query.get('applicationFormId') || applicationDocumentId;
   const financialDelegation = query.get('financialDelegation') === 'true';
   const schemeAmountQuery = query.get('schemeAmount');
   const eligibleAmountQuery = query.get('eligibleAmount');
@@ -458,10 +460,14 @@ const DocPage: React.FC = () => {
   // Example API calls for Permanent and Objection
   const callPermanentRejectAPI = async () => {
     try {
-      // Use actual Permanent API endpoint
+      // Call rejectServiceApplication API for Permanent rejection
+      const payload = {
+        applicationFormId: applicationFormId,
+        rejectedReasonId: rejectionReason ? parseInt(rejectionReason) : undefined,
+      };
       await axios.post(
-        `https://e-reshme.karnataka.gov.in/dbt/v1/service/getNextStepDetailsAfterSubmitBySubSchemeIdAndApprovalStageId?subSchemeId=${subSchemeId}&approvalStageId=${approvalStageId}`,
-        {},
+        `${API_URL_DBT_}dbt/v1/service/rejectServiceApplication`,
+        payload,
         {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("jwtToken")}`,

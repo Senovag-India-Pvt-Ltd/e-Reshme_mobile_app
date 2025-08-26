@@ -263,13 +263,24 @@ const MulberryPage: React.FC = () => {
   const handleEdit = async () => {
     try {
       if (isEditable) {
-
-  if (!selectedFile) {
-    setMessage('Please select or capture an image before uploading.');
-    setIserror(true);
-    setShowAlert(true);
-    return; // Exit if no file is selected
-  }
+        // Validate mandatory date fields
+        if (
+          (!isUprootingReasonEnabled && !isNurseryEnabled && !farmerOtherData.extensionDate) ||
+          (isUprootingReasonEnabled && !farmerOtherData.uprootingDate) ||
+          (isNurseryEnabled && !farmerOtherData.extensionDate)
+        ) {
+          setMessage('Please select the required date before submitting.');
+          setIserror(true);
+          setShowAlert(true);
+          return;
+        }
+        // Validate file selection
+        if (!selectedFile) {
+          setMessage('Please select or capture an image before uploading.');
+          setIserror(true);
+          setShowAlert(true);
+          return; // Exit if no file is selected
+        }
         const api = axios.create({
           baseURL: API_URL_ChowkiManagment,
         });
@@ -290,7 +301,7 @@ const MulberryPage: React.FC = () => {
             uprootingReason: farmerOtherData.uprootingReason,
             uprootingDate: farmerOtherData.uprootingDate,
             applicationType: farmerOtherData.applicationType,
-            noOfSapplings: farmerOtherData.noOfSaplings,
+            noOfSapplings: farmerOtherData.noOfSapplings, // <-- fix: use correct field name
           }, {
             headers: {
               'Content-Type': 'application/json',
