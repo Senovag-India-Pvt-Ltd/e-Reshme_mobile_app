@@ -16,7 +16,7 @@ import {
   IonSpinner,
 } from "@ionic/react";
 import { InputChangeEventDetail } from "@ionic/core";
-import { trash, informationCircle, copy, search, createOutline, checkmarkCircle } from "ionicons/icons";
+import { trash, informationCircle, copy, search, createOutline, checkmarkCircle, refreshOutline } from "ionicons/icons";
 import "./ProfileInfoPage.css";
 import "./AddDlfPage.css";
 import "./UpdateDlfPage.css";
@@ -471,6 +471,9 @@ const UpdateDlfPage: React.FC = () => {
           </IonButtons>
           <IonTitle>Update DFL's</IonTitle>
           <IonButtons slot="end">
+            <IonButton fill="clear" onClick={clearSearch} aria-label="Refresh" disabled={searching}>
+              <IonIcon icon={refreshOutline} />
+            </IonButton>
             <IonButton fill="clear" onClick={handleIconClick} aria-label="Info">
               <IonIcon icon={informationCircle} />
             </IonButton>
@@ -595,7 +598,7 @@ const UpdateDlfPage: React.FC = () => {
                   <label className="info-label">Receipt No</label>
                   <IonInput
                     value={data.receiptNo}
-                    onIonChange={(e) => handleChange(e, index, "receiptNo")}
+                    onIonInput={(e) => handleChange(e as any, index, "receiptNo")}
                   />
                 </div>
               )}
@@ -603,26 +606,40 @@ const UpdateDlfPage: React.FC = () => {
 
             <div className="result-actions">
               {editedItemIndex === index ? (
-                <IonButton
-                  className={`btn-result-primary ${submittingIndex === index ? "is-loading" : ""}`}
-                  expand="block"
-                  disabled={submittingIndex !== null}
-                  onClick={() => handleSubmit(index)}
-                >
-                  {submittingIndex === index ? (
-                    <>
-                      <IonSpinner name="crescent" className="btn-spinner" />
-                      <span style={{ marginLeft: 8 }}>Submitting...</span>
-                    </>
-                  ) : (
-                    <>
-                      <IonIcon icon={checkmarkCircle} slot="start" /> Submit
-                    </>
-                  )}
-                </IonButton>
+                (() => {
+                  const submitDisabled =
+                    submittingIndex !== null ||
+                    !data?.receiptNo ||
+                    !data.receiptNo.toString().trim();
+                  const submitClass =
+                    submittingIndex === index
+                      ? "is-loading"
+                      : submitDisabled
+                      ? "is-disabled-state"
+                      : "is-active";
+                  return (
+                    <IonButton
+                      className={`btn-result-primary ${submitClass}`}
+                      expand="block"
+                      disabled={submitDisabled}
+                      onClick={() => handleSubmit(index)}
+                    >
+                      {submittingIndex === index ? (
+                        <>
+                          <IonSpinner name="crescent" className="btn-spinner" />
+                          <span style={{ marginLeft: 8 }}>Submitting...</span>
+                        </>
+                      ) : (
+                        <>
+                          <IonIcon icon={checkmarkCircle} slot="start" /> Submit
+                        </>
+                      )}
+                    </IonButton>
+                  );
+                })()
               ) : (
                 <IonButton
-                  className="btn-result-primary"
+                  className={`btn-result-primary ${submittingIndex !== null ? "is-disabled-state" : "is-active"}`}
                   expand="block"
                   disabled={submittingIndex !== null}
                   onClick={() => toggleEditMode(index)}

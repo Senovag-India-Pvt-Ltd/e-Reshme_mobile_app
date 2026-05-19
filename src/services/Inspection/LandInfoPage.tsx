@@ -21,7 +21,7 @@ import {
   IonCol,
   IonAlert,
 } from "@ionic/react";
-import { trash, searchOutline } from "ionicons/icons";
+import { trash, searchOutline, refreshOutline } from "ionicons/icons";
 import { IonSpinner } from "@ionic/react";
 import "./ProfileInfoPage.css";
 import axios from "axios";
@@ -388,6 +388,11 @@ const toggleViewAll = () => {
             <IonBackButton text="Back" defaultHref="/subsubmenu" />
           </IonButtons>
           <IonTitle>Land Info</IonTitle>
+          <IonButtons slot="end">
+            <IonButton fill="clear" onClick={handleClear} aria-label="Refresh" disabled={searching}>
+              <IonIcon icon={refreshOutline} />
+            </IonButton>
+          </IonButtons>
         </IonToolbar>
       </IonHeader>
 

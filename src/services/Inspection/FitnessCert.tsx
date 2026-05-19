@@ -35,6 +35,9 @@ import {
   trashSharp,
   copy,
   searchOutline,
+  refreshOutline,
+  ribbonOutline,
+  documentTextOutline,
 } from "ionicons/icons";
 import { IonSpinner } from "@ionic/react";
 import "./ProfileInfoPage.css";
@@ -824,6 +827,9 @@ const FitnessPage: React.FC = () => {
           </IonButtons>
           <IonTitle>Fitness Certificate</IonTitle>
           <IonButtons slot="end">
+            <IonButton fill="clear" onClick={clearSearch} aria-label="Refresh" disabled={searching}>
+              <IonIcon icon={refreshOutline} />
+            </IonButton>
             <IonButton fill="clear" onClick={handleIconClick} aria-label="Info">
               <IonIcon icon={informationCircle} />
             </IonButton>
@@ -878,138 +884,138 @@ const FitnessPage: React.FC = () => {
         {dataList &&
           dataList.length > 0 &&
           dataList.map((data, index) => (
-            <>
-              <IonCard key={index} className="details-card">
-                <IonCardHeader>
-                  <IonCardTitle>DFLs Details</IonCardTitle>
-                </IonCardHeader>
-                <IonCardContent>
-                  {index === 0 && (
-                    <div className="details-row">
-                      <IonLabel>Farmer Name:</IonLabel>
+            <React.Fragment key={index}>
+              <div className="result-card">
+                <div className="result-head">
+                  <div className="result-avatar is-accent-amber">
+                    <IonIcon icon={ribbonOutline} />
+                  </div>
+                  <div className="result-head-text">
+                    <span className="result-eyebrow">DFL Details</span>
+                    <h3 className="result-title">
+                      {index === 0 && data.farmerName
+                        ? data.farmerName
+                        : `Lot ${data.lotNumberCrc || '—'}`}
+                    </h3>
+                  </div>
+                </div>
+                <div className="result-body">
+                  {index === 0 && data.farmerName && (
+                    <div className="info-row">
+                      <label className="info-label">Farmer Name</label>
                       <IonInput value={data.farmerName} readonly={true} />
                     </div>
                   )}
-                  <div className="details-row">
-                    <IonLabel>Race:</IonLabel>
+                  <div className="info-row">
+                    <label className="info-label">Race</label>
                     <IonInput value={data.raceName} readonly={true} />
                   </div>
-                  {/* <div className="details-row">
-                    <IonLabel>Lot Number(of the RSP):</IonLabel>
-                    <IonInput value={data.lotNumberRsp} readonly={true} />
-                  </div> */}
-                  <div className="details-row">
-                    <IonLabel>Lot No:</IonLabel>
+                  <div className="info-row">
+                    <label className="info-label">Lot Number</label>
                     <IonInput value={data.lotNumberCrc} readonly={true} />
                   </div>
-                  <div className="details-row">
-                    <IonLabel>Number of DFL’s:</IonLabel>
+                  <div className="info-row">
+                    <label className="info-label">Number of DFLs</label>
                     <IonInput value={data.numbersOfDfls} readonly={true} />
                   </div>
-                  <div className="details-row">
-                    <IonLabel>Rate per 100 DFLs:</IonLabel>
+                  <div className="info-row">
+                    <label className="info-label">Rate per 100 DFLs</label>
                     <IonInput value={data.ratePer100Dfls} readonly={true} />
                   </div>
-                </IonCardContent>
-              </IonCard>
-
-              <IonButton
-                style={
-                  {
-                    "--background": "#ffffff",
-                    "--color": "#000000",
-                    color: "#000000",
-                    backgroundColor: "#ffffff",
-                  } as any
-                }
-                expand="full"
-                onClick={() => handleFCClick(data.saleAndDisposalId)}
-              >
-                Issue FC
-              </IonButton>
+                </div>
+                <div className="result-actions">
+                  <IonButton
+                    className="btn-result-primary is-active"
+                    expand="block"
+                    onClick={() => handleFCClick(data.saleAndDisposalId)}
+                  >
+                    <IonIcon icon={documentTextOutline} slot="start" /> Issue FC
+                  </IonButton>
+                </div>
+              </div>
 
               {data.issueFCVisible && data.fcData && (
-                <IonCard className="issue-fc-card">
-                  <IonCardHeader>
-                    <IonCardTitle>Issue FC Details</IonCardTitle>
-                  </IonCardHeader>
-                  <IonCardContent>
-                    <div className="details-row">
-                      <IonLabel>Note:</IonLabel>
+                <div className="result-card">
+                  <div className="result-head">
+                    <div className="result-avatar is-accent-amber">
+                      <IonIcon icon={ribbonOutline} />
+                    </div>
+                    <div className="result-head-text">
+                      <span className="result-eyebrow">Issue FC Details</span>
+                      <h3 className="result-title">Inspection Summary</h3>
+                    </div>
+                  </div>
+
+                  <div className="result-body">
+                    <div className="info-row">
+                      <label className="info-label">Note</label>
                       <IonInput value={data.fcData.note} readonly={true} />
                     </div>
-                    <div className="details-row">
-                      <IonLabel>Crop Date:</IonLabel>
+                    <div className="info-row">
+                      <label className="info-label">Crop Date</label>
                       <IonInput value={data.fcData.cropDate} readonly={true} />
                     </div>
-                    <div className="details-row">
-                      <IonLabel>Crop Status:</IonLabel>
-                      <IonInput
-                        value={data.fcData.cropStatusName}
-                        readonly={true}
-                      />
+                    <div className="info-row">
+                      <label className="info-label">Crop Status</label>
+                      <IonInput value={data.fcData.cropStatusName} readonly={true} />
                     </div>
-                    <div className="details-row">
-                      <IonLabel>Moult:</IonLabel>
+                    <div className="info-row">
+                      <label className="info-label">Moult</label>
                       <IonInput value={data.fcData.mountName} readonly={true} />
                     </div>
 
-                    <IonCardHeader>
-                      <IonCardTitle>Add FC Details</IonCardTitle>
-                    </IonCardHeader>
-                    <div className="details-row">
-                      <IonLabel>Expected Cocoons (in Kgs):</IonLabel>
+                    <div className="form-section-divider">
+                      <span>Add FC Details</span>
+                    </div>
+
+                    <div className="info-row">
+                      <label className="info-label">Expected Cocoons (in Kgs)</label>
                       <IonInput
+                        type="number"
                         value={inspectionData.expectedCocoon}
-                        onIonChange={(e) => handleChange(e, "expectedCocoon")}
+                        placeholder="0"
+                        onIonInput={(e) => handleChange(e as any, "expectedCocoon")}
                       />
                     </div>
-                    <div className="details-row">
-                      <IonLabel>Lot Test Details:</IonLabel>
+                    <div className="info-row">
+                      <label className="info-label">Lot Test Details</label>
                       <IonInput
                         value={inspectionData.lotTestDetails}
-                        onIonChange={(e) => handleChange(e, "lotTestDetails")}
+                        placeholder="Enter lot test details"
+                        onIonInput={(e) => handleChange(e as any, "lotTestDetails")}
                       />
                     </div>
 
-                    <IonCol size="12">
-                      <div className="details-row">
-                        <IonLabel>
-                          <b>Select Status:</b>
-                        </IonLabel>
-                        {fetchError ? (
-                          <p style={{ color: "red" }}>
-                            Failed to fetch Status list. Please try again later.
-                          </p>
-                        ) : (
-                          <IonSelect
-                            value={inspectionData.diseaseStatusId}
-                            placeholder="Select Status"
-                            onIonChange={(e) =>
-                              handleChange(e, "diseaseStatusId")
-                            }
-                          >
-                            <IonSelectOption value="">
-                              Select Status
+                    <div className="info-row">
+                      <label className="info-label">Disease Status</label>
+                      {fetchError ? (
+                        <p className="info-error">Failed to fetch Status list. Please try again later.</p>
+                      ) : (
+                        <IonSelect
+                          value={inspectionData.diseaseStatusId}
+                          placeholder="Select Status"
+                          interface="action-sheet"
+                          onIonChange={(e) => handleChange(e, "diseaseStatusId")}
+                        >
+                          {diseaseListData?.map((disease) => (
+                            <IonSelectOption
+                              key={disease.diseaseStatusId}
+                              value={disease.diseaseStatusId}
+                            >
+                              {disease.name}
                             </IonSelectOption>
-                            {diseaseListData?.map((disease) => (
-                              <IonSelectOption
-                                key={disease.diseaseStatusId}
-                                value={disease.diseaseStatusId}
-                              >
-                                {disease.name}
-                              </IonSelectOption>
-                            ))}
-                          </IonSelect>
-                        )}
-                      </div>
-                    </IonCol>
+                          ))}
+                        </IonSelect>
+                      )}
+                    </div>
 
-                    <div className="details-row">
-                      <IonLabel>No of Chandrika:</IonLabel>
+                    <div className="info-row">
+                      <label className="info-label">No. of Chandrika</label>
                       <IonInput
+                        type="number"
                         value={inspectionData.noOfChandies}
-                        onIonChange={(e) => handleChange(e, "noOfChandies")}
+                        placeholder="0"
+                        onIonInput={(e) => handleChange(e as any, "noOfChandies")}
                       />
                     </div>
 
@@ -1038,33 +1044,36 @@ const FitnessPage: React.FC = () => {
                     )}
                   </div> */}
 
-                    <div className="details-row">
-                      <IonLabel>Spun on Date:</IonLabel>
-
-                      {/* Expected Marker Date */}
-                      <div
+                    <div className="info-row">
+                      <label className="info-label">Spun From Date</label>
+                      <button
+                        type="button"
+                        className="select-trigger"
                         onClick={() => setShowDispatchDatePicker(true)}
-                        className="date-display"
                       >
-                        {inspectionData.spunFromDate
-                          ? new Date(
-                              inspectionData.spunFromDate,
-                            ).toLocaleDateString()
-                          : "Select Date"}
-                      </div>
+                        <span className={inspectionData.spunFromDate ? "select-value" : "select-placeholder"}>
+                          {inspectionData.spunFromDate
+                            ? new Date(inspectionData.spunFromDate).toLocaleDateString()
+                            : "Tap to select date"}
+                        </span>
+                        <IonIcon icon={documentTextOutline} />
+                      </button>
+                    </div>
 
-                      {/* Spun Date */}
-                      <div
+                    <div className="info-row">
+                      <label className="info-label">Spun To Date</label>
+                      <button
+                        type="button"
+                        className="select-trigger"
                         onClick={() => setShowSpunDatePicker(true)}
-                        className="date-display"
-                        style={{ marginLeft: "1rem" }} // space between dates
                       >
-                        {inspectionData.spunToDate
-                          ? new Date(
-                              inspectionData.spunToDate,
-                            ).toLocaleDateString()
-                          : "Select Date"}
-                      </div>
+                        <span className={inspectionData.spunToDate ? "select-value" : "select-placeholder"}>
+                          {inspectionData.spunToDate
+                            ? new Date(inspectionData.spunToDate).toLocaleDateString()
+                            : "Tap to select date"}
+                        </span>
+                        <IonIcon icon={documentTextOutline} />
+                      </button>
 
                       {/* Spun From Date Picker */}
                       {showDispatchDatePicker && (
@@ -1167,20 +1176,20 @@ const FitnessPage: React.FC = () => {
                       )}
                     </div>
 
-                    <div className="details-row">
-                      <IonLabel>Transaction Date:</IonLabel>
-
-                      {/* Transaction Date */}
-                      <div
+                    <div className="info-row">
+                      <label className="info-label">Transaction Date</label>
+                      <button
+                        type="button"
+                        className="select-trigger"
                         onClick={() => setShowTransactionDatePicker(true)}
-                        className="date-display"
                       >
-                        {inspectionData.transactionDate
-                          ? new Date(
-                              inspectionData.transactionDate,
-                            ).toLocaleDateString()
-                          : "Select Date"}
-                      </div>
+                        <span className={inspectionData.transactionDate ? "select-value" : "select-placeholder"}>
+                          {inspectionData.transactionDate
+                            ? new Date(inspectionData.transactionDate).toLocaleDateString()
+                            : "Tap to select date"}
+                        </span>
+                        <IonIcon icon={documentTextOutline} />
+                      </button>
 
                       {/* Transaction Date Picker */}
                       {showTransactionDatePicker && (
@@ -1319,35 +1328,33 @@ const FitnessPage: React.FC = () => {
                       )}
                     </div> */}
 
-                    {/* <IonButton expand="block">Submit</IonButton> */}
-                    <IonButton
-                      style={
-                        {
-                          "--background": "#ffffff",
-                          "--color": "#000000",
-                          color: "#000000",
-                          backgroundColor: "#ffffff",
-                        } as any
-                      }
-                      expand="full"
-                      className="submit-button"
-                      onClick={() => handleEdit(data.saleAndDisposalId)}
-                      disabled={
-                        !inspectionData.spunFromDate ||
-                        !inspectionData.spunToDate ||
-                        !inspectionData.transactionDate ||
-                        !inspectionData.expectedCocoon ||
-                        !inspectionData.lotTestDetails ||
-                        !inspectionData.diseaseStatusId ||
-                        !inspectionData.noOfChandies
-                      }
-                    >
-                      Submit
-                    </IonButton>
-                  </IonCardContent>
-                </IonCard>
+                  </div>
+
+                  <div className="result-actions">
+                    {(() => {
+                      const fcReady =
+                        !!inspectionData.spunFromDate &&
+                        !!inspectionData.spunToDate &&
+                        !!inspectionData.transactionDate &&
+                        !!inspectionData.expectedCocoon &&
+                        !!inspectionData.lotTestDetails &&
+                        !!inspectionData.diseaseStatusId &&
+                        !!inspectionData.noOfChandies;
+                      return (
+                        <IonButton
+                          className={`btn-result-primary ${fcReady ? "is-active" : "is-disabled-state"}`}
+                          expand="block"
+                          disabled={!fcReady}
+                          onClick={() => handleEdit(data.saleAndDisposalId)}
+                        >
+                          <IonIcon icon={ribbonOutline} slot="start" /> Submit FC
+                        </IonButton>
+                      );
+                    })()}
+                  </div>
+                </div>
               )}
-            </>
+            </React.Fragment>
           ))}
         <IonAlert
           isOpen={showAlert}

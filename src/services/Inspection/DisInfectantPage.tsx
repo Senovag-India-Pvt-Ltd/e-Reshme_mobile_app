@@ -7,7 +7,7 @@ import {
   IonAlert,
   IonModal,
 } from '@ionic/react';
-import { trash, searchOutline } from 'ionicons/icons';
+import { trash, searchOutline, refreshOutline } from 'ionicons/icons';
 import { IonSpinner } from '@ionic/react';
 import './ProfileInfoPage.css';
 import './AddDlfPage.css';
@@ -299,6 +299,11 @@ const handleInputChange = (e: CustomEvent) => {
             <IonBackButton text="Back" defaultHref="/menu/1" />
           </IonButtons>
           <IonTitle>Supply of Disinfectants</IonTitle>
+          <IonButtons slot="end">
+            <IonButton fill="clear" onClick={clearSearch} aria-label="Refresh" disabled={searching}>
+              <IonIcon icon={refreshOutline} />
+            </IonButton>
+          </IonButtons>
         </IonToolbar>
       </IonHeader>
 

@@ -6,7 +6,7 @@ import {
   IonSelect, IonSelectOption, IonDatetime, IonItem, IonCol,
   IonAlert, IonSpinner,
 } from '@ionic/react';
-import { trash, searchOutline, checkmarkCircleOutline, addOutline } from 'ionicons/icons';
+import { trash, searchOutline, checkmarkCircleOutline, addOutline, refreshOutline } from 'ionicons/icons';
 import './ProfileInfoPage.css';
 import './AddDlfPage.css';
 import axios from "axios";
@@ -305,6 +305,11 @@ const [isReadyToSubmit, setIsReadyToSubmit] = useState(false); // To control whe
             <IonBackButton text="Back" defaultHref="/cropsub" />
           </IonButtons>
           <IonTitle>Track Cocoon Sale</IonTitle>
+          <IonButtons slot="end">
+            <IonButton fill="clear" onClick={clearSearch} aria-label="Refresh" disabled={searching}>
+              <IonIcon icon={refreshOutline} />
+            </IonButton>
+          </IonButtons>
         </IonToolbar>
       </IonHeader>
 

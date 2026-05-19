@@ -4,7 +4,7 @@ import {
   IonMenuButton,IonIcon,IonBackButton,
   IonSelect,IonSelectOption,IonDatetime,IonCol,IonAlert,IonItem,IonImg,IonModal,
 } from "@ionic/react";
-import { camera, eyeSharp, trash, trashSharp, searchOutline } from "ionicons/icons";
+import { camera, eyeSharp, trash, trashSharp, searchOutline, refreshOutline } from "ionicons/icons";
 import { IonSpinner } from "@ionic/react";
 import "./ProfileInfoPage.css";
 import axios from "axios";
@@ -794,6 +794,11 @@ const handleSearchInputChange = (e: CustomEvent) => {
             <IonBackButton text="Back" defaultHref="/menu/1" />
           </IonButtons>
           <IonTitle>Mulberry Activity</IonTitle>
+          <IonButtons slot="end">
+            <IonButton fill="clear" onClick={clearSearch} aria-label="Refresh" disabled={searching}>
+              <IonIcon icon={refreshOutline} />
+            </IonButton>
+          </IonButtons>
         </IonToolbar>
       </IonHeader>
 

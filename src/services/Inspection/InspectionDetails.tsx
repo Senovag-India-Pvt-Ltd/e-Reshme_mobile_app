@@ -2,31 +2,28 @@ import React, { useState, useEffect } from "react";
 import {
   IonContent,
   IonPage,
-  IonCard,
-  IonCardContent,
-  IonCardHeader,
-  IonCardTitle,
   IonInput,
-  IonLabel,
   IonButton,
   IonHeader,
   IonToolbar,
   IonTitle,
   IonButtons,
-  IonMenuButton,
   IonIcon,
   IonBackButton,
   IonSelect,
   IonSelectOption,
-  IonDatetime,
-  IonItem,
-  IonCol,
   IonAlert,
   IonImg,
   IonModal,
-  IonText,
 } from "@ionic/react";
-import { camera, eyeSharp, trash, trashSharp } from "ionicons/icons"; // Import the trash icon
+import {
+  camera,
+  eyeSharp,
+  trashSharp,
+  leafOutline,
+  documentTextOutline,
+  checkmarkCircle,
+} from "ionicons/icons";
 import "./ProfileInfoPage.css";
 import "./AddDlfPage.css";
 import axios from "axios";
@@ -616,176 +613,112 @@ const CropInspectionPage: React.FC = () => {
     setIsDatePickerOpen(false); // Close date picker after selection
   };
 
+  const isFormReady =
+    !!inspectionFields?.cropInspectionTypeId &&
+    !!inspectionFields?.mountId &&
+    !!inspectionFields?.cropStatusId &&
+    !!selectedFile;
+
   return (
     <IonPage>
       <IonHeader>
-        <IonToolbar>
+        <IonToolbar className="page-toolbar">
           <IonButtons slot="start">
-            <IonBackButton
-              text="Back"
-              defaultHref="/"
-              style={{ color: "#000" }}
-            />
+            <IonBackButton text="Back" defaultHref="/crp-ins" />
           </IonButtons>
-          <IonButtons slot="end">
-            <IonMenuButton />
-          </IonButtons>
-          <IonTitle>
-            <b>Crop Inspection</b>
-          </IonTitle>
+          <IonTitle>Crop Inspection</IonTitle>
         </IonToolbar>
       </IonHeader>
 
-      <IonContent style={{ '--padding-bottom': '130px' } as any}>
-        {/* <div className="search-container">
-          <IonLabel className="fruits-id-label">Fruits ID</IonLabel>
-          <IonInput
-            value={searchText}
-            placeholder="Enter Fruits ID"
-            onIonChange={e => setSearchText(e.detail.value!)}
-          />
-          <IonButton size="small" onClick={fetchFarmerDetails}>Search</IonButton>
+      <IonContent className="page-content">
+        <div className="page-hero-extension" aria-hidden="true"></div>
 
-          
-          <IonButton size="small" fill="clear" onClick={clearSearch}>
-            <IonIcon color="danger" icon={trash} />
-          </IonButton>
-        </div> */}
+        <div className="result-card">
+          <div className="result-head">
+            <div className="result-avatar is-accent-green">
+              <IonIcon icon={leafOutline} />
+            </div>
+            <div className="result-head-text">
+              <span className="result-eyebrow">Inspection</span>
+              <h3 className="result-title">New Crop Inspection</h3>
+            </div>
+          </div>
 
-        <IonCard className="details-card">
-          <IonCardHeader>
-            {/* <IonCardTitle>DFLs Details</IonCardTitle> */}
-          </IonCardHeader>
-          <IonCardContent>
-            <IonCol size="12">
-              <div className="details-row">
-                <IonLabel>
-                  <b>Select Inspection Type:</b>
-                </IonLabel>
-                {fetchError ? (
-                  <p style={{ color: "red" }}>
-                    Failed to fetch Tsc list. Please try again later.
-                  </p>
-                ) : (
-                  <IonSelect
-                    value={inspectionFields?.cropInspectionTypeId}
-                    // disabled={!isEditable}
-                    placeholder="Select Crop Inspection Type"
-                    onIonChange={(e) => handleChange(e, "cropInspectionTypeId")}
-                  >
-                    {cropInspectionTypeData?.map((type) => (
-                      <IonSelectOption
-                        key={type.cropInspectionTypeId}
-                        value={type.cropInspectionTypeId}
-                      >
-                        {type.cropInspectionTypeName}
-                      </IonSelectOption>
-                    ))}
-                  </IonSelect>
-                )}
-              </div>
-            </IonCol>
-
-            <IonCol size="12">
-              <div className="details-row">
-                <IonLabel>
-                  <b>Select Moult:</b>
-                </IonLabel>
-                {fetchError ? (
-                  <p style={{ color: "red" }}>
-                    Failed to fetch mount list. Please try again later.
-                  </p>
-                ) : (
-                  <IonSelect
-                    value={inspectionFields?.mountId}
-                    // disabled={!isEditable}
-                    placeholder="Select Moult"
-                    onIonChange={(e) => handleChange(e, "mountId")}
-                  >
-                    {mountData?.map((mount) => (
-                      <IonSelectOption
-                        key={mount.mountId}
-                        value={mount.mountId}
-                      >
-                        {mount.name}
-                      </IonSelectOption>
-                    ))}
-                  </IonSelect>
-                )}
-              </div>
-            </IonCol>
-
-            <IonCol size="12">
-              <div className="details-row">
-                <IonLabel>
-                  <b>Select Crop Status:</b>
-                </IonLabel>
-                {fetchError ? (
-                  <p style={{ color: "red" }}>
-                    Failed to fetch crop status list. Please try again later.
-                  </p>
-                ) : (
-                  <IonSelect
-                    value={inspectionFields?.cropStatusId}
-                    // disabled={!isEditable}
-                    placeholder="Select Crop Status"
-                    onIonChange={(e) => handleChange(e, "cropStatusId")}
-                  >
-                    {cropStatusData?.map((status) => (
-                      <IonSelectOption
-                        key={status.cropStatusId}
-                        value={status.cropStatusId}
-                      >
-                        {status.name}
-                      </IonSelectOption>
-                    ))}
-                  </IonSelect>
-                )}
-              </div>
-            </IonCol>
-
-            <IonCol size="12">
-              <div className="details-row">
-                <IonLabel>
-                  <b>Inspection Note:</b>
-                </IonLabel>
-                <IonInput
-                  value={inspectionFields.note}
-                  onIonChange={(e) => handleChange(e, "note")}
-                  // disabled={!isEditable}
-                  placeholder="Enter inspection note"
-                />
-              </div>
-            </IonCol>
-
-            {/* 
-                    <div className="details-row">
-                    <IonLabel>Inspection Date:</IonLabel>
-                    <div
-                      onClick={() =>
-                       setShowHatchingDatePicker(true) // isEditable && setShowHatchingDatePicker(true)
-                      }
-                      className="date-display"
-                      style={{ marginTop: '-20px' }}
+          <div className="result-body">
+            <div className="info-row">
+              <label className="info-label">Inspection Type</label>
+              {fetchError ? (
+                <p className="info-error">Failed to fetch inspection types. Please try again later.</p>
+              ) : (
+                <IonSelect
+                  value={inspectionFields?.cropInspectionTypeId}
+                  placeholder="Select Inspection Type"
+                  interface="action-sheet"
+                  onIonChange={(e) => handleChange(e, "cropInspectionTypeId")}
+                >
+                  {cropInspectionTypeData?.map((type) => (
+                    <IonSelectOption
+                      key={type.cropInspectionTypeId}
+                      value={type.cropInspectionTypeId}
                     >
-                      {inspectionFields.date
-                        ? new Date(inspectionFields.date).toLocaleDateString()
-                        : "Select Date"}
-                    </div>
-                    {showHatchingDatePicker && (
-                      <IonDatetime
-                        value={inspectionFields.date}
-                        onIonChange={(e) => {
-                          handleChange(e, "date");
-                          setShowHatchingDatePicker(false);
-                        }}
-                        onIonCancel={() => setShowHatchingDatePicker(false)}
-                      />
-                    )}
-                  </div> */}
+                      {type.cropInspectionTypeName}
+                    </IonSelectOption>
+                  ))}
+                </IonSelect>
+              )}
+            </div>
 
-            <div className="details-row">
-              <IonLabel>Inspection Date:</IonLabel>
+            <div className="info-row">
+              <label className="info-label">Moult</label>
+              {fetchError ? (
+                <p className="info-error">Failed to fetch moult list. Please try again later.</p>
+              ) : (
+                <IonSelect
+                  value={inspectionFields?.mountId}
+                  placeholder="Select Moult"
+                  interface="action-sheet"
+                  onIonChange={(e) => handleChange(e, "mountId")}
+                >
+                  {mountData?.map((mount) => (
+                    <IonSelectOption key={mount.mountId} value={mount.mountId}>
+                      {mount.name}
+                    </IonSelectOption>
+                  ))}
+                </IonSelect>
+              )}
+            </div>
+
+            <div className="info-row">
+              <label className="info-label">Crop Status</label>
+              {fetchError ? (
+                <p className="info-error">Failed to fetch crop status. Please try again later.</p>
+              ) : (
+                <IonSelect
+                  value={inspectionFields?.cropStatusId}
+                  placeholder="Select Crop Status"
+                  interface="action-sheet"
+                  onIonChange={(e) => handleChange(e, "cropStatusId")}
+                >
+                  {cropStatusData?.map((status) => (
+                    <IonSelectOption key={status.cropStatusId} value={status.cropStatusId}>
+                      {status.name}
+                    </IonSelectOption>
+                  ))}
+                </IonSelect>
+              )}
+            </div>
+
+            <div className="info-row">
+              <label className="info-label">Inspection Note</label>
+              <IonInput
+                value={inspectionFields.note}
+                onIonInput={(e) => handleChange(e as any, "note")}
+                placeholder="Enter inspection note"
+              />
+            </div>
+
+            <div className="info-row">
+              <label className="info-label">Inspection Date</label>
               <IonInput
                 value={new Date(inspectionFields.date).toLocaleDateString()}
                 readonly={true}
@@ -793,120 +726,118 @@ const CropInspectionPage: React.FC = () => {
               />
             </div>
 
-            <div className="file-upload-section">
-              <IonLabel>Choose File:</IonLabel>
-              <input type="file" onChange={handleFileChange} />
-            </div>
-            <div>
-              <IonButton onClick={handleCaptureImage}>
-                <IonIcon icon={camera} slot="icon-only" />
-              </IonButton>
-
-              {previewImage && (
-                <>
-                  <IonButton onClick={() => setIsModalOpen(true)}>
-                    <IonIcon icon={eyeSharp} slot="icon-only" />
-                  </IonButton>
-
-                  <IonModal
-                    isOpen={isModalOpen}
-                    onDidDismiss={() => setIsModalOpen(false)}
-                  >
-                    <IonHeader>
-                      <IonToolbar>
-                        <IonTitle>View File</IonTitle>
-                        <IonButton
-                          onClick={() => setIsModalOpen(false)}
-                          slot="end"
-                          fill="clear"
-                        >
-                          Close
-                        </IonButton>
-                      </IonToolbar>
-                    </IonHeader>
-                    <IonContent>
-                      <div style={{ textAlign: "center", padding: "12px" }}>
-                        <div
-                          style={{
-                            position: "relative",
-                            display: "inline-block",
-                            maxWidth: "100%",
-                          }}
-                        >
-                          <IonImg
-                            src={previewImage}
-                            alt="Preview"
-                            style={{
-                              width: "100%",
-                              maxHeight: "70vh",
-                              objectFit: "contain",
-                            }}
-                          />
-                          {hasCameraCaptureLocation &&
-                            locationData.capturedAt && (
-                              <div
-                                style={{
-                                  position: "absolute",
-                                  left: "10px",
-                                  bottom: "10px",
-                                  background: "transparent",
-                                  color: "#fff",
-                                  padding: "4px 6px",
-                                  fontSize: "12px",
-                                  textAlign: "left",
-                                }}
-                              >
-                                <div>
-                                  <strong>Location:</strong>{" "}
-                                  {locationData.latitude
-                                    ? locationData.latitude.toFixed(6)
-                                    : "N/A"}
-                                  ,{" "}
-                                  {locationData.longitude
-                                    ? locationData.longitude.toFixed(6)
-                                    : "N/A"}
-                                </div>
-                                <div>
-                                  <strong>Date/Time:</strong>{" "}
-                                  {locationData.capturedAt
-                                    ? new Date(
-                                        locationData.capturedAt,
-                                      ).toLocaleString()
-                                    : "N/A"}
-                                </div>
-                              </div>
-                            )}
-                        </div>
-                      </div>
-                    </IonContent>
-                  </IonModal>
-                </>
-              )}
+            <div className="info-row">
+              <label className="info-label">
+                Inspection Photo <span className="info-hint">(file or camera)</span>
+              </label>
+              <div className="file-action-row">
+                <input
+                  type="file"
+                  id="inspection-file-input"
+                  onChange={handleFileChange}
+                  accept="image/*"
+                  style={{ display: 'none' }}
+                />
+                <IonButton
+                  className="btn-result-primary is-active"
+                  expand="block"
+                  size="default"
+                  onClick={() => document.getElementById('inspection-file-input')?.click()}
+                  style={{ flex: 1 }}
+                >
+                  <IonIcon icon={documentTextOutline} slot="start" /> Choose File
+                </IonButton>
+                <IonButton
+                  className="icon-only-btn"
+                  onClick={handleCaptureImage}
+                  aria-label="Capture image"
+                >
+                  <IonIcon icon={camera} />
+                </IonButton>
+              </div>
 
               {selectedFile && (
-                <IonButton onClick={handleClearFile}>
-                  <IonIcon icon={trashSharp} slot="icon-only" />
-                </IonButton>
+                <div className="info-file-preview">
+                  <span className="info-file-name">{selectedFile.name}</span>
+                  {previewImage && (
+                    <IonButton
+                      className="icon-only-btn"
+                      onClick={() => setIsModalOpen(true)}
+                      aria-label="View image"
+                    >
+                      <IonIcon icon={eyeSharp} />
+                    </IonButton>
+                  )}
+                  <IonButton
+                    className="icon-only-btn danger"
+                    onClick={handleClearFile}
+                    aria-label="Remove file"
+                  >
+                    <IonIcon icon={trashSharp} />
+                  </IonButton>
+                </div>
               )}
             </div>
+          </div>
 
+          <div className="result-actions">
             <IonButton
-              expand="full"
+              className={`btn-result-primary ${isFormReady ? "is-active" : "is-disabled-state"}`}
+              expand="block"
+              disabled={!isFormReady}
               onClick={handleEdit}
-              disabled={!selectedFile}
             >
-              Submit
+              <IonIcon icon={checkmarkCircle} slot="start" /> Submit Inspection
             </IonButton>
-            {/* </>
-                )} */}
-          </IonCardContent>
-        </IonCard>
+          </div>
+        </div>
+
+        <IonModal isOpen={isModalOpen} onDidDismiss={() => setIsModalOpen(false)}>
+          <IonHeader>
+            <IonToolbar>
+              <IonTitle>View Image</IonTitle>
+              <IonButtons slot="end">
+                <IonButton fill="clear" onClick={() => setIsModalOpen(false)}>Close</IonButton>
+              </IonButtons>
+            </IonToolbar>
+          </IonHeader>
+          <IonContent>
+            <div style={{ textAlign: "center", padding: "12px" }}>
+              <div style={{ position: "relative", display: "inline-block", maxWidth: "100%" }}>
+                {previewImage && (
+                  <IonImg
+                    src={previewImage}
+                    alt="Preview"
+                    style={{ width: "100%", maxHeight: "70vh", objectFit: "contain" }}
+                  />
+                )}
+                {hasCameraCaptureLocation && locationData.capturedAt && (
+                  <div className="image-location-overlay">
+                    <div>
+                      <strong>Location:</strong>{" "}
+                      {locationData.latitude ? locationData.latitude.toFixed(6) : "N/A"},{" "}
+                      {locationData.longitude ? locationData.longitude.toFixed(6) : "N/A"}
+                    </div>
+                    <div>
+                      <strong>Captured:</strong>{" "}
+                      {locationData.capturedAt
+                        ? new Date(locationData.capturedAt).toLocaleString()
+                        : "N/A"}
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          </IonContent>
+        </IonModal>
+
         <IonAlert
           isOpen={showAlert}
           onDidDismiss={() => setShowAlert(false)}
           header={isError ? "Error" : "Success"}
           message={message}
           buttons={["OK"]}
+          cssClass={`app-alert ${isError ? 'app-alert--error' : 'app-alert--success'}`}
         />
       </IonContent>
     </IonPage>

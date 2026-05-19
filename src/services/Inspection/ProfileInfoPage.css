@@ -509,6 +509,87 @@
   text-overflow: ellipsis;
 }
 
+/* Form section divider — used between read-only and editable groups in a result-card */
+.form-section-divider {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 18px 0 10px;
+  font-family: var(--app-font-sans);
+}
+.form-section-divider > span {
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.005em;
+  color: var(--app-text);
+  white-space: nowrap;
+}
+.form-section-divider::before,
+.form-section-divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--app-border);
+}
+
+/* File action row (Choose File + camera icon side-by-side) */
+.file-action-row {
+  display: flex;
+  align-items: stretch;
+  gap: 10px;
+  width: 100%;
+}
+.file-action-row ion-button {
+  margin: 0 !important;
+}
+
+/* Location overlay on captured image */
+.image-location-overlay {
+  position: absolute;
+  left: 10px;
+  bottom: 10px;
+  background: rgba(0, 0, 0, 0.55);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  color: #ffffff;
+  padding: 8px 12px;
+  border-radius: 10px;
+  font-size: 12px;
+  font-weight: 500;
+  font-family: var(--app-font-sans);
+  line-height: 1.4;
+  text-align: left;
+}
+.image-location-overlay strong {
+  font-weight: 700;
+  color: #ffffff;
+}
+
+/* Pending count banner (Crop Inspection modal) */
+.pending-count-banner {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 12px 16px 4px;
+  padding: 12px 16px;
+  background: rgba(37, 99, 235, 0.08);
+  border: 1px solid rgba(37, 99, 235, 0.18);
+  border-radius: 14px;
+  color: var(--ion-color-primary);
+  font-size: 13px;
+  font-weight: 600;
+  font-family: var(--app-font-sans);
+  letter-spacing: 0.005em;
+}
+.pending-count-banner ion-icon {
+  font-size: 20px;
+  color: var(--ion-color-primary) !important;
+}
+.pending-count-banner strong {
+  font-size: 15px;
+  font-weight: 700;
+}
+
 /* Searchbar inside modals — pick up brand tokens */
 .custom-searchbar {
   --background: var(--app-surface-2);
@@ -702,30 +783,105 @@
 }
 
 /* ──────────────────────────────────────────────────────────
-   Loading-state buttons — keep brand color, show spinner
+   Button states
+   - .btn-primary (Search): ALWAYS vibrant blue, no disabled grey
+   - .btn-result-primary (Submit/Save): proper 3-state disabled/enabled/loading
    ────────────────────────────────────────────────────────── */
-.btn-result-primary.is-loading,
-.btn-primary.is-loading {
+
+.btn-primary,
+.btn-result-primary {
+  transition:
+    background var(--duration-base) var(--ease-out-soft),
+    box-shadow var(--duration-base) var(--ease-out-soft),
+    color var(--duration-base) var(--ease-out-soft),
+    opacity var(--duration-base) var(--ease-out-soft),
+    transform var(--duration-fast) var(--ease-out-soft);
+}
+
+/* SEARCH (.btn-primary) — always vibrant blue, regardless of state */
+ion-button.btn-primary,
+ion-button.btn-primary[disabled],
+ion-button.btn-primary.button-disabled {
+  --background: var(--grad-primary) !important;
+  --background-hover: var(--grad-primary) !important;
+  --background-activated: var(--ion-color-primary-shade) !important;
+  --color: #ffffff !important;
+  --box-shadow: 0 10px 22px rgba(37, 99, 235, 0.32) !important;
+  background: var(--grad-primary) !important;
+  color: #ffffff !important;
+  opacity: 1 !important;
+  cursor: pointer;
+}
+ion-button.btn-primary ion-icon,
+ion-button.btn-primary[disabled] ion-icon,
+ion-button.btn-primary.button-disabled ion-icon {
+  color: #ffffff !important;
+  opacity: 1 !important;
+}
+
+/* SEARCH loading state — keep gradient, show spinner */
+ion-button.btn-primary.is-loading {
   --background: var(--grad-primary) !important;
   --color: #ffffff !important;
-  opacity: 0.92;
+  opacity: 0.94;
   cursor: wait;
 }
 
-.btn-result-primary[disabled],
-.btn-result-primary.button-disabled,
-.btn-primary[disabled],
-.btn-primary.button-disabled {
+/* SUBMIT / SAVE (.btn-result-primary) — React-controlled explicit state classes */
+
+/* Active (form ready) → vibrant blue gradient */
+ion-button.btn-result-primary.is-active {
   --background: var(--grad-primary) !important;
+  --background-hover: var(--grad-primary) !important;
+  --background-activated: var(--ion-color-primary-shade) !important;
   --color: #ffffff !important;
-  opacity: 0.6;
+  --box-shadow: 0 10px 22px rgba(37, 99, 235, 0.32) !important;
+  background: var(--grad-primary) !important;
+  color: #ffffff !important;
+  opacity: 1 !important;
+  cursor: pointer;
+}
+ion-button.btn-result-primary.is-active ion-icon {
+  color: #ffffff !important;
+  opacity: 1 !important;
 }
 
-.btn-result-primary.is-loading[disabled],
-.btn-result-primary.is-loading.button-disabled,
-.btn-primary.is-loading[disabled],
-.btn-primary.is-loading.button-disabled {
-  opacity: 0.92;
+/* Inactive (form incomplete) → solid grey */
+ion-button.btn-result-primary.is-disabled-state {
+  --background: #94A3B8 !important;
+  --background-hover: #94A3B8 !important;
+  --background-activated: #94A3B8 !important;
+  --color: #ffffff !important;
+  --box-shadow: none !important;
+  background: #94A3B8 !important;
+  color: #ffffff !important;
+  opacity: 1 !important;
+  cursor: not-allowed;
+}
+ion-button.btn-result-primary.is-disabled-state ion-icon {
+  color: #ffffff !important;
+  opacity: 0.85 !important;
+}
+
+@media (prefers-color-scheme: dark) {
+  ion-button.btn-result-primary.is-disabled-state {
+    --background: #334155 !important;
+    --color: #94A3B8 !important;
+    background: #334155 !important;
+    color: #94A3B8 !important;
+  }
+}
+
+/* Loading → keep gradient + spinner */
+ion-button.btn-result-primary.is-loading {
+  --background: var(--grad-primary) !important;
+  --background-hover: var(--grad-primary) !important;
+  --color: #ffffff !important;
+  --box-shadow: 0 10px 22px rgba(37, 99, 235, 0.32) !important;
+  background: var(--grad-primary) !important;
+  color: #ffffff !important;
+  opacity: 0.94 !important;
+  cursor: wait;
 }
 
 .btn-spinner {
@@ -735,11 +891,14 @@
   color: #ffffff;
 }
 
+/* Secondary button disabled state */
 .btn-result-secondary[disabled],
 .btn-result-secondary.button-disabled {
   --background: var(--app-surface-2) !important;
-  --color: var(--app-text-muted) !important;
-  opacity: 0.7;
+  --color: var(--app-text-subtle) !important;
+  --border-color: var(--app-border) !important;
+  opacity: 1;
+  cursor: not-allowed;
 }
 
 /* Responsive */

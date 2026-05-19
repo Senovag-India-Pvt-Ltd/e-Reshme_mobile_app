@@ -4,7 +4,7 @@ import {
   IonCardTitle, IonInput, IonLabel, IonButton, IonHeader,
   IonToolbar, IonTitle, IonButtons, IonMenuButton, IonIcon, IonSelect, IonSelectOption, IonBackButton, IonAlert, IonSpinner
 } from '@ionic/react';
-import { trash, searchOutline, checkmarkCircle } from 'ionicons/icons';
+import { trash, searchOutline, checkmarkCircle, refreshOutline } from 'ionicons/icons';
 import './ProfileInfoPage.css';
 import axios from 'axios';
 import { API_URL_DBT } from '../auth.service';
@@ -413,6 +413,11 @@ const ProfileInfoPage: React.FC = () => {
             <IonBackButton text="Back" defaultHref="/subsubmenu" />
           </IonButtons>
           <IonTitle>Farmer Profile Info</IonTitle>
+          <IonButtons slot="end">
+            <IonButton fill="clear" onClick={clearSearch} aria-label="Refresh" disabled={searching || submitting}>
+              <IonIcon icon={refreshOutline} />
+            </IonButton>
+          </IonButtons>
         </IonToolbar>
       </IonHeader>
 
@@ -544,7 +549,7 @@ const ProfileInfoPage: React.FC = () => {
             <div className="result-actions">
               <IonButton
                 expand="block"
-                className={`btn-result-primary ${loadingDetails ? "is-loading" : ""}`}
+                className={`btn-result-primary ${loadingDetails ? "is-loading" : (loadingDetails || submitting ? "is-disabled-state" : "is-active")}`}
                 disabled={loadingDetails || submitting}
                 onClick={() => farmerId !== null && toggleViewAll(farmerId)}
               >

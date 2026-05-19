@@ -13,7 +13,7 @@ import {
   IonAlert,
   IonSpinner,
 } from "@ionic/react";
-import { trash, searchOutline, addCircleOutline } from "ionicons/icons";
+import { trash, searchOutline, addCircleOutline, refreshOutline } from "ionicons/icons";
 import "./ProfileInfoPage.css";
 import "./AddDlfPage.css";
 import axios from "axios";
@@ -42,8 +42,9 @@ const AddDlfPage: React.FC = () => {
   const history = useHistory();
 
   // Check if Fruits ID format is valid: 3 letters + 13 digits (e.g., FID2802000042820)
+  // Trim whitespace so pasted values with trailing spaces still validate.
   const isValidFruitsId = (id: string): boolean => {
-    return /^[A-Za-z]{3}\d{13}$/.test(id);
+    return /^[A-Za-z]{3}\d{13}$/.test((id || "").trim());
   };
 
   const fetchFarmerDetails = () => {
@@ -270,7 +271,8 @@ const AddDlfPage: React.FC = () => {
   };
 
   const handleInputChange = (e: any) => {
-    const value = (e.detail?.value ?? "").toString();
+    // Strip whitespace from anywhere in the value (e.g. trailing space from paste).
+    const value = (e.detail?.value ?? "").toString().replace(/\s+/g, "");
     setSearchText(value);
   };
 
@@ -282,6 +284,16 @@ const AddDlfPage: React.FC = () => {
             <IonBackButton text="Back" defaultHref="/cropsub" />
           </IonButtons>
           <IonTitle>DFL's Page</IonTitle>
+          <IonButtons slot="end">
+            <IonButton
+              fill="clear"
+              onClick={clearSearch}
+              aria-label="Refresh"
+              disabled={searching}
+            >
+              <IonIcon icon={refreshOutline} />
+            </IonButton>
+          </IonButtons>
         </IonToolbar>
       </IonHeader>
 

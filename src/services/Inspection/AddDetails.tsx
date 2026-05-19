@@ -248,6 +248,20 @@ const AddDetailsPage: React.FC = () => {
     ? tscListData.find((t) => String(t.tscMasterId) === String(dflDetails.tsc))?.name
     : "";
 
+  const isFormFilled =
+    !!resolvedFruitsId &&
+    [
+      dflDetails.tsc,
+      dflDetails.raceOfDfls,
+      dflDetails.lotNumberofCRC,
+      dflDetails.numberofDFLs,
+      dflDetails.rateperDFLs,
+      dflDetails.sourceofDFLs,
+      dflDetails.soldafterMoult,
+      dflDetails.hatchingdate,
+      dflDetails.dispathdate,
+    ].every((v) => v !== undefined && v !== null && v.toString().trim() !== "");
+
   return (
     <IonPage>
       <IonHeader>
@@ -419,9 +433,9 @@ const AddDetailsPage: React.FC = () => {
 
           <div className="result-actions">
             <IonButton
-              className={`btn-result-primary ${submitting ? "is-loading" : ""}`}
+              className={`btn-result-primary ${submitting ? "is-loading" : (isFormFilled ? "is-active" : "is-disabled-state")}`}
               expand="block"
-              disabled={submitting}
+              disabled={!isFormFilled || submitting}
               onClick={handleEdit}
             >
               {submitting ? (
