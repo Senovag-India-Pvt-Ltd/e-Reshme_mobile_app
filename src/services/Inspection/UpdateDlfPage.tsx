@@ -2,29 +2,21 @@ import React, { useState, useEffect, useRef } from "react";
 import {
   IonContent,
   IonPage,
-  IonCard,
-  IonCardContent,
-  IonCardHeader,
-  IonCardTitle,
   IonInput,
-  IonLabel,
   IonButton,
   IonHeader,
   IonToolbar,
   IonTitle,
   IonButtons,
-  IonMenuButton,
   IonIcon,
   IonBackButton,
   IonAlert,
   IonModal,
-  IonList,
   IonSearchbar,
-  IonItem,
-  IonText,
+  IonSpinner,
 } from "@ionic/react";
 import { InputChangeEventDetail } from "@ionic/core";
-import { trash, informationCircle, copy, search } from "ionicons/icons"; // Import the trash and info icons
+import { trash, informationCircle, copy, search, createOutline, checkmarkCircle } from "ionicons/icons";
 import "./ProfileInfoPage.css";
 import "./AddDlfPage.css";
 import "./UpdateDlfPage.css";
@@ -38,6 +30,7 @@ import {
 const UpdateDlfPage: React.FC = () => {
   const [searchText, setSearchText] = useState<string>("");
   const [dataList, setDataList] = useState<any[]>([]);
+  const [farmerData, setFarmerData] = useState<any>(null);
   const [farmerOtherData, setFarmerOtherData] = useState<any>({});
   const [viewAll, setViewAll] = useState<boolean>(false);
   const [receiptNo, setReceiptNo] = useState<string>("");
@@ -56,6 +49,8 @@ const UpdateDlfPage: React.FC = () => {
   const inputRef = useRef<HTMLIonInputElement>(null); // Add useRef for input field
   const [showCopyAlert, setShowCopyAlert] = useState<boolean>(false);
   const [copyMessage, setShowCopyMessage] = useState<string>("");
+  const [searching, setSearching] = useState<boolean>(false);
+  const [submittingIndex, setSubmittingIndex] = useState<number | null>(null);
 
   useEffect(() => {
     getIdList();
@@ -140,14 +135,12 @@ const UpdateDlfPage: React.FC = () => {
       )
       .then((res) => {
         const farmerResponses = res.data?.content?.[0]?.farmerResponses || [];
-        setFarmerId(
-          farmerResponses.length > 0 ? farmerResponses[0].farmerId : null,
-        );
-        setFruitsId(
-          farmerResponses.length > 0 ? farmerResponses[0].fruitsId : null,
-        );
-        if (farmerResponses?.length > 0) {
-          getAllChowkiDetails(farmerResponses[0].fruitsId);
+        const firstFarmer = farmerResponses[0] || null;
+        setFarmerData(firstFarmer);
+        setFarmerId(firstFarmer ? firstFarmer.farmerId : null);
+        setFruitsId(firstFarmer ? firstFarmer.fruitsId : null);
+        if (firstFarmer) {
+          getAllChowkiDetails(firstFarmer.fruitsId);
         } else {
           setMessage(`No data found for Fruits ID: ${fruitsIdValue}`);
           setIsError(true);
@@ -163,15 +156,16 @@ const UpdateDlfPage: React.FC = () => {
   };
 
   const fetchFarmerDetails = () => {
-    // Check if searchText is empty before proceeding
     if (!searchText || searchText.trim().length === 0) {
       setMessage("Please enter a Fruits ID first");
       setIsError(true);
       setShowAlert(true);
       return;
     }
+    if (searching) return;
 
-    clearField(); // Clear previous data
+    clearField();
+    setSearching(true);
     const api = axios.create({
       baseURL: API_URL_DBT,
     });
@@ -190,27 +184,25 @@ const UpdateDlfPage: React.FC = () => {
       )
       .then((res) => {
         const farmerResponses = res.data?.content?.[0]?.farmerResponses || [];
-        // setDataList(farmerResponses); // Set all fetched data entries
-        setFarmerId(
-          farmerResponses.length > 0 ? farmerResponses[0].farmerId : null,
-        ); // Set farmerId if data is available
-        setFruitsId(
-          farmerResponses.length > 0 ? farmerResponses[0].fruitsId : null,
-        );
-        if (farmerResponses?.length > 0) {
-          getAllChowkiDetails(farmerResponses[0].fruitsId);
+        const firstFarmer = farmerResponses[0] || null;
+        setFarmerData(firstFarmer);
+        setFarmerId(firstFarmer ? firstFarmer.farmerId : null);
+        setFruitsId(firstFarmer ? firstFarmer.fruitsId : null);
+        if (firstFarmer) {
+          getAllChowkiDetails(firstFarmer.fruitsId);
         } else {
-          // Show error message when no data is found
           setMessage(`No data found for Fruits ID: ${searchText}`);
           setIsError(true);
           setShowAlert(true);
         }
+        setSearching(false);
       })
       .catch((error) => {
         console.error("Error fetching farmer details:", error);
         setMessage("Error fetching farmer details. Please try again.");
         setIsError(true);
         setShowAlert(true);
+        setSearching(false);
       });
   };
 
@@ -256,11 +248,14 @@ const UpdateDlfPage: React.FC = () => {
   const clearSearch = () => {
     setSearchText("");
     setDataList([]);
+    setFarmerData(null);
     setIsEditable(false);
     setViewAll(false);
   };
 
   const clearField = () => {
+    setFarmerData(null);
+    setDataList([]);
     setViewAll(false);
   };
 
@@ -268,6 +263,7 @@ const UpdateDlfPage: React.FC = () => {
     setFarmerOtherData({});
     setSearchText("");
     setDataList([]);
+    setFarmerData(null);
     setFarmerId(null);
     setViewAll(false);
   };
@@ -288,15 +284,17 @@ const UpdateDlfPage: React.FC = () => {
   };
 
   const handleSubmit = (index: number) => {
-    const selectedItem = dataList[index]; // Get the specific item being edited
+    const selectedItem = dataList[index];
 
-    // Validate that receiptNo is provided
     if (!selectedItem?.receiptNo || !selectedItem.receiptNo.trim()) {
       setMessage("Receipt No is mandatory");
       setIsError(true);
       setShowAlert(true);
       return;
     }
+    if (submittingIndex !== null) return;
+
+    setSubmittingIndex(index);
 
     const api = axios.create({
       baseURL: API_URL_ChowkiManagment,
@@ -322,13 +320,15 @@ const UpdateDlfPage: React.FC = () => {
         setMessage("Farmer details updated successfully");
         setIsError(false);
         setShowAlert(true);
-        setEditedItemIndex(null); // Clear edit mode
+        setEditedItemIndex(null);
+        setSubmittingIndex(null);
       })
       .catch((error) => {
         console.error("Error updating farmer details", error);
         setMessage("Error updating farmer details");
         setIsError(true);
         setShowAlert(true);
+        setSubmittingIndex(null);
       });
   };
 
@@ -465,178 +465,173 @@ const UpdateDlfPage: React.FC = () => {
   return (
     <IonPage>
       <IonHeader>
-        <IonToolbar>
+        <IonToolbar className="page-toolbar">
           <IonButtons slot="start">
-            <IonBackButton
-              text="Back"
-              defaultHref="/"
-              style={{ color: "#000" }}
-            />
-            <IonMenuButton />
+            <IonBackButton text="Back" defaultHref="/cropsub" />
           </IonButtons>
-          <IonTitle>
-            <b>Update DFL's</b>
-          </IonTitle>
-          <IonButton
-            style={
-              {
-                "--background": "#ffffff",
-                "--color": "#000000",
-                color: "#000000",
-                backgroundColor: "#ffffff",
-              } as any
-            }
-            slot="end"
-            fill="clear"
-            onClick={handleIconClick}
-          >
-            <IonIcon icon={informationCircle} />
-          </IonButton>
+          <IonTitle>Update DFL's</IonTitle>
+          <IonButtons slot="end">
+            <IonButton fill="clear" onClick={handleIconClick} aria-label="Info">
+              <IonIcon icon={informationCircle} />
+            </IonButton>
+          </IonButtons>
         </IonToolbar>
       </IonHeader>
 
-      <IonContent style={{ '--padding-bottom': '130px' } as any}>
-        <div className="search-container">
-          <IonLabel className="fruits-id-label">Fruits ID</IonLabel>
-          <IonInput
-            ref={inputRef} // Attach ref to IonInput
-            value={searchText}
-            placeholder="Enter Fruits ID"
-            onIonInput={handleInputChange} // Update to use onIonInput
-            onKeyPress={handleKeyPress}
-          />
-        </div>
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "center",
-            gap: "10px",
-            marginTop: "10px",
-          }}
-        >
-          <IonButton
-            style={
-              {
-                "--background": "#ffffff",
-                "--color": "#000000",
-                color: "#000000",
-                backgroundColor: "#ffffff",
-              } as any
-            }
-            size="small"
-            onClick={fetchFarmerDetails}
-          >
-            <IonIcon icon={search} slot="start" />
-            Search
-          </IonButton>
-          <IonButton
-            style={
-              {
-                "--background": "#ffffff",
-                "--color": "#000000",
-                color: "#000000",
-                backgroundColor: "#ffffff",
-              } as any
-            }
-            size="small"
-            fill="clear"
-            onClick={clearSearch}
-          >
-            <IonIcon color="danger" icon={trash} />
-          </IonButton>
+      <IonContent className="page-content">
+        <div className="page-hero-extension" aria-hidden="true"></div>
+        <div className="search-section">
+          <div className="search-input-wrap">
+            <span className="search-label">Fruits ID</span>
+            <IonInput
+              ref={inputRef}
+              value={searchText}
+              placeholder="Enter Fruits ID"
+              onIonInput={handleInputChange}
+              onKeyPress={handleKeyPress}
+            />
+          </div>
+          <div className="search-action-row">
+            <IonButton
+              className={`btn-primary ${searching ? "is-loading" : ""}`}
+              disabled={searching}
+              onClick={fetchFarmerDetails}
+            >
+              {searching ? (
+                <>
+                  <IonSpinner name="crescent" className="btn-spinner" />
+                  <span style={{ marginLeft: 8 }}>Searching...</span>
+                </>
+              ) : (
+                <>
+                  <IonIcon icon={search} slot="start" /> Search
+                </>
+              )}
+            </IonButton>
+            <IonButton
+              className="icon-only-btn danger"
+              onClick={clearSearch}
+              aria-label="Clear"
+              disabled={searching || submittingIndex !== null}
+            >
+              <IonIcon icon={trash} />
+            </IonButton>
+          </div>
         </div>
 
-        {dataList.map((data, index) => (
-          <IonCard key={index} className="details-card">
-            <IonCardHeader>
-              <IonCardTitle>DFL Details</IonCardTitle>
-            </IonCardHeader>
-            <IonCardContent>
-              {index === 0 && (
-                <div className="details-row">
-                  <IonLabel>Farmer Name:</IonLabel>
-                  <IonInput value={data.farmerName} readonly={true} />
+        {farmerData && (
+          <div className="result-card">
+            <div className="result-head">
+              <div className="result-avatar">
+                {(farmerData.fullName?.[0] || 'F').toUpperCase()}
+              </div>
+              <div className="result-head-text">
+                <span className="result-eyebrow">Farmer Found</span>
+                <h3 className="result-title">{farmerData.fullName || '—'}</h3>
+              </div>
+            </div>
+            <div className="result-body">
+              <div className="info-row">
+                <label className="info-label">Fruits ID</label>
+                <IonInput value={farmerData.fruitsId} readonly={true} />
+              </div>
+              <div className="info-row">
+                <label className="info-label">Address</label>
+                <IonInput value={farmerData.address || '—'} readonly={true} />
+              </div>
+              {farmerData.villageName && (
+                <div className="info-row">
+                  <label className="info-label">Village</label>
+                  <IonInput value={farmerData.villageName} readonly={true} />
                 </div>
               )}
-              <div className="details-row">
-                <IonLabel>Dfls Source:</IonLabel>
+              {farmerData.fatherName && (
+                <div className="info-row">
+                  <label className="info-label">Father / Husband Name</label>
+                  <IonInput value={farmerData.fatherName} readonly={true} />
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
+        {dataList.map((data, index) => (
+          <div key={index} className="result-card">
+            <div className="result-head">
+              <div className="result-avatar is-accent-cyan">D</div>
+              <div className="result-head-text">
+                <span className="result-eyebrow">DFL Details</span>
+                <h3 className="result-title">Lot {data.lotNumberCrc || '—'}</h3>
+              </div>
+            </div>
+            <div className="result-body">
+              <div className="info-row">
+                <label className="info-label">DFLs Source</label>
                 <IonInput value={data.dflsSource} readonly={true} />
               </div>
-              <div className="details-row">
-                <IonLabel>Number Of DFLs:</IonLabel>
+              <div className="info-row">
+                <label className="info-label">Number of DFLs</label>
                 <IonInput value={data.numbersOfDfls} readonly={true} />
               </div>
-              <div className="details-row">
-                <IonLabel>Lot Number:</IonLabel>
+              <div className="info-row">
+                <label className="info-label">Lot Number</label>
                 <IonInput value={data.lotNumberCrc} readonly={true} />
               </div>
-              <div className="details-row">
-                <IonLabel>Rate Per DFLs:</IonLabel>
+              <div className="info-row">
+                <label className="info-label">Rate per 100 DFLs</label>
                 <IonInput value={data.ratePer100Dfls} readonly={true} />
               </div>
-
-              <div className="details-row">
-                <IonLabel>Hatching Date:</IonLabel>
+              <div className="info-row">
+                <label className="info-label">Hatching Date</label>
                 <IonInput value={data.expectedHatchingDate} readonly={true} />
               </div>
-              <div className="details-row">
-                <IonLabel>Date of Disposal:</IonLabel>
+              <div className="info-row">
+                <label className="info-label">Date of Disposal</label>
                 <IonInput value={data.dateOfDisposal} readonly={true} />
               </div>
-              {/* <div className="details-row">
-                <IonLabel>Grainage Name:</IonLabel>
-                <IonInput value={data.grainageMasterName} readonly={true} />
-              </div> */}
 
-              {editedItemIndex === index ? (
-                <div className="details-row">
-                  <IonLabel>Receipt No:</IonLabel>
+              {editedItemIndex === index && (
+                <div className="info-row">
+                  <label className="info-label">Receipt No</label>
                   <IonInput
                     value={data.receiptNo}
                     onIonChange={(e) => handleChange(e, index, "receiptNo")}
                   />
-                  <IonButton
-                    style={
-                      {
-                        "--background": "#ffffff",
-                        "--color": "#000000",
-                        color: "#000000",
-                        backgroundColor: "#ffffff",
-                      } as any
-                    }
-                    expand="full"
-                    onClick={() => handleSubmit(index)}
-                  >
-                    Submit
-                  </IonButton>
                 </div>
+              )}
+            </div>
+
+            <div className="result-actions">
+              {editedItemIndex === index ? (
+                <IonButton
+                  className={`btn-result-primary ${submittingIndex === index ? "is-loading" : ""}`}
+                  expand="block"
+                  disabled={submittingIndex !== null}
+                  onClick={() => handleSubmit(index)}
+                >
+                  {submittingIndex === index ? (
+                    <>
+                      <IonSpinner name="crescent" className="btn-spinner" />
+                      <span style={{ marginLeft: 8 }}>Submitting...</span>
+                    </>
+                  ) : (
+                    <>
+                      <IonIcon icon={checkmarkCircle} slot="start" /> Submit
+                    </>
+                  )}
+                </IonButton>
               ) : (
                 <IonButton
-                  style={
-                    {
-                      "--background": "#ffffff",
-                      "--color": "#000000",
-                      color: "#000000",
-                      backgroundColor: "#ffffff",
-                    } as any
-                  }
-                  expand="full"
+                  className="btn-result-primary"
+                  expand="block"
+                  disabled={submittingIndex !== null}
                   onClick={() => toggleEditMode(index)}
                 >
-                  Proceed
+                  <IonIcon icon={createOutline} slot="start" /> Proceed
                 </IonButton>
               )}
-
-              <IonAlert
-                isOpen={showAlert}
-                onDidDismiss={() => setShowAlert(false)}
-                header={isError ? "Error" : "Success"}
-                message={message}
-                buttons={["OK"]}
-              />
-            </IonCardContent>
-          </IonCard>
+            </div>
+          </div>
         ))}
 
         <IonModal isOpen={showModal} onDidDismiss={() => setShowModal(false)}>
@@ -644,17 +639,7 @@ const UpdateDlfPage: React.FC = () => {
             <IonToolbar>
               <IonTitle>List Data</IonTitle>
               <IonButtons slot="end">
-                <IonButton
-                  style={
-                    {
-                      "--background": "#ffffff",
-                      "--color": "#000000",
-                      color: "#000000",
-                      backgroundColor: "#ffffff",
-                    } as any
-                  }
-                  onClick={() => setShowModal(false)}
-                >
+                <IonButton fill="clear" onClick={() => setShowModal(false)}>
                   Close
                 </IonButton>
               </IonButtons>
@@ -668,65 +653,42 @@ const UpdateDlfPage: React.FC = () => {
               className="custom-searchbar"
               showClearButton="focus"
             />
-            <IonList>
+            <div className="modal-list">
               {filteredListData.map((item, index) => (
-                <IonCard key={index} className="list-card">
-                  <IonCardContent>
-                    <div className="list-item">
-                      <IonText>
-                        <b>Fruits ID:</b> {item.fruitsId}
-                      </IonText>
-                      <IonButton
-                        style={
-                          {
-                            "--background": "#ffffff",
-                            "--color": "#000000",
-                            color: "#000000",
-                            backgroundColor: "#ffffff",
-                            marginLeft: "10px",
-                          } as any
-                        }
-                        fill="clear"
-                        onClick={() => copyToClipboard(item.fruitsId)}
-                      >
-                        <IonIcon icon={copy} />
-                      </IonButton>
+                <div key={index} className="modal-list-card">
+                  <div className="modal-list-head">
+                    <div className="modal-list-fid">
+                      <span className="info-label">Fruits ID</span>
+                      <span className="modal-list-fid-value">{item.fruitsId}</span>
                     </div>
-                    <IonText>
-                      <b>Race Name:</b> {item.raceName}
-                    </IonText>
-                    <IonText>
-                      <b>Lot Number:</b> {item.lotNumberCrc}
-                    </IonText>
-                    <IonText>
-                      <b>Name and Address of the Farm:</b>{" "}
-                      {item.nameAndAddressOfTheFarm}
-                    </IonText>
-                    <IonText>
-                      <b>Rate per DFLs:</b> {item.ratePer100Dfls}
-                    </IonText>
-                    <IonText>
-                      <b>Number of DFLs:</b> {item.numbersOfDfls}
-                    </IonText>
-                    <IonText>
-                      <b>Inspection Hatching Date:</b> {item.hatchingInspectionDate || item.hatchingDate || '-'}
-                    </IonText>
-                    <IonText>
-                      <b>Date of Disposal:</b> {item.dateOfDisposal || item.dispatchDate || '-'}
-                    </IonText>
-                    <IonText>
-                      <b>Grainage Name:</b> {item.grainageMasterName || item.grainageName || '-'}
-                    </IonText>
-                  </IonCardContent>
-                </IonCard>
+                    <IonButton
+                      className="icon-only-btn"
+                      onClick={() => copyToClipboard(item.fruitsId)}
+                      aria-label="Copy Fruits ID"
+                    >
+                      <IonIcon icon={copy} />
+                    </IonButton>
+                  </div>
+                  <div className="modal-list-grid">
+                    <div className="modal-list-row"><span className="info-label">Race Name</span><span>{item.raceName || '—'}</span></div>
+                    <div className="modal-list-row"><span className="info-label">Lot Number</span><span>{item.lotNumberCrc || '—'}</span></div>
+                    <div className="modal-list-row modal-list-row--full"><span className="info-label">Farm Address</span><span>{item.nameAndAddressOfTheFarm || '—'}</span></div>
+                    <div className="modal-list-row"><span className="info-label">Rate / 100 DFLs</span><span>{item.ratePer100Dfls || '—'}</span></div>
+                    <div className="modal-list-row"><span className="info-label">No. of DFLs</span><span>{item.numbersOfDfls || '—'}</span></div>
+                    <div className="modal-list-row"><span className="info-label">Hatching Date</span><span>{item.hatchingInspectionDate || item.hatchingDate || '—'}</span></div>
+                    <div className="modal-list-row"><span className="info-label">Disposal Date</span><span>{item.dateOfDisposal || item.dispatchDate || '—'}</span></div>
+                    <div className="modal-list-row modal-list-row--full"><span className="info-label">Grainage Name</span><span>{item.grainageMasterName || item.grainageName || '—'}</span></div>
+                  </div>
+                </div>
               ))}
-            </IonList>
+            </div>
             <IonAlert
               isOpen={showCopyAlert}
               onDidDismiss={() => setShowCopyAlert(false)}
               header="Copy Status"
               message={copyMessage}
               buttons={["OK"]}
+              cssClass="app-alert app-alert--success"
             />
           </IonContent>
         </IonModal>
@@ -737,6 +699,7 @@ const UpdateDlfPage: React.FC = () => {
           header={isError ? "Error" : "Success"}
           message={message}
           buttons={["OK"]}
+          cssClass={`app-alert ${isError ? 'app-alert--error' : 'app-alert--success'}`}
         />
       </IonContent>
     </IonPage>

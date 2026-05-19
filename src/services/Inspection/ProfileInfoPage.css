@@ -1,118 +1,758 @@
-/* ── Search container ── */
+/* =========================================================================
+   Shared result-card styling for all search-form pages
+   (ProfileInfo, LandInfo, AddDlf, UpdateDlf, TrackCocoon, CropInspection,
+    Mulberry, DisInfectant, FitnessCert, ReelerProfile, etc.)
+   Uses tokens from /src/theme/variables.css
+   ========================================================================= */
+
+/* ──────────────────────────────────────────────────────────
+   Legacy .search-container — kept for pages that still use it
+   ────────────────────────────────────────────────────────── */
 .search-container {
   display: flex;
   align-items: center;
-  margin: 20px 16px 0 16px;
-  background: #ffffff;
-  border: 1px solid #d0e4f7;
-  border-radius: 10px;
-  padding: 8px 14px;
-  box-shadow: 0 2px 8px rgba(21,101,192,0.08);
+  margin: 18px 20px 0;
+  background: var(--app-surface);
+  border: 1.5px solid var(--app-border);
+  border-radius: 14px;
+  padding: 10px 16px;
+  box-shadow: 0 1px 2px rgba(8, 32, 71, 0.03);
+  font-family: var(--app-font-sans);
+}
+.search-container:focus-within {
+  border-color: var(--ion-color-primary);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.14);
 }
 
 .fruits-id-label {
   font-weight: 700;
-  font-size: 14px;
-  color: #0d2137;
-  min-width: 80px;
-  margin-right: 10px;
+  font-size: 11px;
+  color: var(--app-text-muted);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  min-width: 78px;
+  margin-right: 12px;
 }
 
 .search-container ion-input {
   flex: 1;
-  --padding-start: 4px;
-  font-size: 14px;
-}
-
-/* ── Cards ── */
-.details-card {
-  margin: 16px;
-  border-radius: 12px;
-  box-shadow: 0 3px 14px rgba(21,101,192,0.13);
-  overflow: hidden;
-}
-
-ion-card-header {
-  background: linear-gradient(135deg, #0d2137 0%, #1565c0 100%);
-  border-bottom: 2px solid #1976d2;
-  padding: 12px 16px;
-}
-
-ion-card-title {
+  --padding-start: 0;
+  --color: var(--app-text);
   font-size: 15px;
-  font-weight: 700;
-  color: #ffffff;
-  letter-spacing: 0.3px;
+  font-weight: 500;
 }
 
-ion-card-content {
-  padding: 16px;
-  font-size: 14px;
-  color: #333;
+/* ──────────────────────────────────────────────────────────
+   Premium result card
+   ────────────────────────────────────────────────────────── */
+.details-card {
+  margin: 18px 20px;
+  border-radius: 20px;
+  background: var(--app-surface);
+  border: 1px solid var(--app-border);
+  box-shadow:
+    0 12px 28px rgba(8, 32, 71, 0.08),
+    0 2px 6px rgba(8, 32, 71, 0.04);
+  overflow: hidden;
+  font-family: var(--app-font-sans);
 }
 
-/* ── Details rows ── */
+/* Card header — clean white with brand accent bar, readable dark title */
+.details-card ion-card-header {
+  background: var(--app-surface) !important;
+  border-bottom: 1px solid var(--app-border);
+  padding: 18px 20px 14px !important;
+  display: flex !important;
+  align-items: center;
+  gap: 12px;
+}
+
+.details-card ion-card-header::before {
+  content: '';
+  display: inline-block;
+  width: 4px;
+  height: 22px;
+  border-radius: 4px;
+  background: var(--grad-primary);
+  flex-shrink: 0;
+  box-shadow: 0 2px 6px rgba(37, 99, 235, 0.32);
+}
+
+.details-card ion-card-title {
+  font-size: 16px !important;
+  font-weight: 700 !important;
+  color: var(--app-text) !important;
+  letter-spacing: -0.01em !important;
+  margin: 0 !important;
+  text-transform: none !important;
+}
+
+.details-card ion-card-content {
+  padding: 18px 20px 20px !important;
+  font-family: var(--app-font-sans);
+  color: var(--app-text);
+}
+
+/* ──────────────────────────────────────────────────────────
+   Detail rows — stacked label / input for clarity
+   ────────────────────────────────────────────────────────── */
 .details-row {
   display: flex;
-  align-items: center;
+  flex-direction: column;
   margin-bottom: 14px;
-  gap: 10px;
+  gap: 6px;
 }
 
 .details-row ion-label {
-  flex: 0 0 42%;
-  font-weight: 600;
-  font-size: 13px;
-  color: #0d2137;
+  flex: none;
+  font-weight: 600 !important;
+  font-size: 11px !important;
+  color: var(--app-text-muted) !important;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin: 0;
 }
 
-.details-row ion-input {
-  flex: 1;
-  border: 1px solid #d0e4f7;
-  border-radius: 8px;
-  --padding-start: 10px;
-  --padding-end: 10px;
-  --padding-top: 8px;
-  --padding-bottom: 8px;
-  font-size: 13px;
-  background: #f5f9ff;
-  min-height: 38px;
-}
-
+.details-row ion-input,
+.details-row ion-textarea,
 .details-row ion-select {
-  flex: 1;
-  border: 1px solid #d0e4f7;
-  border-radius: 8px;
-  padding: 8px 10px;
-  font-size: 13px;
-  background: #f5f9ff;
-  min-height: 38px;
+  --background: var(--app-surface-2) !important;
+  --color: var(--app-text);
+  --placeholder-color: var(--app-text-subtle);
+  --padding-start: 14px !important;
+  --padding-end: 14px !important;
+  --padding-top: 12px !important;
+  --padding-bottom: 12px !important;
+  background: var(--app-surface-2);
+  border: 1.5px solid var(--app-border);
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--app-text);
+  min-height: 46px;
+  width: 100%;
+  transition: border-color var(--duration-base) var(--ease-out-soft),
+              box-shadow var(--duration-base) var(--ease-out-soft);
 }
 
-/* ── Buttons ── */
-ion-button {
-  margin-top: 8px;
-  --border-radius: 8px;
-  font-weight: 600;
-  letter-spacing: 0.3px;
-  font-size: 13px;
+.details-row ion-input.has-focus,
+.details-row ion-input.ion-touched.ion-invalid,
+.details-row ion-input:focus-within,
+.details-row ion-select:focus-within {
+  border-color: var(--ion-color-primary);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.14);
 }
 
-/* ── Date display ── */
+/* File input inside detail rows */
+.details-row input[type="file"] {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1.5px solid var(--app-border);
+  border-radius: 12px;
+  background: var(--app-surface-2);
+  font-size: 13px;
+  color: var(--app-text);
+  font-family: var(--app-font-sans);
+}
+
+/* ──────────────────────────────────────────────────────────
+   Date display + custom value displays
+   ────────────────────────────────────────────────────────── */
 .date-display {
   flex: 1;
-  border: 1px solid #d0e4f7;
-  border-radius: 8px;
-  padding: 9px 12px;
-  font-size: 13px;
-  color: #333;
-  background: #f5f9ff;
+  border: 1.5px solid var(--app-border);
+  border-radius: 12px;
+  padding: 12px 14px;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--app-text);
+  background: var(--app-surface-2);
   cursor: pointer;
-  min-height: 38px;
+  min-height: 46px;
   display: flex;
   align-items: center;
+  transition: border-color var(--duration-base) var(--ease-out-soft);
 }
 
-.date-display:active {
-  background: #e3f2fd;
+.date-display:hover { border-color: var(--ion-color-primary); }
+.date-display:active { background: rgba(37, 99, 235, 0.05); }
+
+/* ──────────────────────────────────────────────────────────
+   Buttons inside detail cards — override inline white hacks
+   ────────────────────────────────────────────────────────── */
+.details-card ion-button {
+  --background: var(--grad-primary) !important;
+  --background-hover: var(--grad-primary) !important;
+  --background-activated: var(--ion-color-primary-shade) !important;
+  --color: #ffffff !important;
+  --box-shadow: 0 8px 18px rgba(37, 99, 235, 0.26) !important;
+  --border-radius: 12px;
+  --padding-start: 22px;
+  --padding-end: 22px;
+  font-weight: 600;
+  font-size: 14px;
+  letter-spacing: 0.005em;
+  min-height: 46px;
+  text-transform: none;
+  margin-top: 14px;
+}
+
+.details-card ion-button[color="danger"] {
+  --background: var(--app-surface) !important;
+  --color: var(--ion-color-danger) !important;
+  --box-shadow: none !important;
+  border: 1.5px solid rgba(239, 68, 68, 0.32);
+  border-radius: 12px;
+}
+
+.details-card ion-button[fill="clear"] {
+  --background: transparent !important;
+  --background-hover: transparent !important;
+  --color: var(--ion-color-primary) !important;
+  --box-shadow: none !important;
+}
+
+/* Make sure the inner button text is white on the gradient buttons */
+.details-card ion-button::part(native) {
+  color: #ffffff;
+}
+.details-card ion-button[color="danger"]::part(native) {
+  color: var(--ion-color-danger);
+}
+.details-card ion-button[fill="clear"]::part(native) {
+  color: var(--ion-color-primary);
+}
+
+.details-card ion-button ion-icon { color: #ffffff !important; }
+.details-card ion-button[color="danger"] ion-icon { color: var(--ion-color-danger) !important; }
+
+/* ──────────────────────────────────────────────────────────
+   Premium result card (plain-div based — full layout control)
+   Used by ProfileInfoPage and other modernized search results
+   ────────────────────────────────────────────────────────── */
+.result-card {
+  margin: 20px 20px 24px;
+  background: var(--app-surface);
+  border: 1px solid var(--app-border);
+  border-radius: 22px;
+  overflow: hidden;
+  box-shadow:
+    0 16px 36px rgba(8, 32, 71, 0.10),
+    0 2px 6px rgba(8, 32, 71, 0.04);
+  font-family: var(--app-font-sans);
+  animation: fade-up 360ms var(--ease-out-soft) both;
+}
+
+/* ── Head: gradient strip with avatar + title ── */
+.result-head {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 18px 20px;
+  background: linear-gradient(135deg, rgba(37, 99, 235, 0.08) 0%, rgba(139, 92, 246, 0.06) 100%);
+  border-bottom: 1px solid var(--app-border);
+}
+
+.result-avatar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 52px;
+  height: 52px;
+  border-radius: 16px;
+  background: var(--grad-primary);
+  color: #ffffff;
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  flex-shrink: 0;
+  box-shadow: 0 8px 18px rgba(37, 99, 235, 0.30);
+  border: 1px solid rgba(255, 255, 255, 0.35);
+}
+
+.result-head-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  flex: 1;
+}
+
+.result-eyebrow {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.10em;
+  text-transform: uppercase;
+  color: var(--ion-color-primary);
+}
+
+.result-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--app-text);
+  letter-spacing: -0.015em;
+  line-height: 1.25;
+  margin: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ── Body: info rows ── */
+.result-body {
+  padding: 18px 20px 4px;
+}
+
+.info-row {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 14px;
+}
+
+.info-label {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--app-text-muted);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.info-hint {
+  font-size: 10px;
+  font-weight: 500;
+  color: var(--app-text-subtle);
+  text-transform: none;
+  letter-spacing: 0.005em;
+}
+
+.info-error {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--ion-color-danger);
+}
+
+.info-row ion-input,
+.info-row ion-select,
+.info-row ion-textarea {
+  --background: var(--app-surface-2);
+  --color: var(--app-text);
+  --placeholder-color: var(--app-text-subtle);
+  --padding-start: 14px;
+  --padding-end: 14px;
+  --padding-top: 12px;
+  --padding-bottom: 12px;
+  background: var(--app-surface-2);
+  border: 1.5px solid var(--app-border);
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--app-text);
+  min-height: 46px;
+  width: 100%;
+  box-sizing: border-box;
+  transition: border-color var(--duration-base) var(--ease-out-soft),
+              box-shadow var(--duration-base) var(--ease-out-soft);
+}
+
+.info-row ion-input.has-focus,
+.info-row ion-input:focus-within,
+.info-row ion-select:focus-within {
+  border-color: var(--ion-color-primary);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.14);
+}
+
+/* Disabled / readonly state still readable */
+.info-row ion-input[disabled],
+.info-row ion-select[disabled] {
+  opacity: 1;
+  color: var(--app-text);
+}
+
+.info-row input[type="file"] {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1.5px solid var(--app-border);
+  border-radius: 12px;
+  background: var(--app-surface-2);
+  font-size: 13px;
+  color: var(--app-text);
+  font-family: var(--app-font-sans);
+}
+
+.info-file-preview {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 8px;
+  padding: 10px 12px;
+  border: 1px solid var(--app-border);
+  border-radius: 12px;
+  background: var(--app-surface);
+}
+.info-file-preview .info-file-name {
+  flex: 1;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--app-text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.info-file-preview img {
+  width: 56px;
+  height: 56px;
+  object-fit: cover;
+  border-radius: 10px;
+}
+
+/* ── Action footer ── */
+.result-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 6px 20px 20px;
+}
+
+/* Standalone CTA section (button outside any card) */
+.cta-section {
+  max-width: 560px;
+  margin: 0 auto;
+  padding: 8px 20px 20px;
+  box-sizing: border-box;
+}
+
+/* ──────────────────────────────────────────────────────────
+   Modal listing cards (Update DFL's, Track Cocoon, etc.)
+   ────────────────────────────────────────────────────────── */
+.modal-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 12px 16px 24px;
+  font-family: var(--app-font-sans);
+}
+
+.modal-list-card {
+  background: var(--app-surface);
+  border: 1px solid var(--app-border);
+  border-radius: 16px;
+  padding: 14px 16px 12px;
+  box-shadow:
+    0 8px 18px rgba(8, 32, 71, 0.06),
+    0 1px 3px rgba(8, 32, 71, 0.04);
+  transition: box-shadow var(--duration-base) var(--ease-out-soft),
+              border-color var(--duration-base) var(--ease-out-soft),
+              transform var(--duration-fast) var(--ease-out-soft);
+}
+.modal-list-card:hover {
+  border-color: rgba(37, 99, 235, 0.24);
+  box-shadow:
+    0 12px 24px rgba(8, 32, 71, 0.10),
+    0 2px 6px rgba(8, 32, 71, 0.05);
+}
+.modal-list-card:active { transform: scale(0.99); }
+
+.modal-list-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding-bottom: 10px;
+  margin-bottom: 10px;
+  border-bottom: 1px solid var(--app-border);
+}
+
+.modal-list-fid {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  flex: 1;
+}
+
+.modal-list-fid-value {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--ion-color-primary);
+  letter-spacing: -0.005em;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.modal-list-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px 14px;
+}
+
+.modal-list-row {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.modal-list-row--full { grid-column: 1 / -1; }
+
+.modal-list-row > span:last-child {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--app-text);
+  letter-spacing: -0.005em;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Searchbar inside modals — pick up brand tokens */
+.custom-searchbar {
+  --background: var(--app-surface-2);
+  --color: var(--app-text);
+  --placeholder-color: var(--app-text-subtle);
+  --border-radius: 14px;
+  --box-shadow: none;
+  --icon-color: var(--app-text-muted);
+  padding: 14px 16px 8px;
+  font-family: var(--app-font-sans);
+}
+
+/* ──────────────────────────────────────────────────────────
+   Select trigger — looks like an input but opens a modal/picker
+   Used for searchable TSC dropdown and date pickers
+   ────────────────────────────────────────────────────────── */
+.select-trigger {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+  padding: 12px 14px;
+  background: var(--app-surface-2);
+  border: 1.5px solid var(--app-border);
+  border-radius: 12px;
+  font-family: var(--app-font-sans);
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--app-text);
+  text-align: left;
+  min-height: 46px;
+  cursor: pointer;
+  transition: border-color var(--duration-base) var(--ease-out-soft),
+              box-shadow var(--duration-base) var(--ease-out-soft),
+              transform var(--duration-fast) var(--ease-out-soft);
+  box-sizing: border-box;
+}
+
+.select-trigger:hover {
+  border-color: var(--ion-color-primary);
+}
+.select-trigger:active {
+  transform: scale(0.99);
+}
+.select-trigger:focus-visible {
+  outline: none;
+  border-color: var(--ion-color-primary);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.14);
+}
+
+.select-trigger .select-value {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--app-text);
+  font-weight: 600;
+}
+
+.select-trigger .select-placeholder {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--app-text-subtle);
+  font-weight: 500;
+}
+
+.select-trigger ion-icon {
+  font-size: 18px;
+  color: var(--app-text-muted) !important;
+  flex-shrink: 0;
+}
+
+/* ──────────────────────────────────────────────────────────
+   Modal options list (TSC selector, etc.)
+   ────────────────────────────────────────────────────────── */
+.modal-options-list {
+  display: flex;
+  flex-direction: column;
+  padding: 8px 12px 24px;
+  gap: 4px;
+  font-family: var(--app-font-sans);
+}
+
+.modal-option {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+  padding: 14px 16px;
+  background: var(--app-surface);
+  border: 1px solid var(--app-border);
+  border-radius: 12px;
+  font-family: var(--app-font-sans);
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--app-text);
+  text-align: left;
+  cursor: pointer;
+  transition: background var(--duration-fast) var(--ease-out-soft),
+              border-color var(--duration-base) var(--ease-out-soft),
+              transform var(--duration-fast) var(--ease-out-soft);
+  box-sizing: border-box;
+}
+
+.modal-option:hover {
+  background: var(--app-surface-2);
+  border-color: rgba(37, 99, 235, 0.24);
+}
+.modal-option:active {
+  transform: scale(0.99);
+}
+
+.modal-option.is-selected {
+  background: rgba(37, 99, 235, 0.06);
+  border-color: var(--ion-color-primary);
+}
+
+.modal-option-label {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.modal-option.is-selected .modal-option-label {
+  color: var(--ion-color-primary);
+  font-weight: 700;
+}
+
+.modal-option ion-icon {
+  font-size: 20px;
+  color: var(--ion-color-primary) !important;
+  flex-shrink: 0;
+}
+
+/* IonSelect (action-sheet interface) inside info-row — match input look */
+.info-row > ion-select {
+  display: flex;
+  align-items: center;
+  --background: var(--app-surface-2);
+  --color: var(--app-text);
+  --placeholder-color: var(--app-text-subtle);
+  --padding-start: 14px;
+  --padding-end: 12px;
+  background: var(--app-surface-2);
+  border: 1.5px solid var(--app-border);
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 600;
+  min-height: 46px;
+  width: 100%;
+}
+
+.btn-result-primary {
+  --background: var(--grad-primary) !important;
+  --background-hover: var(--grad-primary) !important;
+  --background-activated: var(--ion-color-primary-shade) !important;
+  --color: #ffffff !important;
+  --box-shadow: 0 10px 22px rgba(37, 99, 235, 0.30) !important;
+  --border-radius: 14px;
+  font-weight: 600;
+  font-size: 15px;
+  letter-spacing: 0.005em;
+  min-height: 52px;
+  text-transform: none;
+  margin: 0 !important;
+}
+
+.btn-result-secondary {
+  --background: var(--app-surface) !important;
+  --background-hover: var(--app-surface-2) !important;
+  --color: var(--ion-color-primary) !important;
+  --box-shadow: none !important;
+  --border-color: var(--app-border-strong);
+  --border-width: 1.5px;
+  --border-style: solid;
+  --border-radius: 14px;
+  font-weight: 600;
+  font-size: 15px;
+  letter-spacing: 0.005em;
+  min-height: 52px;
+  text-transform: none;
+  margin: 0 !important;
+}
+
+/* ──────────────────────────────────────────────────────────
+   Loading-state buttons — keep brand color, show spinner
+   ────────────────────────────────────────────────────────── */
+.btn-result-primary.is-loading,
+.btn-primary.is-loading {
+  --background: var(--grad-primary) !important;
+  --color: #ffffff !important;
+  opacity: 0.92;
+  cursor: wait;
+}
+
+.btn-result-primary[disabled],
+.btn-result-primary.button-disabled,
+.btn-primary[disabled],
+.btn-primary.button-disabled {
+  --background: var(--grad-primary) !important;
+  --color: #ffffff !important;
+  opacity: 0.6;
+}
+
+.btn-result-primary.is-loading[disabled],
+.btn-result-primary.is-loading.button-disabled,
+.btn-primary.is-loading[disabled],
+.btn-primary.is-loading.button-disabled {
+  opacity: 0.92;
+}
+
+.btn-spinner {
+  width: 18px;
+  height: 18px;
+  --color: #ffffff;
+  color: #ffffff;
+}
+
+.btn-result-secondary[disabled],
+.btn-result-secondary.button-disabled {
+  --background: var(--app-surface-2) !important;
+  --color: var(--app-text-muted) !important;
+  opacity: 0.7;
+}
+
+/* Responsive */
+@media (max-width: 380px) {
+  .details-card { margin: 14px 16px; border-radius: 18px; }
+  .details-card ion-card-header { padding: 16px 16px 12px !important; }
+  .details-card ion-card-content { padding: 14px 16px 16px !important; }
+  .details-card ion-card-title { font-size: 15px !important; }
+
+  .result-card { margin: 16px 16px 20px; border-radius: 18px; }
+  .result-head { padding: 16px 16px; gap: 12px; }
+  .result-avatar { width: 46px; height: 46px; border-radius: 14px; font-size: 19px; }
+  .result-title { font-size: 16px; }
+  .result-body { padding: 14px 16px 4px; }
+  .result-actions { padding: 4px 16px 18px; }
 }

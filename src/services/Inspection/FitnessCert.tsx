@@ -34,7 +34,9 @@ import {
   eyeSharp,
   trashSharp,
   copy,
+  searchOutline,
 } from "ionicons/icons";
+import { IonSpinner } from "@ionic/react";
 import "./ProfileInfoPage.css";
 import "./AddDlfPage.css";
 import "./FitnessCert.css";
@@ -120,6 +122,7 @@ const FitnessPage: React.FC = () => {
   }
 
   const [showAlert, setShowAlert] = useState<boolean>(false);
+  const [searching, setSearching] = useState<boolean>(false);
 
   // Pending list modal state
   const [showModal, setShowModal] = useState<boolean>(false);
@@ -158,7 +161,9 @@ const FitnessPage: React.FC = () => {
   };
 
   const fetchFarmerDetails = () => {
+    if (searching) return;
     clearField();
+    setSearching(true);
     const api = axios.create({
       baseURL: API_URL_DBT,
     });
@@ -179,10 +184,12 @@ const FitnessPage: React.FC = () => {
         setDataList([res.data.content[0].farmerResponses[0]]);
         setFarmerId(res.data.content[0].farmerResponses[0].farmerId);
         toggleViewAll(res.data.content[0].farmerResponses[0].fruitsId);
+        setSearching(false);
       })
       .catch((error) => {
         setMessage("Farmer number does not exist");
         setIsError(true);
+        setSearching(false);
       });
   };
 
@@ -811,84 +818,61 @@ const FitnessPage: React.FC = () => {
   return (
     <IonPage>
       <IonHeader>
-        <IonToolbar>
+        <IonToolbar className="page-toolbar">
           <IonButtons slot="start">
-            <IonBackButton
-              text="Back"
-              slot="start"
-              defaultHref="/"
-              style={{ color: "#000" }}
-            />
+            <IonBackButton text="Back" defaultHref="/cropsub" />
           </IonButtons>
-          <IonTitle>
-            <b>Fitness Certificate</b>
-          </IonTitle>
-          <IonButton
-            style={{ "--background": "#ffffff", "--color": "#000000", color: "#000000", backgroundColor: "#ffffff" } as any}
-            slot="end"
-            fill="clear"
-            onClick={handleIconClick}
-          >
-            <IonIcon icon={informationCircle} />
-          </IonButton>
+          <IonTitle>Fitness Certificate</IonTitle>
+          <IonButtons slot="end">
+            <IonButton fill="clear" onClick={handleIconClick} aria-label="Info">
+              <IonIcon icon={informationCircle} />
+            </IonButton>
+          </IonButtons>
         </IonToolbar>
       </IonHeader>
 
-      <IonContent
-        className="with-bottom-menu"
-        style={{ ["--padding-bottom" as any]: "180px" }}
-      >
-        <div className="search-container">
-          <IonLabel className="fruits-id-label">Fruits ID</IonLabel>
-          <IonInput
-            ref={inputRef}
-            value={searchText}
-            placeholder="Enter Fruits ID"
-            onIonInput={handleInputChange}
-          />
-        </div>
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "center",
-            gap: "10px",
-            marginTop: "10px",
-          }}
-        >
-          <IonButton
-            style={
-              {
-                "--background": "#ffffff",
-                "--color": "#000000",
-                color: "#000000",
-                backgroundColor: "#ffffff",
-              } as any
-            }
-            id="searchButton"
-            size="small"
-            onClick={() => {
-              inputRef.current?.blur(); // Blur input on search click
-              fetchFarmerDetails();
-            }}
-          >
-            Search
-          </IonButton>
-          <IonButton
-            style={
-              {
-                "--background": "#ffffff",
-                "--color": "#000000",
-                color: "#000000",
-                backgroundColor: "#ffffff",
-              } as any
-            }
-            size="small"
-            fill="clear"
-            onClick={clearSearch}
-          >
-            <IonIcon color="danger" icon={trash} />
-          </IonButton>
+      <IonContent className="page-content">
+        <div className="page-hero-extension" aria-hidden="true"></div>
+        <div className="search-section">
+          <div className="search-input-wrap">
+            <span className="search-label">Fruits ID</span>
+            <IonInput
+              ref={inputRef}
+              value={searchText}
+              placeholder="Enter Fruits ID"
+              onIonInput={handleInputChange}
+            />
+          </div>
+          <div className="search-action-row">
+            <IonButton
+              className={`btn-primary ${searching ? "is-loading" : ""}`}
+              id="searchButton"
+              disabled={searching}
+              onClick={() => {
+                inputRef.current?.blur();
+                fetchFarmerDetails();
+              }}
+            >
+              {searching ? (
+                <>
+                  <IonSpinner name="crescent" className="btn-spinner" />
+                  <span style={{ marginLeft: 8 }}>Searching...</span>
+                </>
+              ) : (
+                <>
+                  <IonIcon icon={searchOutline} slot="start" /> Search
+                </>
+              )}
+            </IonButton>
+            <IonButton
+              className="icon-only-btn danger"
+              onClick={clearSearch}
+              aria-label="Clear"
+              disabled={searching}
+            >
+              <IonIcon icon={trash} />
+            </IonButton>
+          </div>
         </div>
 
         {dataList &&

@@ -56,6 +56,7 @@ import DocPage from './services/PMKYC/DocPage';
 import Logout from './pages/Logout/Logout';
 
 /* Theme variables */
+import './theme/variables.css';
 
 
 setupIonicReact();

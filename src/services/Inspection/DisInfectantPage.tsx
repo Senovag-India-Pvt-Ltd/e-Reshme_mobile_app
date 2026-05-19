@@ -7,7 +7,8 @@ import {
   IonAlert,
   IonModal,
 } from '@ionic/react';
-import { trash } from 'ionicons/icons'; // Import the trash icon
+import { trash, searchOutline } from 'ionicons/icons';
+import { IonSpinner } from '@ionic/react';
 import './ProfileInfoPage.css';
 import './AddDlfPage.css';
 import axios from "axios";
@@ -41,12 +42,15 @@ const [showDispatchDatePicker, setShowDispatchDatePicker] =
     disinfectantName:'',
   });
   const [showAlert, setShowAlert] = useState<boolean>(false);
+  const [searching, setSearching] = useState<boolean>(false);
 
 
 
   const history = useHistory();
   const fetchFarmerDetails = () => {
+    if (searching) return;
     clearField();
+    setSearching(true);
     const api = axios.create({
       baseURL: API_URL_DBT,
     });
@@ -66,11 +70,12 @@ const [showDispatchDatePicker, setShowDispatchDatePicker] =
         console.log(res.data.content[0].farmerResponses[0]);
         setData(res.data.content[0].farmerResponses[0]);
         setFarmerId(res.data.content[0].farmerResponses[0].farmerId);
-        // toggleViewAll(res.data.content[0].farmerResponses[0].farmerId);
+        setSearching(false);
       })
       .catch((error) => {
         setMessage("Farmer number does not exist");
         setIsError(false);
+        setSearching(false);
       });
   };
 
@@ -289,32 +294,52 @@ const handleInputChange = (e: CustomEvent) => {
   return (
     <IonPage>
       <IonHeader>
-        <IonToolbar>
+        <IonToolbar className="page-toolbar">
           <IonButtons slot="start">
-            <IonBackButton text="Back" slot="start" defaultHref="/" style={{ color: '#000' }} />
-            <IonMenuButton />
-            
+            <IonBackButton text="Back" defaultHref="/menu/1" />
           </IonButtons>
-          <IonTitle style={{ color: '#000000' }}><b>Supply of Disinfectants</b></IonTitle>
+          <IonTitle>Supply of Disinfectants</IonTitle>
         </IonToolbar>
       </IonHeader>
 
-      <IonContent style={{ '--padding-bottom': '130px' } as any}>
-        <div className="search-container">
-          <IonLabel className="fruits-id-label">Fruits ID</IonLabel>
-          <IonInput
-            ref={inputRef} // Attach ref to IonInput
-            value={searchText}
-            placeholder="Enter Fruits ID"
-            onIonInput={handleInputChange} // Update to use onIonInput
-          /></div>
-          <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '10px', marginTop: '10px' }}>
-          <IonButton style={{ '--background': '#ffffff', '--color': '#000000', color: '#000000', backgroundColor: '#ffffff' } as any} size="small" onClick={fetchFarmerDetails}>Search</IonButton>
-
-          {/* Clear button with trash icon */}
-          <IonButton style={{ '--background': '#ffffff', '--color': '#000000', color: '#000000', backgroundColor: '#ffffff' } as any} size="small" fill="clear" onClick={clearSearch}>
-            <IonIcon color="danger" icon={trash} />
-          </IonButton>
+      <IonContent className="page-content">
+        <div className="page-hero-extension" aria-hidden="true"></div>
+        <div className="search-section">
+          <div className="search-input-wrap">
+            <span className="search-label">Fruits ID</span>
+            <IonInput
+              ref={inputRef}
+              value={searchText}
+              placeholder="Enter Fruits ID"
+              onIonInput={handleInputChange}
+            />
+          </div>
+          <div className="search-action-row">
+            <IonButton
+              className={`btn-primary ${searching ? "is-loading" : ""}`}
+              disabled={searching}
+              onClick={fetchFarmerDetails}
+            >
+              {searching ? (
+                <>
+                  <IonSpinner name="crescent" className="btn-spinner" />
+                  <span style={{ marginLeft: 8 }}>Searching...</span>
+                </>
+              ) : (
+                <>
+                  <IonIcon icon={searchOutline} slot="start" /> Search
+                </>
+              )}
+            </IonButton>
+            <IonButton
+              className="icon-only-btn danger"
+              onClick={clearSearch}
+              aria-label="Clear"
+              disabled={searching}
+            >
+              <IonIcon icon={trash} />
+            </IonButton>
+          </div>
         </div>
 
         {data && (

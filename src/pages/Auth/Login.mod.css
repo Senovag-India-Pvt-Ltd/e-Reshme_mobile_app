@@ -1,185 +1,644 @@
-/* Dark, solid, professional styles for Login page */
-:root{
-  --muted: #9a9a9a;
-  --card-bg: var(--ion-background-color);
-  --surface: #141414;
-  --primary-solid: var(--ion-color-primary);
-  --secondary-solid: var(--ion-color-secondary);
+/* =========================================================================
+   Login screen — premium redesign v2
+   Uses tokens from /src/theme/variables.css
+   ========================================================================= */
+
+/* ---------- Page background ---------- */
+.login-page ion-content {
+  --background: var(--ion-background-color);
 }
 
-/* page background */
-.background{
-  background: var(--ion-background-color);
-  min-height: 100vh;
-  color: var(--ion-text-color);
-}
-
-/* small solid header bar (not gradient) */
-.background{
-  background: var(--ion-background-color);
-  min-height: 100vh;
-  color: var(--ion-text-color);
+.login-bg {
   position: relative;
+  min-height: 100vh;
+  background: var(--ion-background-color);
+  overflow-x: hidden;
+  overflow-y: visible;
+  padding-bottom: 36px;
 }
 
-/* decorative subtle horizontal lines behind the logo */
-.trapezoid{
+/* Hero — extended gradient sweep with dramatic curve */
+.login-bg::before {
+  content: '';
   position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 185px;
-  background: transparent;
-  z-index: 1;
+  top: -12%;
+  left: -12%;
+  right: -12%;
+  height: 62vh;
+  background: var(--grad-hero);
+  border-bottom-left-radius: 50% 28%;
+  border-bottom-right-radius: 50% 28%;
+  filter: saturate(115%);
+  z-index: 0;
   pointer-events: none;
-  display: none;
+  box-shadow: 0 22px 60px -10px rgba(11, 42, 92, 0.35);
 }
 
-
-
-/* Centered login card wrapper */
-.login-card-wrap{ display:flex; justify-content:center; padding: 20px 12px; margin-top: 10vh; }
-
-.login-card{
-  width: 100%;
-  max-width: 460px;
-  border-radius: 10px;
-  overflow: hidden;
-  background: var(--card-bg);
-  border: 1px solid rgba(255,255,255,0.03);
-  box-shadow: 0 12px 40px rgba(0,0,0,0.6);
+/* Floating orbs for depth */
+.login-bg .orb {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(48px);
+  z-index: 0;
+  pointer-events: none;
+  opacity: 0.40;
+}
+.login-bg .orb-1 {
+  top: 6%;
+  right: -40px;
+  width: 220px;
+  height: 220px;
+  background: radial-gradient(circle at center, rgba(147, 197, 253, 0.85), rgba(147, 197, 253, 0));
+  animation: orb-float-a 14s var(--ease-in-out-soft) infinite;
+}
+.login-bg .orb-2 {
+  top: 22%;
+  left: -60px;
+  width: 180px;
+  height: 180px;
+  background: radial-gradient(circle at center, rgba(96, 165, 250, 0.75), rgba(96, 165, 250, 0));
+  animation: orb-float-b 18s var(--ease-in-out-soft) infinite;
+}
+.login-bg .orb-3 {
+  top: 36%;
+  right: 30%;
+  width: 140px;
+  height: 140px;
+  background: radial-gradient(circle at center, rgba(255, 255, 255, 0.65), rgba(255, 255, 255, 0));
+  animation: orb-float-c 12s var(--ease-in-out-soft) infinite;
 }
 
-.login-header{ display:flex; gap:12px; align-items:center; padding:16px; }
-.logo-small{ width:56px; height:56px; border-radius:8px; background:transparent; padding:4px; object-fit:contain; }
-.login-card h3{ margin:0; font-size:18px; color:var(--ion-text-color); }
-.muted{ margin:0; font-size:13px; color:var(--muted); }
+@keyframes orb-float-a {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  50%      { transform: translate(-22px, 30px) scale(1.06); }
+}
+@keyframes orb-float-b {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  50%      { transform: translate(28px, -20px) scale(1.08); }
+}
+@keyframes orb-float-c {
+  0%, 100% { transform: translate(0, 0) scale(1); opacity: 0.55; }
+  50%      { transform: translate(-18px, 24px) scale(1.12); opacity: 0.75; }
+}
 
-.login-header{ justify-content:space-between; }
-.header-actions{ display:flex; gap:10px; align-items:center; }
-.circular-button-wrapper.small{ gap:6px; }
-.circular-btn.small{ --width:52px; --height:52px; --border-radius:12px; --background: var(--secondary-solid); }
+/* Legacy element — hide */
+.trapezoid { display: none; }
 
-/* input and icon sizing tweaks */
-.login-card ion-item{ --padding-start: 8px; --padding-end:8px; }
-.login-card ion-icon{ font-size:20px; color:var(--ion-color-medium); }
-.login-card ion-input{ padding:8px 6px; color: var(--ion-text-color); }
-.login-card .actions ion-button{ height:44px; --background: #ffffff; --color: #000000; background: #ffffff; color: #000000; box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15); font-weight: bold; }
+/* ---------- Brand block (logo + title above the card) ---------- */
+.brand-block {
+  position: relative;
+  z-index: 2;
+  text-align: center;
+  padding: 70px 24px 92px;
+  color: #ffffff;
+  animation: fade-up var(--duration-slow) var(--ease-out-soft) both;
+}
 
-/* Verify OTP button styling */
-.verification-card ion-button{ --background: #ffffff; --color: #000000; background: #ffffff; color: #000000; box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15); font-weight: bold; }
+.brand-logo-wrap {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 100px;
+  height: 100px;
+  border-radius: 30px;
+  background: rgba(255, 255, 255, 0.20);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.40);
+  box-shadow:
+    0 18px 40px rgba(8, 32, 71, 0.28),
+    inset 0 1px 1px rgba(255, 255, 255, 0.35);
+  margin-bottom: 18px;
+  animation: logo-pop 700ms var(--ease-out-soft) both;
+}
 
-/* Login input cleanup: remove default item lines and add spacing between fields */
-.login-form ion-item{
-  --inner-border-width: 0 !important;
-  --border-width: 0 !important;
+/* Soft glowing halo behind the logo square */
+.brand-logo-wrap::before {
+  content: '';
+  position: absolute;
+  inset: -16px;
+  border-radius: 38px;
+  background: radial-gradient(circle at center, rgba(255, 255, 255, 0.30), rgba(255, 255, 255, 0) 70%);
+  z-index: -1;
+  animation: halo-pulse 4s var(--ease-in-out-soft) infinite;
+}
+
+.brand-logo-wrap ion-img,
+.brand-logo-wrap img {
+  width: 74px;
+  height: 74px;
+  object-fit: contain;
+  border-radius: 22px;
+}
+
+@keyframes logo-pop {
+  0%   { opacity: 0; transform: translateY(-8px) scale(0.94); }
+  100% { opacity: 1; transform: translateY(0) scale(1); }
+}
+@keyframes halo-pulse {
+  0%, 100% { opacity: 0.55; transform: scale(1); }
+  50%      { opacity: 0.85; transform: scale(1.06); }
+}
+
+.brand-title {
+  font-size: 24px;
+  font-weight: 700;
+  letter-spacing: -0.025em;
+  color: #ffffff;
+  margin: 0;
+  text-shadow: 0 4px 16px rgba(8, 32, 71, 0.25);
+}
+
+.brand-subtitle {
+  font-size: 13px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.85);
+  margin-top: 6px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+/* ---------- Auth card — lifted to overlap the hero ---------- */
+.auth-card {
+  position: relative;
+  z-index: 3;
+  margin: -52px 20px 0;
+  padding: 26px 22px 22px;
+  background: var(--app-surface);
+  border-radius: 28px;
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  box-shadow:
+    0 32px 60px -16px rgba(8, 32, 71, 0.24),
+    0 12px 24px -8px rgba(8, 32, 71, 0.10),
+    0 0 0 1px rgba(37, 99, 235, 0.04);
+  animation: fade-up var(--duration-slow) var(--ease-out-soft) both;
+  animation-delay: 120ms;
+}
+
+@media (prefers-color-scheme: light) {
+  .auth-card {
+    background: rgba(255, 255, 255, 0.96);
+    backdrop-filter: blur(22px) saturate(180%);
+    -webkit-backdrop-filter: blur(22px) saturate(180%);
+  }
+}
+
+@media (prefers-color-scheme: dark) {
+  .auth-card {
+    background: rgba(30, 41, 59, 0.86);
+    backdrop-filter: blur(22px) saturate(160%);
+    -webkit-backdrop-filter: blur(22px) saturate(160%);
+    border-color: rgba(148, 163, 184, 0.14);
+    box-shadow:
+      0 32px 60px -16px rgba(0, 0, 0, 0.55),
+      0 12px 24px -8px rgba(0, 0, 0, 0.40);
+  }
+}
+
+/* "Login" heading — confident & clean (HDFC/banking style) */
+.auth-heading {
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--app-text);
+  margin: 0 0 4px;
+  letter-spacing: -0.025em;
+  line-height: 1.2;
+}
+.auth-hint {
+  font-size: 13px;
+  color: var(--app-text-muted);
+  font-weight: 500;
+  margin: 0 0 22px;
+  letter-spacing: 0.005em;
+}
+
+.auth-subheading {
+  font-size: 13px;
+  color: var(--app-text-muted);
+  margin: -10px 0 18px;
+  font-weight: 500;
+}
+
+/* ---------- Inputs ---------- */
+.login-form ion-list {
+  background: transparent;
+  padding: 0;
+}
+
+.login-form ion-item {
+  --background: #ffffff;
+  --border-radius: 12px;
+  --border-color: transparent;
+  --inner-border-width: 0;
+  --highlight-color-focused: var(--ion-color-primary);
+  --highlight-color-valid: var(--ion-color-primary);
   --highlight-height: 0;
-  margin-bottom: 10px;
+  --padding-start: 16px;
+  --inner-padding-end: 12px;
+  --min-height: 62px;
+  margin-bottom: 14px;
+  border-radius: 12px;
+  border: 1.5px solid var(--app-border);
+  box-shadow: 0 1px 0 rgba(8, 32, 71, 0.02);
+  transition: border-color var(--duration-base) var(--ease-out-soft),
+              box-shadow var(--duration-base) var(--ease-out-soft),
+              background var(--duration-base) var(--ease-out-soft);
 }
 
-.login-form ion-item:last-child{
-  margin-bottom: 0;
+.login-form ion-item.item-has-focus,
+.login-form ion-item:focus-within {
+  --background: #ffffff;
+  border-color: var(--ion-color-primary);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.14);
 }
 
-/* Input list spacing */
-.login-card ion-list{ padding: 12px 16px 6px 16px; }
+@media (prefers-color-scheme: dark) {
+  .login-form ion-item {
+    --background: var(--app-surface-2);
+    border-color: var(--app-border);
+  }
+  .login-form ion-item.item-has-focus,
+  .login-form ion-item:focus-within {
+    --background: var(--app-surface);
+  }
+}
 
-/* Actions */
-.actions{ padding: 12px 16px 22px 16px; }
-.actions ion-button{ --border-radius: 10px; font-weight:bold; width:100%; box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15); }
+.login-form ion-item ion-icon[slot="start"] {
+  color: var(--app-text-subtle);
+  font-size: 22px;
+  margin-right: 14px;
+  margin-inline-end: 14px;
+  transition: color var(--duration-base) var(--ease-out-soft);
+}
 
-/* Capture / small circular buttons */
-.capture-button-container{ display:flex; gap:12px; justify-content:center; margin-bottom:6px; }
-.circular-button-wrapper{ display:flex; flex-direction:column; align-items:center; gap:8px; }
-.circular-btn{ --width:66px; --height:66px; --border-radius:50%; --background: var(--secondary-solid); display:flex; align-items:center; justify-content:center; border-radius: 10px; }
-.circular-btn ion-icon{ font-size:28px; color:var(--ion-color-primary-contrast); }
-.button-label{ margin:0; font-size:12px; color:var(--muted); font-weight:600; }
+.login-form ion-item.item-has-focus ion-icon[slot="start"] {
+  color: var(--ion-color-primary);
+}
 
-/* Floating actions for login screen */
-.login-floating-actions {
-  position: fixed;
-  top: 90px;
-  left: 12px;
-  right: 12px;
+/* Compact stacked labels (banking-app style) */
+.login-form ion-label,
+.login-form ion-input::part(label) {
+  color: var(--app-text-muted) !important;
+  font-weight: 500 !important;
+  font-size: 12px !important;
+  letter-spacing: 0.005em !important;
+  text-transform: none !important;
+}
+
+.login-form ion-input {
+  --color: var(--app-text);
+  --placeholder-color: var(--app-text-subtle);
+  --placeholder-opacity: 1;
+  font-size: 16px;
+  font-weight: 500;
+  letter-spacing: -0.005em;
+}
+
+/* Eye toggle button inside password input */
+.login-form .password-toggle {
+  --background: transparent !important;
+  --background-hover: transparent !important;
+  --background-activated: transparent !important;
+  --box-shadow: none !important;
+  --color: var(--app-text-muted) !important;
+  --padding-start: 6px;
+  --padding-end: 6px;
+  min-height: 34px;
+  height: 34px;
+  margin: 0;
+}
+.login-form .password-toggle ion-icon {
+  color: var(--app-text-muted) !important;
+  font-size: 20px;
+}
+
+/* ---------- Primary action ---------- */
+.login-form .actions {
+  padding-top: 10px;
+}
+
+.btn-primary-gradient {
+  --background: var(--grad-primary) !important;
+  --background-hover: var(--grad-primary) !important;
+  --background-activated: var(--ion-color-primary-shade) !important;
+  --color: #ffffff !important;
+  --border-radius: 12px;
+  --box-shadow: 0 10px 24px rgba(37, 99, 235, 0.28) !important;
+  font-weight: 600;
+  font-size: 15px;
+  letter-spacing: 0.005em;
+  min-height: 54px;
+  width: 100%;
+  transition: transform var(--duration-fast) var(--ease-out-soft),
+              box-shadow var(--duration-base) var(--ease-out-soft);
+}
+.btn-primary-gradient:hover {
+  --box-shadow: 0 14px 30px rgba(37, 99, 235, 0.36) !important;
+}
+.btn-primary-gradient:active {
+  transform: translateY(1px);
+}
+
+/* ---------- Secondary actions (Capture / Saved) ---------- */
+.secondary-actions {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  gap: 12px;
+  padding: 24px 22px 28px;
+  animation: fade-up var(--duration-slow) var(--ease-out-soft) both;
+  animation-delay: 200ms;
+}
+
+.secondary-actions .action-tile {
+  flex: 1;
   display: flex;
   flex-direction: row;
-  justify-content: space-between;
-  gap: 10px;
-  z-index: 12000;
   align-items: center;
-  pointer-events: none;
+  justify-content: center;
+  gap: 10px;
+  padding: 14px 12px;
+  background: var(--app-surface);
+  border: 1px solid var(--app-border);
+  border-radius: 14px;
+  box-shadow: 0 2px 8px rgba(8, 32, 71, 0.04);
+  cursor: pointer;
+  transition: transform var(--duration-fast) var(--ease-out-soft),
+              box-shadow var(--duration-base) var(--ease-out-soft),
+              border-color var(--duration-base) var(--ease-out-soft),
+              background var(--duration-base) var(--ease-out-soft);
+  font-family: var(--app-font-sans);
+}
+.secondary-actions .action-tile:active {
+  transform: scale(0.98);
+}
+.secondary-actions .action-tile:hover {
+  border-color: rgba(37, 99, 235, 0.24);
+  box-shadow: 0 6px 18px rgba(8, 32, 71, 0.08);
 }
 
-.login-floating-actions > div {
-  pointer-events: auto;
+.action-tile .action-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 10px;
+  background: rgba(37, 99, 235, 0.08);
+  color: var(--ion-color-primary);
+}
+.action-tile .action-icon ion-icon {
+  font-size: 18px;
+  color: var(--ion-color-primary) !important;
+}
+.action-tile .action-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--app-text);
+  letter-spacing: -0.005em;
 }
 
-.login-floating-actions .circular-btn {
-  --width:48px;
-  --height:48px;
-  border-radius: 8px;
+/* Legacy classes (used by older markup elsewhere) */
+.circular-btn {
+  --width: 56px;
+  --height: 56px;
+  --border-radius: var(--radius-md);
+  --background: var(--grad-primary);
+  --color: #ffffff;
+  --box-shadow: var(--shadow-brand);
+}
+.circular-btn ion-icon { color: #ffffff !important; }
+.button-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--app-text-muted);
+  margin: 0;
 }
 
-@media (max-width: 480px) {
-  .login-floating-actions {
-    top: 80px;
-    left: 8px;
-    right: 8px;
-    gap: 6px;
-  }
-  .login-floating-actions .button-label { font-size: 10px; }
+/* ---------- OTP verification card ---------- */
+/* Visual chrome inherits from .auth-card — keep alignment identical to login. */
+.verification-card {
+  text-align: center;
 }
 
-/* ensure logo sits above decorative background */
-.image-container{ position: relative; z-index: 2; margin-top: 18px; }
-.logo-round{
-  width: 110px;
-  height: 110px;
-  border-radius: 50%;
-  overflow: hidden;
-  position: relative;
-  z-index: 9999;
-  margin-top: 22px;
-  transform: translateY(-36px);
-  box-shadow: 0 8px 20px rgba(0,0,0,0.45);
+.otp-shield {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 56px;
+  height: 56px;
+  border-radius: 18px;
+  background: var(--grad-primary);
+  color: #ffffff;
+  margin: 0 auto 16px;
+  box-shadow: 0 12px 24px rgba(37, 99, 235, 0.32);
+  animation: logo-pop 600ms var(--ease-out-soft) both;
+}
+.otp-shield ion-icon {
+  color: #ffffff !important;
+  font-size: 28px;
 }
 
-/* OTP area */
-.verification-card{ max-width:680px; margin: 8px 12px 32px 12px; border-radius:12px; background-color: white; }
-.verification-header{ background-color: rgb(245, 240, 240) !important; }
-.otp-inputs{ display:flex; gap:10px; justify-content:center; align-items:center; padding:8px 0 6px; }
-.otp-input{ 
-  width:48px; 
-  height:56px; 
-  text-align:center; 
-  font-size:20px; 
-  border-radius:10px; 
-  border:2px solid #000000; 
-  background: #ffffff; 
-  color: #000000;
-  padding: 8px;
+.otp-title {
+  text-align: center;
+  margin: 0 0 6px;
+}
+
+.otp-sub {
+  font-size: 13px;
+  color: var(--app-text-muted);
+  font-weight: 500;
+  text-align: center;
+  margin: 0 0 10px;
+}
+
+.otp-phone-chip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 8px 14px;
+  margin: 0 auto;
+  background: rgba(37, 99, 235, 0.08);
+  border: 1px solid rgba(37, 99, 235, 0.16);
+  border-radius: 999px;
+  color: var(--ion-color-primary);
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+}
+.otp-phone-chip ion-icon {
+  color: var(--ion-color-primary) !important;
+  font-size: 14px;
+}
+
+.otp-inputs {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  align-items: center;
+  padding: 22px 0 6px;
+}
+
+.otp-input {
+  flex: 1;
+  min-width: 0;
+  max-width: 52px;
+  height: 60px;
+  text-align: center;
+  font-size: 22px;
+  font-weight: 700;
+  border-radius: 14px;
+  border: 1.5px solid var(--app-border);
+  background: #ffffff;
+  color: var(--app-text);
+  padding: 0;
   box-sizing: border-box;
-}
-.otp-input:focus{ 
-  outline:none; 
-  box-shadow:0 0 12px rgba(0, 188, 212, 0.5), inset 0 0 8px rgba(0, 188, 212, 0.2); 
-  border-color: #000000;
-}
-.otp-input::placeholder {
-  color: rgba(0,0,0,0.3);
-} 
-
-/* Saved images modal styling improvements */
-.image-card{ border-radius:10px; overflow:hidden; }
-.image-card img{ width:100%; height:110px; object-fit:cover; display:block; }
-
-/* Responsive tweaks */
-@media (max-width:520px){
-  .login-card{ max-width:94%; }
-  .otp-input{ width:40px; height:48px; font-size:18px; }
-  .logo-small{ width:48px; height:48px; }
-  .logo-round{ width:88px; height:88px; transform: translateY(-28px); margin-top: 14px; }
+  font-family: var(--app-font-sans);
+  box-shadow: 0 1px 2px rgba(8, 32, 71, 0.03);
+  transition: border-color var(--duration-base) var(--ease-out-soft),
+              box-shadow var(--duration-base) var(--ease-out-soft),
+              background var(--duration-base) var(--ease-out-soft),
+              transform var(--duration-fast) var(--ease-out-soft);
 }
 
-/* small helpers */
-.muted-note{ font-size:12px; color:var(--muted); text-align:center; margin-top:6px; }
+@media (prefers-color-scheme: dark) {
+  .otp-input {
+    background: var(--app-surface-2);
+    border-color: var(--app-border);
+  }
+}
+
+.otp-input:focus {
+  outline: none;
+  border-color: var(--ion-color-primary);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.14);
+  transform: translateY(-1px);
+}
+
+.otp-helper-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 2px 4px;
+  font-size: 13px;
+  color: var(--app-text-muted);
+  font-weight: 500;
+}
+
+.otp-timer {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--app-text-muted);
+}
+.otp-timer ion-icon {
+  font-size: 16px;
+  color: var(--app-text-muted) !important;
+}
+
+.otp-resend-btn {
+  --background: transparent !important;
+  --color: var(--ion-color-primary) !important;
+  --box-shadow: none !important;
+  --padding-start: 8px !important;
+  --padding-end: 8px !important;
+  font-weight: 700;
+  min-height: 32px;
+  margin: 0;
+  text-transform: none;
+}
+.otp-resend-btn[disabled] {
+  --color: var(--app-text-subtle) !important;
+  opacity: 1;
+}
+
+.verification-card .actions {
+  padding-top: 14px;
+}
+
+/* ---------- Saved-images modal ---------- */
+.saved-modal-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 12px;
+  padding: 14px;
+}
+
+.saved-tile {
+  background: var(--app-surface);
+  border: 1px solid var(--app-border);
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+  cursor: pointer;
+  transition: transform var(--duration-fast) var(--ease-out-soft);
+}
+.saved-tile:active { transform: scale(0.98); }
+
+.saved-tile .tile-img {
+  width: 100%;
+  height: 110px;
+  object-fit: cover;
+  display: block;
+}
+.saved-tile .tile-placeholder {
+  width: 100%;
+  height: 110px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--app-surface-2);
+  color: var(--app-text-muted);
+}
+.saved-tile .tile-actions {
+  display: flex;
+  justify-content: center;
+  padding: 6px;
+  background: var(--app-surface);
+  border-top: 1px solid var(--app-border);
+}
+
+.saved-empty {
+  text-align: center;
+  padding: 56px 24px;
+  color: var(--app-text-muted);
+}
+.saved-empty .empty-icon {
+  width: 80px;
+  height: 80px;
+  border-radius: 24px;
+  background: var(--grad-primary-soft);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 16px;
+}
+.saved-empty .empty-icon ion-icon {
+  font-size: 36px;
+  color: var(--ion-color-primary) !important;
+}
+
+/* ---------- Legacy classes ---------- */
+.logo-round {
+  width: 74px;
+  height: 74px;
+  border-radius: 22px;
+  object-fit: contain;
+}
+
+/* ---------- Responsive ---------- */
+@media (max-width: 380px) {
+  .brand-block { padding: 54px 20px 80px; }
+  .brand-logo-wrap { width: 88px; height: 88px; border-radius: 26px; }
+  .brand-logo-wrap ion-img,
+  .brand-logo-wrap img { width: 64px; height: 64px; border-radius: 18px; }
+  .brand-title { font-size: 21px; }
+  .auth-card { margin-inline: 16px; padding: 22px 18px 18px; border-radius: 24px; }
+  .auth-heading { font-size: 22px; }
+  .secondary-actions { padding-inline: 16px; gap: 10px; }
+  .otp-inputs { gap: 6px; }
+  .otp-input { max-width: 46px; height: 54px; font-size: 19px; }
+  .otp-helper-row { font-size: 12px; }
+}

@@ -1,12 +1,12 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { 
-  IonContent, IonPage, IonCard, IonCardContent, IonCardHeader, 
-  IonCardTitle, IonInput, IonLabel, IonButton, IonHeader, 
-  IonToolbar, IonTitle, IonButtons, IonMenuButton, IonIcon, IonBackButton, 
-  IonSelect, IonSelectOption, IonDatetime, IonItem,IonCol,
-  IonAlert,
+import {
+  IonContent, IonPage, IonCard, IonCardContent, IonCardHeader,
+  IonCardTitle, IonInput, IonLabel, IonButton, IonHeader,
+  IonToolbar, IonTitle, IonButtons, IonMenuButton, IonIcon, IonBackButton,
+  IonSelect, IonSelectOption, IonDatetime, IonItem, IonCol,
+  IonAlert, IonSpinner,
 } from '@ionic/react';
-import { trash } from 'ionicons/icons'; // Import the trash icon
+import { trash, searchOutline, checkmarkCircleOutline, addOutline } from 'ionicons/icons';
 import './ProfileInfoPage.css';
 import './AddDlfPage.css';
 import axios from "axios";
@@ -41,6 +41,7 @@ const [showDispatchDatePicker, setShowDispatchDatePicker] =
     mountId: '',
   });
   const [showAlert, setShowAlert] = useState<boolean>(false);
+  const [searching, setSearching] = useState<boolean>(false);
 
 
   // State variables for dropdown options
@@ -48,11 +49,13 @@ const [showDispatchDatePicker, setShowDispatchDatePicker] =
 //   const [tscOptions, setTscOptions] = useState<string[]>(['Tsc 1', 'Tsc 2']); 
   const history = useHistory();
   const fetchFarmerDetails = () => {
+    if (searching) return;
     clearField();
+    setSearching(true);
     const api = axios.create({
       baseURL: API_URL_ChowkiManagment,
     });
-  
+
     api
       .get(`chowkimanagement/getInspectioninfoForCocoonSaleTrack/${searchText}`, {
         headers: {
@@ -62,17 +65,18 @@ const [showDispatchDatePicker, setShowDispatchDatePicker] =
         },
       })
       .then((res) => {
-        // Assuming the data is returned as an array of farmer inspection details
-        const farmerData = res.data[0]; // Adjust based on the structure of the response
+        const farmerData = res.data[0];
         console.log(farmerData);
         setSaleAndDisposal(farmerData.saleAndDisposalId);
-  
-        setDataList(res.data); // Update the data state with farmer details
-        setFarmerId(farmerData.farmerId); // Set farmer ID as needed
+        setDataList(res.data);
+        setFarmerId(farmerData.farmerId);
+        setSearching(false);
       })
       .catch((error) => {
         setMessage("Farmer number does not exist");
-        setIsError(true); // This should likely be set to true to indicate an error
+        setIsError(true);
+        setShowAlert(true);
+        setSearching(false);
       });
   };
   
@@ -296,42 +300,74 @@ const [isReadyToSubmit, setIsReadyToSubmit] = useState(false); // To control whe
   return (
     <IonPage>
       <IonHeader>
-        <IonToolbar>
+        <IonToolbar className="page-toolbar">
           <IonButtons slot="start">
-            <IonBackButton text="Back" slot="start" defaultHref="/" style={{ color: '#000' }} />
-            <IonMenuButton />
-            
+            <IonBackButton text="Back" defaultHref="/cropsub" />
           </IonButtons>
-          <IonTitle><b>Track Cocoon Sale</b></IonTitle>
+          <IonTitle>Track Cocoon Sale</IonTitle>
         </IonToolbar>
       </IonHeader>
 
-      <IonContent style={{ '--padding-bottom': '130px' } as any}>
-        <div className="search-container">
-          <IonLabel className="fruits-id-label">Fruits ID</IonLabel>
-          <IonInput
-            ref={inputRef} // Attach ref to IonInput
-            value={searchText}
-            placeholder="Enter Fruits ID"
-            onIonInput={handleInputChange} // Update to use onIonInput
-          /></div>
-          <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '10px', marginTop: '10px' }}>
-          <IonButton style={{ '--background': '#ffffff', '--color': '#000000', color: '#000000', backgroundColor: '#ffffff' } as any} size="small" onClick={fetchFarmerDetails}>Search</IonButton>
+      <IonContent className="page-content">
+        <div className="page-hero-extension" aria-hidden="true"></div>
+        <div className="search-section">
+          <div className="search-input-wrap">
+            <span className="search-label">Fruits ID</span>
+            <IonInput
+              ref={inputRef}
+              value={searchText}
+              placeholder="Enter Fruits ID"
+              onIonInput={handleInputChange}
+            />
+          </div>
+          <div className="search-action-row">
+            <IonButton
+              className={`btn-primary ${searching ? "is-loading" : ""}`}
+              disabled={searching}
+              onClick={fetchFarmerDetails}
+            >
+              {searching ? (
+                <>
+                  <IonSpinner name="crescent" className="btn-spinner" />
+                  <span style={{ marginLeft: 8 }}>Searching...</span>
+                </>
+              ) : (
+                <>
+                  <IonIcon icon={searchOutline} slot="start" /> Search
+                </>
+              )}
+            </IonButton>
+            <IonButton
+              className="icon-only-btn danger"
+              onClick={clearSearch}
+              aria-label="Clear"
+              disabled={searching}
+            >
+              <IonIcon icon={trash} />
+            </IonButton>
+          </div>
 
-          {/* Clear button with trash icon */}
-          <IonButton style={{ '--background': '#ffffff', '--color': '#000000', color: '#000000', backgroundColor: '#ffffff' } as any} size="small" fill="clear" onClick={clearSearch}>
-            <IonIcon color="danger" icon={trash} />
+          <IonButton
+            className="btn-primary"
+            expand="block"
+            onClick={handleVerify}
+            disabled={searching || dataList.length === 0}
+            style={{ maxWidth: 'none', marginTop: 4 }}
+          >
+            <IonIcon icon={checkmarkCircleOutline} slot="start" /> Verify
           </IonButton>
+          {dataList.some(data => !data.auctionDate) && (
+            <IonButton
+              className="btn-primary"
+              expand="block"
+              onClick={() => add(saleAndDisposal)}
+              disabled={searching}
+              style={{ maxWidth: 'none' }}
+            >
+              <IonIcon icon={addOutline} slot="start" /> Add
+            </IonButton>
+          )}
         </div>
-
-        <IonButton style={{ '--background': '#ffffff', '--color': '#000000', color: '#000000', backgroundColor: '#ffffff' } as any} expand="block" onClick={handleVerify}>
-          Verify
-        </IonButton>
-        {dataList.some(data => !data.auctionDate) && (
-      <IonButton style={{ '--background': '#ffffff', '--color': '#000000', color: '#000000', backgroundColor: '#ffffff' } as any} expand="block" onClick={() => add(saleAndDisposal)}>
-        Add
-      </IonButton>
-    )}
 
         {dataList.map((data,index)=>(
           <IonCard key={index} className="details-card">

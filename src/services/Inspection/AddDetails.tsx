@@ -2,66 +2,50 @@ import React, { useState, useEffect } from "react";
 import {
   IonContent,
   IonPage,
-  IonCard,
-  IonCardContent,
-  IonCardHeader,
-  IonCardTitle,
   IonInput,
-  IonLabel,
   IonButton,
   IonHeader,
   IonToolbar,
   IonTitle,
   IonButtons,
-  IonMenuButton,
   IonIcon,
   IonBackButton,
   IonSelect,
   IonSelectOption,
   IonDatetime,
-  IonCol,
   IonAlert,
   IonModal,
   IonSearchbar,
-  IonList,
-  IonItem,
-  IonFooter,
+  IonSpinner,
 } from "@ionic/react";
-import { trash, search } from "ionicons/icons"; // Import the trash and search icons
+import {
+  checkmarkCircle,
+  chevronDownOutline,
+  calendarOutline,
+} from "ionicons/icons";
 import "./ProfileInfoPage.css";
 import "./AddDlfPage.css";
 import axios from "axios";
-import { API_URL_DBT, API_URL_ChowkiManagment } from "../auth.service";
-import { API_URL_Master_Data } from "../auth.service";
+import { API_URL_ChowkiManagment, API_URL_Master_Data } from "../auth.service";
 import { useHistory, useParams } from "react-router-dom";
 
-const AddDlfPage: React.FC = () => {
+const AddDetailsPage: React.FC = () => {
   const history = useHistory();
-  const [searchText, setSearchText] = useState<string>("");
-  const [data, setData] = useState<any>(null);
-  //   const [isEditable, setIsEditable] = useState<boolean>(false);
   const [isError, setIsError] = useState<boolean>(false);
-  const [viewAll, setViewAll] = useState<boolean>(false);
   const [showAlert, setShowAlert] = useState<boolean>(false);
-  const { fruitsId } = useParams<{ fruitsId?: string }>(); // Get the Fruits ID from the URL parameter
+  const [submitting, setSubmitting] = useState<boolean>(false);
+  const { fruitsId } = useParams<{ fruitsId?: string }>();
   const resolvedFruitsId = (
     fruitsId ||
     window.location.pathname.split("/").pop() ||
     ""
   ).trim();
 
-  // State variables for dropdown options
-  const [raceOptions, setRaceOptions] = useState<number[]>([1, 2]); // Dummy data for race options
-  const [tscOptions, setTscOptions] = useState<number[]>([1, 2]); // Dummy data for Tsc options
-  const [showHatchingDatePicker, setShowHatchingDatePicker] =
-    useState<boolean>(false);
-  const [showDispatchDatePicker, setShowDispatchDatePicker] =
-    useState<boolean>(false);
+  const [showHatchingDatePicker, setShowHatchingDatePicker] = useState<boolean>(false);
+  const [showDispatchDatePicker, setShowDispatchDatePicker] = useState<boolean>(false);
   const [message, setMessage] = useState<string>("");
-  const [farmerId, setFarmerId] = useState<number | null>(null);
   const [dflDetails, setDflDetails] = useState<any>({
     tsc: "",
-    lotNumberofRSP: "",
     lotNumberofCRC: "",
     numberofDFLs: "",
     rateperDFLs: "",
@@ -73,137 +57,83 @@ const AddDlfPage: React.FC = () => {
     hatchingdate: "",
   });
 
-  console.log("dfldetails", dflDetails);
-
-  // Fetch race options from the API
-  const fetchRaceOptions = async () => {
-    try {
-      const response = await fetch("API_URL_FOR_RACE_OPTIONS"); // Replace with your API URL
-      const result = await response.json();
-      setRaceOptions(result); // Assuming the API returns an array of strings
-    } catch (error) {
-      console.error("Error fetching race options:", error);
-    }
-  };
-
-  // Fetch Tsc options from the API
-  const fetchTscOptions = async () => {
-    try {
-      const response = await fetch("API_URL_FOR_TSC_OPTIONS"); // Replace with your API URL
-      const result = await response.json();
-      setTscOptions(result); // Assuming the API returns an array of strings
-    } catch (error) {
-      console.error("Error fetching Tsc options:", error);
-    }
-  };
-
-  useEffect(() => {
-    // fetchDetails(); // Fetch details when the component mounts
-    fetchRaceOptions(); // Fetch race options on component mount
-    fetchTscOptions(); // Fetch Tsc options on component mount
-  }, []);
-
+  // Auto-calculate price from number * rate
   useEffect(() => {
     if (dflDetails?.numberofDFLs && dflDetails?.rateperDFLs) {
       const calculatedPrice = dflDetails.numberofDFLs * dflDetails.rateperDFLs;
       setDflDetails((prevData: any) => ({
         ...prevData,
-        price: calculatedPrice.toFixed(2), // Update price field with the calculated value
+        price: calculatedPrice.toFixed(2),
       }));
     }
   }, [dflDetails?.numberofDFLs, dflDetails?.rateperDFLs]);
+
   useEffect(() => {
-    clearSearch(); // Call clearSearch when the component mounts
+    clearSearch();
   }, []);
 
-  // State for Tsc selection and data fetching
-  const [tsc, setTscMasterId] = useState<string>(""); // Selected Tsc
-  const [tscListData, setTscListData] = useState<any[]>([]); // List of Tsc options from API
-  const [fetchError, setFetchError] = useState<boolean>(false); // Fetch error state
+  // ── TSC list (searchable dropdown via modal) ──
+  const [tscListData, setTscListData] = useState<any[]>([]);
+  const [fetchError, setFetchError] = useState<boolean>(false);
   const [tscModalOpen, setTscModalOpen] = useState<boolean>(false);
   const [tscSearch, setTscSearch] = useState<string>("");
 
-  // Function to fetch Tsc data from the API
   const fetchTscList = async () => {
     try {
       const response = await axios.get(
         `${API_URL_Master_Data}tscMaster/get-all`,
         {
           headers: {
-            Authorization: `Bearer ${localStorage.getItem("jwtToken")}`, // Use token if required
+            Authorization: `Bearer ${localStorage.getItem("jwtToken")}`,
           },
         },
       );
-
       if (response.data && response.data.content) {
-        setTscListData(response.data.content.tscMaster); // Set the fetched data
+        setTscListData(response.data.content.tscMaster);
       } else {
         console.error("Unexpected API response format:", response);
         setFetchError(true);
       }
     } catch (error) {
       console.error("Error fetching Tsc list:", error);
-      setFetchError(true); // Set error state if fetch fails
+      setFetchError(true);
     }
   };
 
-  // Function to handle Tsc selection change
-  const handleTscChange = (value: string) => {
-    setTscMasterId(value); // Set the selected Tsc
-  };
-
-  // Fetch Tsc list when component mounts
   useEffect(() => {
     fetchTscList();
   }, []);
 
-  // State for Tsc selection and data fetching
-  const [raceOfDfls, setRaceOfDfls] = useState<string>(""); // Selected Tsc
-  const [raceMasterListData, setRaceMasterListData] = useState<any[]>([]); // List of Tsc options from API
-  //  const [fetchError, setFetchError] = useState<boolean>(false); // Fetch error state
+  // ── Race list ──
+  const [raceMasterListData, setRaceMasterListData] = useState<any[]>([]);
 
-  // Function to fetch Tsc data from the API
   const fetchRaceMasterList = async () => {
     try {
       const response = await axios.get(
         `${API_URL_Master_Data}raceMaster/get-all`,
         {
           headers: {
-            Authorization: `Bearer ${localStorage.getItem("jwtToken")}`, // Use token if required
+            Authorization: `Bearer ${localStorage.getItem("jwtToken")}`,
           },
         },
       );
-
       if (response.data && response.data.content) {
-        setRaceMasterListData(response.data.content.raceMaster); // Set the fetched data
+        setRaceMasterListData(response.data.content.raceMaster);
       } else {
         console.error("Unexpected API response format:", response);
         setFetchError(true);
       }
     } catch (error) {
-      console.error("Error fetching Tsc list:", error);
-      setFetchError(true); // Set error state if fetch fails
+      console.error("Error fetching Race list:", error);
+      setFetchError(true);
     }
   };
 
-  // Function to handle Tsc selection change
-  const handleRaceMasterChange = (value: string) => {
-    setRaceOfDfls(value); // Set the selected Tsc
-  };
-
-  // Fetch Tsc list when component mounts
   useEffect(() => {
     fetchRaceMasterList();
   }, []);
 
-  // useEffect(() => {
-  //     if (fruitsId) {
-  //         handleEdit(fruitsId);
-  //     }
-  // }, [fruitsId]);
-
   const handleEdit = () => {
-    // Validation: Check if Fruits ID is present
     if (!resolvedFruitsId) {
       setMessage("Enter Fruits ID first");
       setIsError(true);
@@ -211,13 +141,12 @@ const AddDlfPage: React.FC = () => {
       return;
     }
 
-    // Validation: Check if all mandatory fields are filled
     const requiredFields = [
-      { key: "tsc", label: "Tsc" },
+      { key: "tsc", label: "TSC" },
       { key: "raceOfDfls", label: "Race" },
       { key: "lotNumberofCRC", label: "Lot No" },
       { key: "numberofDFLs", label: "Number of DFLs" },
-      { key: "rateperDFLs", label: "Rate per 100 DFLs" },
+      { key: "rateperDFLs", label: "Rate per DFL" },
       { key: "sourceofDFLs", label: "Source of DFLs" },
       { key: "soldafterMoult", label: "Sold after Moult" },
       { key: "hatchingdate", label: "Hatching Date" },
@@ -227,33 +156,25 @@ const AddDlfPage: React.FC = () => {
     const missing = requiredFields
       .filter((f) => {
         const value = dflDetails[f.key];
-        return (
-          value === undefined ||
-          value === null ||
-          value.toString().trim() === ""
-        );
+        return value === undefined || value === null || value.toString().trim() === "";
       })
       .map((f) => f.label);
 
     if (missing.length > 0) {
-      setMessage(
-        `Please fill all mandatory fields. Missing: ${missing.join(", ")}`,
-      );
+      setMessage(`Please fill all mandatory fields. Missing: ${missing.join(", ")}`);
       setIsError(true);
       setShowAlert(true);
       return;
     }
 
-    //   if (isEditable) {
-    const api = axios.create({
-      baseURL: API_URL_ChowkiManagment,
-    });
+    setSubmitting(true);
+
+    const api = axios.create({ baseURL: API_URL_ChowkiManagment });
     api
       .post(
         "chowkimanagement/add-sale-disposal-dfl-info",
         {
           fruitsId: resolvedFruitsId,
-          // lotNumberRsp: dflDetails.lotNumberofRSP,
           lotNumber: dflDetails.lotNumberofCRC,
           numberOfDflsDisposed: dflDetails.numberofDFLs,
           ratePer100DflsPrice: dflDetails.rateperDFLs,
@@ -274,44 +195,34 @@ const AddDlfPage: React.FC = () => {
         },
       )
       .then((res) => {
-        console.log("Response:", res.data);
         if (res.data.error === 0) {
           setMessage("Data added successfully!");
           setIsError(false);
           setShowAlert(true);
           clearSearch();
-
-          // Redirect to "add-dlf" and refresh the page
-          // history.push("/add-dlf")
-          // window.location.reload();
-
-          // Redirect to "add-dlf" after a 1-second delay
           setTimeout(() => {
             history.push("/add-dlf");
           }, 1000);
+          // keep submitting=true while we navigate away
         } else {
           setMessage("Failed to add data.");
           setIsError(true);
           setShowAlert(true);
+          setSubmitting(false);
         }
       })
       .catch((error) => {
         console.error("Error updating farmer details", error);
-        setMessage("Error updating farmer details");
+        setMessage("Error updating farmer details. Please try again.");
         setIsError(true);
-        // setShowAlert(true);
+        setShowAlert(true);
+        setSubmitting(false);
       });
-    //   }
-    //   setIsEditable(!isEditable); // Toggle editable state
   };
 
   const clearSearch = () => {
-    setSearchText("");
-    setData(null);
-    // setIsEditable(false);
     setDflDetails({
       tsc: "",
-      // lotNumberofRSP: "",
       lotNumberofCRC: "",
       numberofDFLs: "",
       rateperDFLs: "",
@@ -328,452 +239,339 @@ const AddDlfPage: React.FC = () => {
     if (dflDetails) {
       setDflDetails({
         ...dflDetails,
-        [field]: e.detail.value, // Change here to work with IonSelect
+        [field]: e.detail.value,
       });
     }
   };
-  //   const clearField=()=>{
-  //     setViewAll(false);
-  //   }
 
-  //   const toggleViewAll = () => {
-  //     setViewAll(!viewAll);
-  //     setIsEditable(!isEditable);
-  //   };
+  const selectedTscName = dflDetails.tsc
+    ? tscListData.find((t) => String(t.tscMasterId) === String(dflDetails.tsc))?.name
+    : "";
 
   return (
     <IonPage>
       <IonHeader>
-        <IonToolbar>
+        <IonToolbar className="page-toolbar">
           <IonButtons slot="start">
-            <IonMenuButton />
-            <IonBackButton defaultHref="/" />
+            <IonBackButton text="Back" defaultHref="/add-dlf" />
           </IonButtons>
-          <IonTitle style={{ color: "#000000" }}>
-            <b>Add DFL's Details</b>
-          </IonTitle>
+          <IonTitle>Add DFL's Details</IonTitle>
         </IonToolbar>
       </IonHeader>
 
-      <IonContent>
-        {/* <div className="search-container">
-          <IonLabel className="fruits-id-label">Fruits ID</IonLabel>
-          <IonInput
-            value={searchText}
-            placeholder="Enter Fruits ID"
-            onIonChange={(e) => setSearchText(e.detail.value!)}
-          />
-          <IonButton size="small" onClick={fetchFarmerDetails}>Search</IonButton>
+      <IonContent className="page-content">
+        <div className="page-hero-extension" aria-hidden="true"></div>
 
+        <div className="result-card">
+          <div className="result-head">
+            <div className="result-avatar is-accent-violet">+</div>
+            <div className="result-head-text">
+              <span className="result-eyebrow">New Entry</span>
+              <h3 className="result-title">DFL Details</h3>
+            </div>
+          </div>
 
-          <IonButton size="small" fill="clear" onClick={clearSearch}>
-            <IonIcon color="danger" icon={trash} />
-          </IonButton>
-        </div> */}
-
-        {/* {data && ( */}
-        <IonCard className="details-card">
-          {/* <IonCardHeader>
-              <IonCardTitle>DFLs Details</IonCardTitle>
-            </IonCardHeader> */}
-          <IonCardContent>
-            {/* {!viewAll ? (
-                <IonButton expand="full" onClick={toggleViewAll}>
-                  Add Details
-                </IonButton>
-              ) : (
-                <>
-                  <IonButton expand="full" onClick={toggleViewAll}>
-                    Hide
-                  </IonButton> */}
-            {/* <div className="details-row">
-                            <IonLabel>Lot No.(RSP):</IonLabel>
-                            <IonInput
-                                value={dflDetails.lotNumberofRSP}
-                                //   readonly={!isEditable}
-                                onIonChange={(e) => handleChange(e, "lotNumberofRSP")}
-                            />
-                        </div> */}
-            <div className="details-row">
-              <IonLabel>Lot No:</IonLabel>
+          <div className="result-body">
+            <div className="info-row">
+              <label className="info-label">Lot No</label>
               <IonInput
                 value={dflDetails.lotNumberofCRC}
-                //   readonly={!isEditable}
+                placeholder="Enter Lot Number"
                 onIonChange={(e) => handleChange(e, "lotNumberofCRC")}
               />
             </div>
-            <div className="details-row">
-              <IonLabel>Number of DFL’s:</IonLabel>
+
+            <div className="info-row">
+              <label className="info-label">Number of DFLs</label>
               <IonInput
+                type="number"
                 value={dflDetails.numberofDFLs}
-                //   readonly={!isEditable}
+                placeholder="0"
                 onIonChange={(e) => handleChange(e, "numberofDFLs")}
               />
             </div>
-            <div className="details-row">
-              <IonLabel>Rate per DFLs:</IonLabel>
+
+            <div className="info-row">
+              <label className="info-label">Rate per DFL</label>
               <IonInput
+                type="number"
                 value={dflDetails.rateperDFLs}
-                //   readonly={!isEditable}
+                placeholder="0.00"
                 onIonChange={(e) => handleChange(e, "rateperDFLs")}
               />
             </div>
-            <div className="details-row">
-              <IonLabel>Price(in Rupees):</IonLabel>
+
+            <div className="info-row">
+              <label className="info-label">Price (₹)</label>
               <IonInput
                 value={dflDetails.price}
                 readonly={true}
-                onIonChange={(e) => handleChange(e, "price")}
+                placeholder="Calculated automatically"
               />
             </div>
-            <div className="details-row">
-              <IonLabel>Source of DFLs:</IonLabel>
+
+            <div className="info-row">
+              <label className="info-label">Source of DFLs</label>
               <IonInput
                 type="text"
                 value={dflDetails.sourceofDFLs}
                 placeholder="Enter source of DFLs"
-                //   readonly={!isEditable}
                 onIonChange={(e) => handleChange(e, "sourceofDFLs")}
               />
             </div>
 
-            <IonCol size="12">
-              <div className="details-row">
-                <IonLabel>
-                  <b>Select Tsc:</b>
-                </IonLabel>
-                {fetchError ? (
-                  <p style={{ color: "red" }}>
-                    Failed to fetch Tsc list. Please try again later.
-                  </p>
-                ) : (
-                  <div
-                    style={{ display: "flex", alignItems: "center", gap: 8 }}
-                  >
-                    <IonButton
-                      style={
-                        {
-                          "--background": "#ffffff",
-                          "--color": "#000000",
-                          color: "#000000",
-                          backgroundColor: "#ffffff",
-                        } as any
-                      }
-                      fill="clear"
-                      size="small"
-                      onClick={() => {
-                        setTscSearch("");
-                        setTscModalOpen(true);
-                      }}
-                      aria-label="Search TSC"
-                    >
-                      <IonIcon icon={search} />
-                    </IonButton>
-                    <span style={{ fontSize: 14, color: "#222" }}>
-                      {dflDetails.tsc
-                        ? tscListData.find(
-                            (t) =>
-                              String(t.tscMasterId) === String(dflDetails.tsc),
-                          )?.name || "Selected"
-                        : "Select Tsc"}
-                    </span>
-                    <IonButton
-                      style={
-                        {
-                          "--background": "#ffffff",
-                          "--color": "#000000",
-                          color: "#000000",
-                          backgroundColor: "#ffffff",
-                        } as any
-                      }
-                      fill="clear"
-                      size="small"
-                      onClick={() =>
-                        handleChange({ detail: { value: "" } } as any, "tsc")
-                      }
-                      aria-label="Clear TSC"
-                    >
-                      <IonIcon icon={trash} />
-                    </IonButton>
-                  </div>
-                )}
-              </div>
-            </IonCol>
+            {/* Select TSC — opens searchable modal */}
+            <div className="info-row">
+              <label className="info-label">Select TSC</label>
+              {fetchError ? (
+                <p className="info-error">Failed to fetch TSC list. Please try again later.</p>
+              ) : (
+                <button
+                  type="button"
+                  className="select-trigger"
+                  onClick={() => {
+                    setTscSearch("");
+                    setTscModalOpen(true);
+                  }}
+                  aria-label="Select TSC"
+                >
+                  <span className={selectedTscName ? "select-value" : "select-placeholder"}>
+                    {selectedTscName || "Tap to select TSC"}
+                  </span>
+                  <IonIcon icon={chevronDownOutline} />
+                </button>
+              )}
+            </div>
 
-            <IonCol size="12">
-              <div className="details-row">
-                <IonLabel>
-                  <b>Select Race:</b>
-                </IonLabel>
-                {fetchError ? (
-                  <p style={{ color: "red" }}>
-                    Failed to fetch Race list. Please try again later.
-                  </p>
-                ) : (
-                  <IonSelect
-                    value={dflDetails.raceOfDfls}
-                    // disabled={!isEditable} // Disable if not editable
-                    placeholder="Select Race"
-                    onIonChange={(e) => handleChange(e, "raceOfDfls")}
-                  >
-                    <IonSelectOption value="">Select Race</IonSelectOption>{" "}
-                    {/* Option to deselect */}
-                    {raceMasterListData?.map((race) => (
-                      <IonSelectOption
-                        key={race.raceMasterId}
-                        value={race.raceMasterId}
-                      >
-                        {race.raceMasterName}
-                      </IonSelectOption>
-                    ))}
-                  </IonSelect>
-                )}
-              </div>
-            </IonCol>
+            {/* Select Race */}
+            <div className="info-row">
+              <label className="info-label">Select Race</label>
+              {fetchError ? (
+                <p className="info-error">Failed to fetch Race list. Please try again later.</p>
+              ) : (
+                <IonSelect
+                  value={dflDetails.raceOfDfls}
+                  placeholder="Select Race"
+                  interface="action-sheet"
+                  onIonChange={(e) => handleChange(e, "raceOfDfls")}
+                >
+                  <IonSelectOption value="">Select Race</IonSelectOption>
+                  {raceMasterListData?.map((race) => (
+                    <IonSelectOption key={race.raceMasterId} value={race.raceMasterId}>
+                      {race.raceMasterName}
+                    </IonSelectOption>
+                  ))}
+                </IonSelect>
+              )}
+            </div>
 
-            <IonModal
-              isOpen={tscModalOpen}
-              onDidDismiss={() => setTscModalOpen(false)}
-            >
-              <IonHeader>
-                <IonToolbar>
-                  <IonTitle>Select TSC</IonTitle>
-                  <IonButtons slot="end">
-                    <IonButton
-                      style={
-                        {
-                          "--background": "#ffffff",
-                          "--color": "#000000",
-                          color: "#000000",
-                          backgroundColor: "#ffffff",
-                        } as any
-                      }
-                      onClick={() => setTscModalOpen(false)}
-                    >
-                      Close
-                    </IonButton>
-                  </IonButtons>
-                </IonToolbar>
-                <IonToolbar>
-                  <IonSearchbar
-                    value={tscSearch}
-                    onIonInput={(e) => setTscSearch(e.detail.value!)}
-                    placeholder="Search TSC"
-                  />
-                </IonToolbar>
-              </IonHeader>
-              <IonContent>
-                <IonList>
-                  <IonItem
-                    button
-                    onClick={() => {
-                      handleChange({ detail: { value: "" } } as any, "tsc");
-                      setTscModalOpen(false);
-                    }}
-                  >
-                    <strong>None</strong>
-                  </IonItem>
-                  {tscListData
-                    .filter(
-                      (t) =>
-                        !tscSearch ||
-                        t.name.toLowerCase().includes(tscSearch.toLowerCase()),
-                    )
-                    .map((t) => (
-                      <IonItem
-                        key={t.tscMasterId}
-                        button
-                        onClick={() => {
-                          handleChange(
-                            { detail: { value: String(t.tscMasterId) } } as any,
-                            "tsc",
-                          );
-                          setTscModalOpen(false);
-                        }}
-                      >
-                        {t.name}
-                      </IonItem>
-                    ))}
-                </IonList>
-              </IonContent>
-            </IonModal>
-
-            <div className="details-row">
-              <IonLabel>Sold after 1st/2nd/3rd Moult*:</IonLabel>
+            {/* Sold After Moult */}
+            <div className="info-row">
+              <label className="info-label">Sold After Moult *</label>
               <IonSelect
                 value={dflDetails.soldafterMoult}
                 placeholder="Select Moult"
-                //   disabled={!isEditable}
+                interface="action-sheet"
                 onIonChange={(e) => handleChange(e, "soldafterMoult")}
-                interfaceOptions={{ cssClass: "custom-select" }} // Add custom class for styling
               >
-                <IonSelectOption value="1st">1st</IonSelectOption>
-                <IonSelectOption value="2nd">2nd</IonSelectOption>
-                <IonSelectOption value="3rd">3rd</IonSelectOption>
+                <IonSelectOption value="1st">1st Moult</IonSelectOption>
+                <IonSelectOption value="2nd">2nd Moult</IonSelectOption>
+                <IonSelectOption value="3rd">3rd Moult</IonSelectOption>
               </IonSelect>
             </div>
 
-            {/* Hatching Date Field */}
-            <div className="details-row">
-              <IonLabel>Hatching Date:</IonLabel>
-              <div
-                onClick={
-                  () => setShowHatchingDatePicker(true)
-                  // isEditable &&
-                }
-                className="date-display"
-                style={{ cursor: "pointer" }}
+            {/* Hatching Date */}
+            <div className="info-row">
+              <label className="info-label">Hatching Date</label>
+              <button
+                type="button"
+                className="select-trigger"
+                onClick={() => setShowHatchingDatePicker(true)}
+                aria-label="Select Hatching Date"
               >
-                {dflDetails.hatchingdate
-                  ? new Date(dflDetails.hatchingdate).toLocaleDateString()
-                  : "Select Date"}
-              </div>
-              {showHatchingDatePicker && (
-                <IonModal
-                  isOpen={showHatchingDatePicker}
-                  onDidDismiss={() => setShowHatchingDatePicker(false)}
-                  cssClass="centered-datetime-modal"
-                >
-                  <IonHeader>
-                    <IonToolbar>
-                      <IonTitle>Select Hatching Date</IonTitle>
-                    </IonToolbar>
-                  </IonHeader>
-                  <IonContent className="ion-padding">
-                    <IonDatetime
-                      presentation="date"
-                      showDefaultButtons={true}
-                      preferWheel={false}
-                      value={
-                        dflDetails.hatchingdate || new Date().toISOString()
-                      }
-                      onIonChange={(e) => {
-                        handleChange(e, "hatchingdate");
-                        setShowHatchingDatePicker(false);
-                      }}
-                      onIonCancel={() => setShowHatchingDatePicker(false)}
-                    />
-                  </IonContent>
-                  <IonFooter>
-                    <IonToolbar>
-                      <IonButton
-                        slot="end"
-                        onClick={() => setShowHatchingDatePicker(false)}
-                        style={
-                          {
-                            "--background": "#ffffff",
-                            "--color": "#000000",
-                            backgroundColor: "#ffffff",
-                            color: "#000000",
-                          } as any
-                        }
-                      >
-                        CLOSE
-                      </IonButton>
-                    </IonToolbar>
-                  </IonFooter>
-                </IonModal>
-              )}
+                <span className={dflDetails.hatchingdate ? "select-value" : "select-placeholder"}>
+                  {dflDetails.hatchingdate
+                    ? new Date(dflDetails.hatchingdate).toLocaleDateString()
+                    : "Tap to select date"}
+                </span>
+                <IonIcon icon={calendarOutline} />
+              </button>
             </div>
 
-            {/* Dispatch Date Field */}
-            {/* <div className="details-row">
-                            <IonLabel>Dispatch Date:</IonLabel>
-                            <div
-                                onClick={() => setShowDispatchDatePicker(true)
-                                    // isEditable && 
-                                }
-                                className="date-display"
-                            >
-                                {dflDetails.dispathdate
-                                    ? new Date(dflDetails.dispathdate).toLocaleDateString()
-                                    : "Select Date"}
-                            </div>
-                            {showDispatchDatePicker && (
-                                <IonDatetime
-                                    value={dflDetails.dispathdate}
-                                    onIonChange={(e) => {
-                                        handleChange(e, "dispathdate");
-                                        setShowDispatchDatePicker(false);
-                                    }}
-                                    onIonCancel={() => setShowDispatchDatePicker(false)}
-                                />
-                            )}
-                        </div> */}
-
-            <div className="details-row">
-              <IonLabel>Dispatch Date:</IonLabel>
-              <div
+            {/* Dispatch Date */}
+            <div className="info-row">
+              <label className="info-label">Dispatch Date</label>
+              <button
+                type="button"
+                className="select-trigger"
                 onClick={() => setShowDispatchDatePicker(true)}
-                className="date-display"
-                style={{ cursor: "pointer" }} // Added to make it look clickable
+                aria-label="Select Dispatch Date"
               >
-                {dflDetails.dispathdate
-                  ? new Date(dflDetails.dispathdate).toLocaleDateString()
-                  : "Select Date"}
-              </div>
-              {showDispatchDatePicker && (
-                <IonModal
-                  isOpen={showDispatchDatePicker}
-                  onDidDismiss={() => setShowDispatchDatePicker(false)}
-                  cssClass="centered-datetime-modal"
-                >
-                  <IonHeader>
-                    <IonToolbar>
-                      <IonTitle>Select Dispatch Date</IonTitle>
-                    </IonToolbar>
-                  </IonHeader>
-                  <IonContent className="ion-padding">
-                    <IonDatetime
-                      presentation="date"
-                      showDefaultButtons={true}
-                      preferWheel={false}
-                      value={dflDetails.dispathdate || new Date().toISOString()}
-                      onIonChange={(e) => {
-                        handleChange(e, "dispathdate");
-                        setShowDispatchDatePicker(false);
-                      }}
-                      onIonCancel={() => setShowDispatchDatePicker(false)}
-                    />
-                  </IonContent>
-                  <IonFooter>
-                    <IonToolbar>
-                      <IonButton
-                        slot="end"
-                        onClick={() => setShowDispatchDatePicker(false)}
-                        style={
-                          {
-                            "--background": "#ffffff",
-                            "--color": "#000000",
-                            backgroundColor: "#ffffff",
-                            color: "#000000",
-                          } as any
-                        }
-                      >
-                        CLOSE
-                      </IonButton>
-                    </IonToolbar>
-                  </IonFooter>
-                </IonModal>
-              )}
+                <span className={dflDetails.dispathdate ? "select-value" : "select-placeholder"}>
+                  {dflDetails.dispathdate
+                    ? new Date(dflDetails.dispathdate).toLocaleDateString()
+                    : "Tap to select date"}
+                </span>
+                <IonIcon icon={calendarOutline} />
+              </button>
             </div>
+          </div>
 
+          <div className="result-actions">
             <IonButton
-              style={
-                {
-                  "--background": "#ffffff",
-                  "--color": "#000000",
-                  color: "#000000",
-                  backgroundColor: "#ffffff",
-                } as any
-              }
-              expand="full"
+              className={`btn-result-primary ${submitting ? "is-loading" : ""}`}
+              expand="block"
+              disabled={submitting}
               onClick={handleEdit}
             >
-              {/* {isEditable ? "Save" : "Edit"} */}Save
+              {submitting ? (
+                <>
+                  <IonSpinner name="crescent" className="btn-spinner" />
+                  <span style={{ marginLeft: 8 }}>Saving...</span>
+                </>
+              ) : (
+                <>
+                  <IonIcon icon={checkmarkCircle} slot="start" /> Save Details
+                </>
+              )}
             </IonButton>
-          </IonCardContent>
-        </IonCard>
+          </div>
+        </div>
+
+        {/* TSC selection modal */}
+        <IonModal isOpen={tscModalOpen} onDidDismiss={() => setTscModalOpen(false)}>
+          <IonHeader>
+            <IonToolbar>
+              <IonTitle>Select TSC</IonTitle>
+              <IonButtons slot="end">
+                <IonButton fill="clear" onClick={() => setTscModalOpen(false)}>
+                  Close
+                </IonButton>
+              </IonButtons>
+            </IonToolbar>
+            <IonToolbar>
+              <IonSearchbar
+                value={tscSearch}
+                onIonInput={(e) => setTscSearch(e.detail.value!)}
+                placeholder="Search TSC"
+                className="custom-searchbar"
+              />
+            </IonToolbar>
+          </IonHeader>
+          <IonContent>
+            <div className="modal-options-list">
+              <button
+                type="button"
+                className={`modal-option ${!dflDetails.tsc ? "is-selected" : ""}`}
+                onClick={() => {
+                  handleChange({ detail: { value: "" } } as any, "tsc");
+                  setTscModalOpen(false);
+                }}
+              >
+                <span className="modal-option-label">None</span>
+                {!dflDetails.tsc && <IonIcon icon={checkmarkCircle} />}
+              </button>
+              {tscListData
+                .filter(
+                  (t) =>
+                    !tscSearch ||
+                    t.name.toLowerCase().includes(tscSearch.toLowerCase()),
+                )
+                .map((t) => {
+                  const isSelected = String(dflDetails.tsc) === String(t.tscMasterId);
+                  return (
+                    <button
+                      key={t.tscMasterId}
+                      type="button"
+                      className={`modal-option ${isSelected ? "is-selected" : ""}`}
+                      onClick={() => {
+                        handleChange(
+                          { detail: { value: String(t.tscMasterId) } } as any,
+                          "tsc",
+                        );
+                        setTscModalOpen(false);
+                      }}
+                    >
+                      <span className="modal-option-label">{t.name}</span>
+                      {isSelected && <IonIcon icon={checkmarkCircle} />}
+                    </button>
+                  );
+                })}
+
+              {tscListData.filter(
+                (t) =>
+                  !tscSearch ||
+                  t.name.toLowerCase().includes(tscSearch.toLowerCase()),
+              ).length === 0 && (
+                <p className="no-data-hint">No TSC matches "{tscSearch}"</p>
+              )}
+            </div>
+          </IonContent>
+        </IonModal>
+
+        {/* Hatching date picker modal */}
+        {showHatchingDatePicker && (
+          <IonModal
+            isOpen={showHatchingDatePicker}
+            onDidDismiss={() => setShowHatchingDatePicker(false)}
+          >
+            <IonHeader>
+              <IonToolbar>
+                <IonTitle>Hatching Date</IonTitle>
+                <IonButtons slot="end">
+                  <IonButton fill="clear" onClick={() => setShowHatchingDatePicker(false)}>
+                    Close
+                  </IonButton>
+                </IonButtons>
+              </IonToolbar>
+            </IonHeader>
+            <IonContent className="ion-padding">
+              <IonDatetime
+                presentation="date"
+                showDefaultButtons={true}
+                preferWheel={false}
+                value={dflDetails.hatchingdate || new Date().toISOString()}
+                onIonChange={(e) => {
+                  handleChange(e, "hatchingdate");
+                  setShowHatchingDatePicker(false);
+                }}
+                onIonCancel={() => setShowHatchingDatePicker(false)}
+              />
+            </IonContent>
+          </IonModal>
+        )}
+
+        {/* Dispatch date picker modal */}
+        {showDispatchDatePicker && (
+          <IonModal
+            isOpen={showDispatchDatePicker}
+            onDidDismiss={() => setShowDispatchDatePicker(false)}
+          >
+            <IonHeader>
+              <IonToolbar>
+                <IonTitle>Dispatch Date</IonTitle>
+                <IonButtons slot="end">
+                  <IonButton fill="clear" onClick={() => setShowDispatchDatePicker(false)}>
+                    Close
+                  </IonButton>
+                </IonButtons>
+              </IonToolbar>
+            </IonHeader>
+            <IonContent className="ion-padding">
+              <IonDatetime
+                presentation="date"
+                showDefaultButtons={true}
+                preferWheel={false}
+                value={dflDetails.dispathdate || new Date().toISOString()}
+                onIonChange={(e) => {
+                  handleChange(e, "dispathdate");
+                  setShowDispatchDatePicker(false);
+                }}
+                onIonCancel={() => setShowDispatchDatePicker(false)}
+              />
+            </IonContent>
+          </IonModal>
+        )}
 
         <IonAlert
           isOpen={showAlert}
@@ -781,561 +579,11 @@ const AddDlfPage: React.FC = () => {
           header={isError ? "Error" : "Success"}
           message={message}
           buttons={["OK"]}
+          cssClass={`app-alert ${isError ? "app-alert--error" : "app-alert--success"}`}
         />
       </IonContent>
     </IonPage>
   );
 };
 
-export default AddDlfPage;
-
-//New Code
-
-// import React, { useState, useEffect } from "react";
-// import {
-//     IonContent,
-//     IonPage,
-//     IonCard,
-//     IonCardContent,
-//     IonCardHeader,
-//     IonCardTitle,
-//     IonInput,
-//     IonLabel,
-//     IonButton,
-//     IonHeader,
-//     IonToolbar,
-//     IonTitle,
-//     IonButtons,
-//     IonMenuButton,
-//     IonIcon,
-//     IonBackButton,
-//     IonSelect,
-//     IonSelectOption,
-//     IonDatetime,
-//     IonCol,
-//     IonAlert,
-//     IonModal,
-// } from "@ionic/react";
-// import { trash } from "ionicons/icons"; // Import the trash icon
-// import "./ProfileInfoPage.css";
-// import "./AddDlfPage.css";
-// import axios from "axios";
-// import { API_URL_DBT, API_URL_ChowkiManagment } from "../auth.service";
-// import { API_URL_Master_Data } from '../auth.service';
-// import { useHistory, useParams } from 'react-router-dom';
-
-// const AddDlfPage: React.FC = () => {
-//     const history = useHistory();
-//     const [searchText, setSearchText] = useState<string>("");
-//     const [data, setData] = useState<any>(null);
-//     //   const [isEditable, setIsEditable] = useState<boolean>(false);
-//     const [isError, setIsError] = useState<boolean>(false);
-//     const [viewAll, setViewAll] = useState<boolean>(false);
-//     const [showAlert, setShowAlert] = useState<boolean>(false);
-//     const { fruitsId } = useParams<{ fruitsId: string }>(); // Get the Fruits ID from the URL parameter
-
-//     // State variables for dropdown options
-//     const [raceOptions, setRaceOptions] = useState<number[]>([
-//         1,
-//         2,
-//     ]); // Dummy data for race options
-//     const [tscOptions, setTscOptions] = useState<number[]>([1, 2]); // Dummy data for Tsc options
-//     const [showHatchingDatePicker, setShowHatchingDatePicker] =
-//         useState<boolean>(false);
-//     const [showDispatchDatePicker, setShowDispatchDatePicker] =
-//         useState<boolean>(false);
-//     const [message, setMessage] = useState<string>("");
-//     const [farmerId, setFarmerId] = useState<number | null>(null);
-//     const [dflDetails, setDflDetails] = useState<any>({
-//         tsc: "",
-//         lotNumberofRSP: "",
-//         lotNumberofCRC: "",
-//         numberofDFLs: "",
-//         rateperDFLs: "",
-//         price: "",
-//         raceOfDfls: "",
-//         soldafterMoult: "",
-//         sourceofDFLs: "",
-//         dispathdate:"",
-//         hatchingdate:"",
-//     });
-
-//     console.log("dfldetails", dflDetails);
-
-//     // Fetch race options from the API
-//     const fetchRaceOptions = async () => {
-//         try {
-//             const response = await fetch("API_URL_FOR_RACE_OPTIONS"); // Replace with your API URL
-//             const result = await response.json();
-//             setRaceOptions(result); // Assuming the API returns an array of strings
-//         } catch (error) {
-//             console.error("Error fetching race options:", error);
-//         }
-//     };
-
-//     // Fetch Tsc options from the API
-//     const fetchTscOptions = async () => {
-//         try {
-//             const response = await fetch("API_URL_FOR_TSC_OPTIONS"); // Replace with your API URL
-//             const result = await response.json();
-//             setTscOptions(result); // Assuming the API returns an array of strings
-//         } catch (error) {
-//             console.error("Error fetching Tsc options:", error);
-//         }
-//     };
-
-//     useEffect(() => {
-//         // fetchDetails(); // Fetch details when the component mounts
-//         fetchRaceOptions(); // Fetch race options on component mount
-//         fetchTscOptions(); // Fetch Tsc options on component mount
-//     }, []);
-
-//     useEffect(() => {
-//         if (dflDetails?.numberofDFLs && dflDetails?.rateperDFLs) {
-//             const calculatedPrice = dflDetails.numberofDFLs * dflDetails.rateperDFLs;
-//             setDflDetails((prevData: any) => ({
-//                 ...prevData,
-//                 price: calculatedPrice.toFixed(2), // Update price field with the calculated value
-//             }));
-//         }
-//     }, [dflDetails?.numberofDFLs, dflDetails?.rateperDFLs]);
-//     useEffect(() => {
-//         clearSearch(); // Call clearSearch when the component mounts
-//     }, []);
-
-//     // State for Tsc selection and data fetching
-//     const [tsc, setTscMasterId] = useState<string>(''); // Selected Tsc
-//     const [tscListData, setTscListData] = useState<any[]>([]); // List of Tsc options from API
-//     const [fetchError, setFetchError] = useState<boolean>(false); // Fetch error state
-
-//     // Function to fetch Tsc data from the API
-//     const fetchTscList = async () => {
-//         try {
-//             const response = await axios.get(`${API_URL_Master_Data}tscMaster/get-all`, {
-//                 headers: {
-//                     Authorization: `Bearer ${localStorage.getItem('jwtToken')}`, // Use token if required
-//                 },
-//             });
-
-//             if (response.data && response.data.content) {
-//                 setTscListData(response.data.content.tscMaster); // Set the fetched data
-//             } else {
-//                 console.error('Unexpected API response format:', response);
-//                 setFetchError(true);
-//             }
-//         } catch (error) {
-//             console.error('Error fetching Tsc list:', error);
-//             setFetchError(true); // Set error state if fetch fails
-//         }
-//     };
-
-//     // Function to handle Tsc selection change
-//     const handleTscChange = (value: string) => {
-//         setTscMasterId(value); // Set the selected Tsc
-//     };
-
-//     // Fetch Tsc list when component mounts
-//     useEffect(() => {
-//         fetchTscList();
-//     }, []);
-
-//     // State for Tsc selection and data fetching
-//     const [raceOfDfls, setRaceOfDfls] = useState<string>(''); // Selected Tsc
-//     const [raceMasterListData, setRaceMasterListData] = useState<any[]>([]); // List of Tsc options from API
-//     //  const [fetchError, setFetchError] = useState<boolean>(false); // Fetch error state
-
-//     // Function to fetch Tsc data from the API
-//     const fetchRaceMasterList = async () => {
-//         try {
-//             const response = await axios.get(`${API_URL_Master_Data}raceMaster/get-all`, {
-//                 headers: {
-//                     Authorization: `Bearer ${localStorage.getItem('jwtToken')}`, // Use token if required
-//                 },
-//             });
-
-//             if (response.data && response.data.content) {
-//                 setRaceMasterListData(response.data.content.raceMaster); // Set the fetched data
-//             } else {
-//                 console.error('Unexpected API response format:', response);
-//                 setFetchError(true);
-//             }
-//         } catch (error) {
-//             console.error('Error fetching Tsc list:', error);
-//             setFetchError(true); // Set error state if fetch fails
-//         }
-//     };
-
-//     // Function to handle Tsc selection change
-//     const handleRaceMasterChange = (value: string) => {
-//         setRaceOfDfls(value); // Set the selected Tsc
-//     };
-
-//     // Fetch Tsc list when component mounts
-//     useEffect(() => {
-//         fetchRaceMasterList();
-//     }, []);
-
-//     // useEffect(() => {
-//     //     if (fruitsId) {
-//     //         handleEdit(fruitsId);
-//     //     }
-//     // }, [fruitsId]);
-
-//     const handleEdit = () => {
-//         //   if (isEditable) {
-//         const api = axios.create({
-//             baseURL: API_URL_ChowkiManagment,
-//         });
-//         api
-//             .post(
-//                 "chowkimanagement/add-sale-disposal-dfl-info",
-//                 {
-//                     fruitsId: fruitsId,
-//                     lotNumberRsp: dflDetails.lotNumberofRSP,
-//                     lotNumber: dflDetails.lotNumberofCRC,
-//                     numberOfDflsDisposed: dflDetails.numberofDFLs,
-//                     ratePer100DflsPrice: dflDetails.rateperDFLs,
-//                     price: dflDetails.price,
-//                     dflsSource: dflDetails.sourceofDFLs,
-//                     raceId: dflDetails.raceOfDfls,
-//                     tsc: dflDetails.tsc,
-//                     soldAfter1stOr2ndMould: dflDetails.soldafterMoult,
-//                     dateOfDisposal:dflDetails.dispathdate,
-//                     expectedDateOfHatching:dflDetails.hatchingdate,
-//                 },
-//                 {
-//                     headers: {
-//                         "Content-Type": "application/json",
-//                         accept: "*/*",
-//                         Authorization: `Bearer ${localStorage.getItem("jwtToken")}`,
-//                     },
-//                 }
-//             )
-//             .then((res) => {
-//                 console.log("Response:", res.data);
-//                 if (res.data.error === 0) {
-//                     setMessage("Data added successfully!");
-//                     setIsError(false);
-//                     setShowAlert(true);
-//                     clearSearch();
-
-//                      // Redirect to "add-dlf" and refresh the page
-//                 // history.push("/add-dlf")
-//                 // window.location.reload();
-
-//                  // Redirect to "add-dlf" after a 1-second delay
-//                  setTimeout(() => {
-//                     history.push("/add-dlf");
-//                 }, 1000);
-
-//                 } else {
-//                     setMessage("Failed to add data.");
-//                     setIsError(true);
-//                     setShowAlert(true);
-//                 }
-//             })
-//             .catch((error) => {
-//                 console.error("Error updating farmer details", error);
-//                 setMessage("Error updating farmer details");
-//                 setIsError(true);
-//                 // setShowAlert(true);
-//             });
-//         //   }
-//         //   setIsEditable(!isEditable); // Toggle editable state
-//     };
-
-//     const clearSearch = () => {
-//         setSearchText("");
-//         setData(null);
-//         // setIsEditable(false);
-//         setDflDetails({
-//             tsc: "",
-//         lotNumberofRSP: "",
-//         lotNumberofCRC: "",
-//         numberofDFLs: "",
-//         rateperDFLs: "",
-//         price: "",
-//         raceOfDfls: "",
-//         soldafterMoult: "",
-//         sourceofDFLs: "",
-//         dispathdate:"",
-//         hatchingdate:"",
-//         });
-//     };
-
-//     const handleChange = (e: any, field: string) => {
-//         if (dflDetails) {
-//             setDflDetails({
-//                 ...dflDetails,
-//                 [field]: e.detail.value, // Change here to work with IonSelect
-//             });
-//         }
-//     };
-//     //   const clearField=()=>{
-//     //     setViewAll(false);
-//     //   }
-
-//     //   const toggleViewAll = () => {
-//     //     setViewAll(!viewAll);
-//     //     setIsEditable(!isEditable);
-//     //   };
-
-//     return (
-//         <IonPage>
-//             <IonHeader>
-//                 <IonToolbar>
-//                     <IonButtons slot="start">
-//                         <IonBackButton defaultHref="/" /> {/* Back button added */}
-//                         <IonMenuButton />
-//                     </IonButtons>
-//                     <IonTitle>
-//                         <b>Add DFL's Details</b>
-//                     </IonTitle>
-//                 </IonToolbar>
-//             </IonHeader>
-
-//             <IonContent>
-//                 {/* <div className="search-container">
-//           <IonLabel className="fruits-id-label">Fruits ID</IonLabel>
-//           <IonInput
-//             value={searchText}
-//             placeholder="Enter Fruits ID"
-//             onIonChange={(e) => setSearchText(e.detail.value!)}
-//           />
-//           <IonButton size="small" onClick={fetchFarmerDetails}>Search</IonButton>
-
-//           <IonButton size="small" fill="clear" onClick={clearSearch}>
-//             <IonIcon color="danger" icon={trash} />
-//           </IonButton>
-//         </div> */}
-
-//                 {/* {data && ( */}
-//                 <IonCard className="details-card">
-//                     {/* <IonCardHeader>
-//               <IonCardTitle>DFLs Details</IonCardTitle>
-//             </IonCardHeader> */}
-//                     <IonCardContent>
-//                         {/* {!viewAll ? (
-//                 <IonButton expand="full" onClick={toggleViewAll}>
-//                   Add Details
-//                 </IonButton>
-//               ) : (
-//                 <>
-//                   <IonButton expand="full" onClick={toggleViewAll}>
-//                     Hide
-//                   </IonButton> */}
-//                         <div className="details-row">
-//                             <IonLabel>Lot No.(RSP):</IonLabel>
-//                             <IonInput
-//                                 value={dflDetails.lotNumberofRSP}
-//                                 //   readonly={!isEditable}
-//                                 onIonChange={(e) => handleChange(e, "lotNumberofRSP")}
-//                             />
-//                         </div>
-//                         <div className="details-row">
-//                             <IonLabel>Lot No. (CRC):</IonLabel>
-//                             <IonInput
-//                                 value={dflDetails.lotNumberofCRC}
-//                                 //   readonly={!isEditable}
-//                                 onIonChange={(e) => handleChange(e, "lotNumberofCRC")}
-//                             />
-//                         </div>
-//                         <div className="details-row">
-//                             <IonLabel>Number of DFL’s:</IonLabel>
-//                             <IonInput
-//                                 value={dflDetails.numberofDFLs}
-//                                 //   readonly={!isEditable}
-//                                 onIonChange={(e) => handleChange(e, "numberofDFLs")}
-//                             />
-//                         </div>
-//                         <div className="details-row">
-//                             <IonLabel>Rate per 100 DFLs:</IonLabel>
-//                             <IonInput
-//                                 value={dflDetails.rateperDFLs}
-//                                 //   readonly={!isEditable}
-//                                 onIonChange={(e) => handleChange(e, "rateperDFLs")}
-//                             />
-//                         </div>
-//                         <div className="details-row">
-//                             <IonLabel>Price(in Rupees):</IonLabel>
-//                             <IonInput
-//                                 value={dflDetails.price}
-//                                 readonly={true}
-//                                 onIonChange={(e) => handleChange(e, "price")}
-//                             />
-//                         </div>
-//                         <div className="details-row">
-//                             <IonLabel>Source of DFLs:</IonLabel>
-//                             <IonInput
-//                                 value={dflDetails.sourceofDFLs}
-//                                 //   readonly={!isEditable}
-//                                 onIonChange={(e) => handleChange(e, "sourceofDFLs")}
-//                             />
-//                         </div>
-
-//                         <IonCol size="12">
-//                             <div className="details-row">
-//                                 <IonLabel>
-//                                     <b>Select Tsc:</b>
-//                                 </IonLabel>
-//                                 {fetchError ? (
-//                                     <p style={{ color: 'red' }}>Failed to fetch Tsc list. Please try again later.</p>
-//                                 ) : (
-//                                     <IonSelect
-//                                         value={dflDetails.tsc}
-//                                         // disabled={!isEditable} // Disable if not editable
-//                                         placeholder="Select Tsc"
-//                                         onIonChange={(e) => handleChange(e, "tsc")}
-//                                     >
-//                                         <IonSelectOption value="">None</IonSelectOption> {/* Option to deselect */}
-//                                         {tscListData?.map((tsc) => (
-//                                             <IonSelectOption key={tsc.tscMasterId} value={tsc.tscMasterId}>
-//                                                 {tsc.name}
-//                                             </IonSelectOption>
-//                                         ))}
-//                                     </IonSelect>
-//                                 )}
-//                             </div>
-//                         </IonCol>
-
-//                         <IonCol size="12">
-//                             <div className="details-row">
-//                                 <IonLabel>
-//                                     <b>Select Race:</b>
-//                                 </IonLabel>
-//                                 {fetchError ? (
-//                                     <p style={{ color: 'red' }}>Failed to fetch Race list. Please try again later.</p>
-//                                 ) : (
-//                                     <IonSelect
-//                                         value={dflDetails.raceOfDfls}
-//                                         // disabled={!isEditable} // Disable if not editable
-//                                         placeholder="Select Race"
-//                                         onIonChange={(e) => handleChange(e, "raceOfDfls")}
-//                                     >
-//                                         <IonSelectOption value="">None</IonSelectOption> {/* Option to deselect */}
-//                                         {raceMasterListData?.map((race) => (
-//                                             <IonSelectOption key={race.raceMasterId} value={race.raceMasterId}>
-//                                                 {race.raceMasterName}
-//                                             </IonSelectOption>
-//                                         ))}
-//                                     </IonSelect>
-//                                 )}
-//                             </div>
-//                         </IonCol>
-
-//                         <div className="details-row">
-//                             <IonLabel>Sold after 1st/2nd/3rd Moult*:</IonLabel>
-//                             <IonSelect
-//                                 value={dflDetails.soldafterMoult}
-//                                 placeholder="Select Moult"
-//                                 //   disabled={!isEditable}
-//                                 onIonChange={(e) => handleChange(e, "soldafterMoult")}
-//                                 interfaceOptions={{ cssClass: "custom-select" }} // Add custom class for styling
-//                             >
-//                                 <IonSelectOption value="1st">1st</IonSelectOption>
-//                                 <IonSelectOption value="2nd">2nd</IonSelectOption>
-//                                 <IonSelectOption value="3rd">3rd</IonSelectOption>
-//                             </IonSelect>
-//                         </div>
-
-//                         {/* Hatching Date Field */}
-//                         <div className="details-row">
-//                             <IonLabel>Hatching Date:</IonLabel>
-//                             <div
-//                                 onClick={() => setShowHatchingDatePicker(true)
-//                                     // isEditable &&
-//                                 }
-//                                 className="date-display"
-//                                 style={{ cursor: 'pointer'  }}
-//                             >
-//                                 {dflDetails.hatchingdate
-//                                     ? new Date(dflDetails.hatchingdate).toLocaleDateString()
-//                                     : "Select Date"}
-//                             </div>
-//                             {showHatchingDatePicker && (
-//                                 <IonModal isOpen={showHatchingDatePicker} onDidDismiss={() => setShowHatchingDatePicker(false)}>
-//                                 <IonDatetime
-//                                     value={dflDetails.hatchingdate}
-//                                     onIonChange={(e) => {
-//                                         handleChange(e, "hatchingdate");
-//                                         setShowHatchingDatePicker(false);
-//                                     }}
-//                                     onIonCancel={() => setShowHatchingDatePicker(false)}
-//                                 />
-//                                 <IonButton onClick={() => setShowHatchingDatePicker(false)}>Close</IonButton>
-//                                 </IonModal>
-//                             )}
-//                         </div>
-
-//                         {/* Dispatch Date Field */}
-//                         {/* <div className="details-row">
-//                             <IonLabel>Dispatch Date:</IonLabel>
-//                             <div
-//                                 onClick={() => setShowDispatchDatePicker(true)
-//                                     // isEditable &&
-//                                 }
-//                                 className="date-display"
-//                             >
-//                                 {dflDetails.dispathdate
-//                                     ? new Date(dflDetails.dispathdate).toLocaleDateString()
-//                                     : "Select Date"}
-//                             </div>
-//                             {showDispatchDatePicker && (
-//                                 <IonDatetime
-//                                     value={dflDetails.dispathdate}
-//                                     onIonChange={(e) => {
-//                                         handleChange(e, "dispathdate");
-//                                         setShowDispatchDatePicker(false);
-//                                     }}
-//                                     onIonCancel={() => setShowDispatchDatePicker(false)}
-//                                 />
-//                             )}
-//                         </div> */}
-
-// <div className="details-row">
-//     <IonLabel>Dispatch Date:</IonLabel>
-//     <div
-//         onClick={() => setShowDispatchDatePicker(true)}
-//         className="date-display"
-//         style={{ cursor: 'pointer' }} // Added to make it look clickable
-//     >
-//         {dflDetails.dispathdate
-//             ? new Date(dflDetails.dispathdate).toLocaleDateString()
-//             : "Select Date"}
-//     </div>
-//     {showDispatchDatePicker && (
-//         <IonModal isOpen={showDispatchDatePicker} onDidDismiss={() => setShowDispatchDatePicker(false)}>
-//             <IonDatetime
-//                 value={dflDetails.dispathdate}
-//                 onIonChange={(e) => {
-//                     handleChange(e, "dispathdate");
-//                     setShowDispatchDatePicker(false);
-//                 }}
-//                 onIonCancel={() => setShowDispatchDatePicker(false)}
-//             />
-//             <IonButton onClick={() => setShowDispatchDatePicker(false)}>Close</IonButton>
-//         </IonModal>
-//     )}
-// </div>
-
-//                         <IonButton expand="full" onClick={handleEdit}>
-//                             {/* {isEditable ? "Save" : "Edit"} */}Save
-//                         </IonButton>
-
-//                     </IonCardContent>
-//                 </IonCard>
-
-//                 <IonAlert
-//                     isOpen={showAlert}
-//                     onDidDismiss={() => setShowAlert(false)}
-//                     header={isError ? "Error" : "Success"}
-//                     message={message}
-//                     buttons={['OK']}
-//                 />
-
-//             </IonContent>
-//         </IonPage>
-//     );
-// };
-
-// export default AddDlfPage;
+export default AddDetailsPage;

@@ -1,10 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { 
-  IonContent, IonCol, IonPage, IonCard, IonCardContent, IonCardHeader, 
-  IonCardTitle, IonInput, IonLabel, IonButton, IonHeader, 
-  IonToolbar, IonTitle, IonButtons, IonMenuButton, IonIcon, IonSelect, IonSelectOption, IonBackButton, IonAlert 
+import {
+  IonContent, IonCol, IonPage, IonCard, IonCardContent, IonCardHeader,
+  IonCardTitle, IonInput, IonLabel, IonButton, IonHeader,
+  IonToolbar, IonTitle, IonButtons, IonMenuButton, IonIcon, IonSelect, IonSelectOption, IonBackButton, IonAlert, IonSpinner
 } from '@ionic/react';
-import { trash } from 'ionicons/icons';
+import { trash, searchOutline, checkmarkCircle } from 'ionicons/icons';
 import './ProfileInfoPage.css';
 import axios from 'axios';
 import { API_URL_DBT } from '../auth.service';
@@ -25,6 +25,9 @@ const ProfileInfoPage: React.FC = () => {
   const [fetchError, setFetchError] = useState<boolean>(false);
   
   const [showAlert, setShowAlert] = useState<boolean>(false); // For alert
+  const [searching, setSearching] = useState<boolean>(false);
+  const [submitting, setSubmitting] = useState<boolean>(false);
+  const [loadingDetails, setLoadingDetails] = useState<boolean>(false);
 
   const inputRef = useRef<HTMLIonInputElement>(null); // Add useRef for input field
 
@@ -38,11 +41,13 @@ const ProfileInfoPage: React.FC = () => {
   };
 
   const fetchFarmerDetails = () => {
+    if (searching) return;
     clearField();  // Clear previous data
+    setSearching(true);
     const api = axios.create({
       baseURL: API_URL_DBT
     });
-  
+
     api.post("farmer-details/getInspectionFarmerDetailsByFruitsId", { fruitsId: searchText }, {
       headers: {
         "Content-Type": "application/json",
@@ -51,13 +56,14 @@ const ProfileInfoPage: React.FC = () => {
       },
     })
     .then(res => {
-      // Directly set the first farmer response if available
       const farmerResponse = res.data?.content?.[0]?.farmerResponses?.[0];
-      setData(farmerResponse);  // This will set data to undefined if no response
-      setFarmerId(farmerResponse?.farmerId);  // Safely handle setting farmerId
+      setData(farmerResponse);
+      setFarmerId(farmerResponse?.farmerId);
+      setSearching(false);
     })
     .catch(error => {
       console.error("Error fetching farmer details:", error);
+      setSearching(false);
     });
   };
   
@@ -180,8 +186,9 @@ const ProfileInfoPage: React.FC = () => {
 
   const handleEdit = async () => {
     if (isEditable) {
+      if (submitting) return;
+      setSubmitting(true);
       try {
-        // Save the farmer details
         const api = axios.create({
           baseURL: API_URL_DBT
         });
@@ -197,44 +204,45 @@ const ProfileInfoPage: React.FC = () => {
             Authorization: `Bearer ${localStorage.getItem("jwtToken")}`,
           },
         });
-  
-        // If a file is selected, upload it
+
         if (selectedFile) {
           const formData = new FormData();
-          formData.append('multipartFile', selectedFile); // Use the correct key
+          formData.append('multipartFile', selectedFile);
           formData.append('farmerId', farmerId?.toString() || '');
-  
+
           const response = await api.post('farmer/upload-photo', formData, {
             headers: {
               'Content-Type': 'multipart/form-data',
               Authorization: `Bearer ${localStorage.getItem('jwtToken')}`,
             },
           });
-  
-          // Update the photo path in the state with the new path from the response
-          const newPhotoPath = response.data.content.photoPath; // Adjust based on your response structure
+
+          const newPhotoPath = response.data.content.photoPath;
           setFarmerOtherData((prevData) => ({
             ...prevData,
-            photoPath: newPhotoPath // Set the new photo path
+            photoPath: newPhotoPath
           }));
-  
+
           setMessage("Farmer details and photo uploaded successfully");
         } else {
           setMessage("Farmer details updated successfully");
         }
-  
+
         setIsError(false);
         setShowAlert(true);
-        clearFields(); // Clear fields upon successful upload
+        clearFields();
+        setIsEditable(false);
       } catch (error) {
         console.error("Error updating farmer details or uploading photo", error);
         setMessage("Error updating farmer details or uploading photo");
         setIsError(true);
         setShowAlert(true);
+      } finally {
+        setSubmitting(false);
       }
+    } else {
+      setIsEditable(true);
     }
-  
-    setIsEditable(!isEditable);
   };
   
 
@@ -258,7 +266,13 @@ const ProfileInfoPage: React.FC = () => {
   
 
   const toggleViewAll = (i: number) => {
-    setViewAll(!viewAll);
+    // If already showing details, just hide them
+    if (viewAll) {
+      setViewAll(false);
+      return;
+    }
+    if (loadingDetails) return;
+    setLoadingDetails(true);
     const api = axios.create({
       baseURL: API_URL_DBT
     });
@@ -274,10 +288,14 @@ const ProfileInfoPage: React.FC = () => {
       setFarmerOtherData(prev => ({ ...prev, ...res.data.content }));
       setFarmerId(res.data.content[0].farmerId);
       setTscMasterId(res.data.content.tscName);
+      setViewAll(true);
+      setLoadingDetails(false);
     })
     .catch(error => {
       setMessage("Farmer number does not exist");
       setIsError(true);
+      setShowAlert(true);
+      setLoadingDetails(false);
     });
   };
   // Hide button logic extracted here
@@ -390,146 +408,176 @@ const ProfileInfoPage: React.FC = () => {
     return (
       <IonPage>
       <IonHeader>
-        <IonToolbar>
+        <IonToolbar className="page-toolbar">
           <IonButtons slot="start">
-            <IonMenuButton />
-            <IonBackButton text="Back" slot="start" defaultHref="/" style={{ color: '#000' }} />
+            <IonBackButton text="Back" defaultHref="/subsubmenu" />
           </IonButtons>
-          <IonTitle style={{ color: '#000000' }}><b>Farmer Profile Info</b></IonTitle>
+          <IonTitle>Farmer Profile Info</IonTitle>
         </IonToolbar>
       </IonHeader>
 
-      <IonContent style={{ '--padding-bottom': '130px' } as any}>
-        <div className="search-container">
-          <IonLabel className="fruits-id-label">Fruits ID</IonLabel>
-          <IonInput
-            ref={inputRef} // Attach ref to IonInput
-            value={searchText}
-            placeholder="Enter Fruits ID"
-            onIonInput={handleInputChange} // Update to use onIonInput
-          /></div>
-          <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '10px', marginTop: '10px' }}>
-
-          <IonButton style={{ '--background': '#ffffff', '--color': '#000000', color: '#000000', backgroundColor: '#ffffff' } as any} size="small" onClick={() => { fetchFarmerDetails(); }}>Search</IonButton>
-          <IonButton style={{ '--background': '#ffffff', '--color': '#000000', color: '#000000', backgroundColor: '#ffffff' } as any} size="small" fill="clear" onClick={clearSearch}>
-            <IonIcon color="danger" icon={trash} />
-          </IonButton>
+      <IonContent className="page-content">
+        <div className="page-hero-extension" aria-hidden="true"></div>
+        <div className="search-section">
+          <div className="search-input-wrap">
+            <span className="search-label">Fruits ID</span>
+            <IonInput
+              ref={inputRef}
+              value={searchText}
+              placeholder="Enter Fruits ID"
+              onIonInput={handleInputChange}
+            />
+          </div>
+          <div className="search-action-row">
+            <IonButton
+              className={`btn-primary ${searching ? "is-loading" : ""}`}
+              disabled={searching}
+              onClick={() => { fetchFarmerDetails(); }}
+            >
+              {searching ? (
+                <>
+                  <IonSpinner name="crescent" className="btn-spinner" />
+                  <span style={{ marginLeft: 8 }}>Searching...</span>
+                </>
+              ) : (
+                <>
+                  <IonIcon icon={searchOutline} slot="start" /> Search
+                </>
+              )}
+            </IonButton>
+            <IonButton
+              className="icon-only-btn danger"
+              onClick={clearSearch}
+              aria-label="Clear"
+              disabled={searching || submitting || loadingDetails}
+            >
+              <IonIcon icon={trash} />
+            </IonButton>
+          </div>
         </div>
 
         {data && (
-          <IonCard className="details-card">
-            <IonCardHeader>
-              <IonCardTitle>Farmer Profile Details</IonCardTitle>
-            </IonCardHeader>
-            <IonCardContent>
-              <div className="details-row">
-                <IonLabel>FarmerName:</IonLabel>
-                <IonInput
-                  value={data.fullName}
-                  readonly={true}
-                />
+          <div className="result-card">
+            <div className="result-head">
+              <div className="result-avatar">
+                {(data.fullName?.[0] || 'F').toUpperCase()}
               </div>
-              <div className="details-row">
-                <IonLabel>Address:</IonLabel>
-                <IonInput
-                  value={data.address}
-                  readonly={true}
-                />
+              <div className="result-head-text">
+                <span className="result-eyebrow">Farmer Profile</span>
+                <h3 className="result-title">{data.fullName}</h3>
+              </div>
+            </div>
+
+            <div className="result-body">
+              <div className="info-row">
+                <label className="info-label">Farmer Name</label>
+                <IonInput value={data.fullName} readonly={true} />
+              </div>
+              <div className="info-row">
+                <label className="info-label">Address</label>
+                <IonInput value={data.address} readonly={true} />
               </div>
 
-              {!viewAll ? (
-                <IonButton style={{ '--background': '#ffffff', '--color': '#000000', color: '#000000', backgroundColor: '#ffffff' } as any} expand="full" onClick={() => farmerId !== null && toggleViewAll(farmerId)}>
-                  View All
-                </IonButton>
-              ) : (
+              {viewAll && (
                 <>
-                  <IonButton style={{ '--background': '#ffffff', '--color': '#000000', color: '#000000', backgroundColor: '#ffffff' } as any} expand="full" onClick={() => farmerId !== null && toggleViewAll(farmerId)}>
-                    Hide
-                  </IonButton>
-                  <div className="details-row">
-                    <IonLabel>Father's/Husband Name:</IonLabel>
-                    <IonInput
-                      value={farmerOtherData?.fatherName}
-                      readonly={true}
-                    />
+                  <div className="info-row">
+                    <label className="info-label">Father's / Husband's Name</label>
+                    <IonInput value={farmerOtherData?.fatherName} readonly={true} />
                   </div>
-                  <div className="details-row">
-                    <IonLabel>Father's/Husband Name in Kannada:</IonLabel>
-                    <IonInput
-                      value={farmerOtherData?.fatherNameKan}
-                      readonly={true}
-                    />
+                  <div className="info-row">
+                    <label className="info-label">Father's / Husband's Name (Kannada)</label>
+                    <IonInput value={farmerOtherData?.fatherNameKan} readonly={true} />
                   </div>
-                  <div className="details-row">
-                    <IonLabel>Caste:</IonLabel>
-                    <IonInput
-                      value={farmerOtherData?.title}
-                      readonly={true}
-                    />
+                  <div className="info-row">
+                    <label className="info-label">Caste</label>
+                    <IonInput value={farmerOtherData?.title} readonly={true} />
                   </div>
 
-                  <IonCol size="12">
-                    <div className="details-row">
-                      <IonLabel>
-                        <b>Select Tsc:</b>
-                      </IonLabel>
-                      {fetchError ? (
-                        <p style={{ color: 'red' }}>Failed to fetch Tsc list. Please try again later.</p>
-                      ) : (
-                        <IonSelect
-                          value={farmerOtherData?.tscMasterId}
-                          disabled={!isEditable} 
-                          placeholder="Select Tsc"
-                          onIonChange={(e) => handleTscChange(e.detail.value!)}
-                        >
-                          <IonSelectOption value="">None</IonSelectOption> 
-                          {tscListData.map((tsc) => (
-                            <IonSelectOption key={tsc.tscMasterId} value={tsc.tscMasterId}>
-                              {tsc.name}
-                            </IonSelectOption>
-                          ))}
-                        </IonSelect>
-                      )}
-                    </div>
-                  </IonCol>
+                  <div className="info-row">
+                    <label className="info-label">Select TSC</label>
+                    {fetchError ? (
+                      <p className="info-error">Failed to fetch TSC list. Please try again later.</p>
+                    ) : (
+                      <IonSelect
+                        value={farmerOtherData?.tscMasterId}
+                        disabled={!isEditable}
+                        placeholder="Select TSC"
+                        onIonChange={(e) => handleTscChange(e.detail.value!)}
+                      >
+                        <IonSelectOption value="">None</IonSelectOption>
+                        {tscListData.map((tsc) => (
+                          <IonSelectOption key={tsc.tscMasterId} value={tsc.tscMasterId}>
+                            {tsc.name}
+                          </IonSelectOption>
+                        ))}
+                      </IonSelect>
+                    )}
+                  </div>
 
-                  <div className="details-row">
-                    <IonLabel>Mobile Number:</IonLabel>
+                  <div className="info-row">
+                    <label className="info-label">Mobile Number</label>
                     <IonInput
                       value={farmerOtherData?.mobileNumber}
                       readonly={!isEditable}
-                      onIonChange={e => handleChange(e, 'mobileNumber')}
+                      onIonChange={(e) => handleChange(e, 'mobileNumber')}
                     />
                   </div>
-                  
-                  <div className="details-row">
-                    <IonLabel>Farmer Photo:</IonLabel>
-                    <label>(MAX: 5MB)</label>
-                    <input
-                      type="file"
-                      onChange={handleFileChange}
-                      accept="image/*" 
-                    />
+
+                  <div className="info-row">
+                    <label className="info-label">
+                      Farmer Photo <span className="info-hint">(max 5 MB)</span>
+                    </label>
+                    <input type="file" onChange={handleFileChange} accept="image/*" />
                     {selectedFile && (
-                      <div>
-                        <IonLabel>Selected File: {selectedFile.name}</IonLabel>
+                      <div className="info-file-preview">
+                        <span className="info-file-name">{selectedFile.name}</span>
                         {selectedFile.type.startsWith('image/') && (
-                          <img
-                            src={URL.createObjectURL(selectedFile)}
-                            alt="Preview"
-                            style={{ width: '100px', height: '100px', objectFit: 'cover' }}
-                          />
+                          <img src={URL.createObjectURL(selectedFile)} alt="Preview" />
                         )}
                       </div>
                     )}
                   </div>
                 </>
               )}
-              <IonButton style={{ '--background': '#ffffff', '--color': '#000000', color: '#000000', backgroundColor: '#ffffff' } as any} onClick={handleEdit}>
-                {isEditable ? 'Save' : 'Edit'}
+            </div>
+
+            <div className="result-actions">
+              <IonButton
+                expand="block"
+                className={`btn-result-primary ${loadingDetails ? "is-loading" : ""}`}
+                disabled={loadingDetails || submitting}
+                onClick={() => farmerId !== null && toggleViewAll(farmerId)}
+              >
+                {loadingDetails ? (
+                  <>
+                    <IonSpinner name="crescent" className="btn-spinner" />
+                    <span style={{ marginLeft: 8 }}>Loading...</span>
+                  </>
+                ) : (
+                  viewAll ? 'Hide Details' : 'View All Details'
+                )}
               </IonButton>
-            </IonCardContent>
-          </IonCard>
+              <IonButton
+                expand="block"
+                className={`btn-result-secondary ${submitting && isEditable ? "is-loading" : ""}`}
+                disabled={submitting}
+                onClick={handleEdit}
+              >
+                {submitting && isEditable ? (
+                  <>
+                    <IonSpinner name="crescent" className="btn-spinner" style={{ '--color': 'var(--ion-color-primary)' } as any} />
+                    <span style={{ marginLeft: 8 }}>Saving...</span>
+                  </>
+                ) : isEditable ? (
+                  <>
+                    <IonIcon icon={checkmarkCircle} slot="start" /> Save Changes
+                  </>
+                ) : (
+                  'Edit Details'
+                )}
+              </IonButton>
+            </div>
+          </div>
         )}
 
         {/* Alert for success/error message */}
@@ -539,6 +587,7 @@ const ProfileInfoPage: React.FC = () => {
           header={isError ? "Error" : "Success"}
           message={message}
           buttons={['OK']}
+          cssClass={`app-alert ${isError ? 'app-alert--error' : 'app-alert--success'}`}
         />
       </IonContent>
     </IonPage>

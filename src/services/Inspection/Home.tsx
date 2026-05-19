@@ -1,13 +1,13 @@
 import React, { useState } from 'react';
 import {
-  IonPage, IonHeader, IonToolbar, IonTitle, IonContent, IonRow, IonCol,
-  IonImg, IonButtons, IonButton, IonIcon, IonLabel, useIonRouter,
-  IonModal, IonToast, IonGrid
+  IonPage, IonHeader, IonToolbar, IonTitle, IonContent,
+  IonImg, IonButton, IonIcon,
+  IonModal, IonToast
 } from '@ionic/react';
 import './Home.css';
 import {
-  personCircleOutline, cloudDownloadOutline, images,
-  trashSharp, logOut, leaf, settings
+  cloudDownloadOutline, images, trashSharp, logOutOutline,
+  leafOutline, cogOutline, gridOutline
 } from 'ionicons/icons';
 import {
   saveImageWithLocation, getSavedImages, readImageDataUrl,
@@ -15,28 +15,10 @@ import {
 } from '../imageStorage';
 import { useHistory } from 'react-router-dom';
 
-const cardStyle: React.CSSProperties = {
-  padding: '16px 12px',
-  borderRadius: '8px',
-  border: 'none',
-  background: 'white',
-  color: '#000',
-  fontSize: '14px',
-  fontWeight: '800',
-  cursor: 'pointer',
-  display: 'flex',
-  flexDirection: 'column',
-  alignItems: 'center',
-  justifyContent: 'center',
-  gap: '8px',
-  boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
-  width: '100%'
-};
-
 const Home: React.FC = () => {
-  const router = useIonRouter();
   const history = useHistory();
   const username = localStorage.getItem('username') || 'User';
+  const firstLetter = (username[0] || 'U').toUpperCase();
 
   const [showSavedModal, setShowSavedModal] = useState<boolean>(false);
   const [savedImages, setSavedImages] = useState<SavedImageMeta[]>([]);
@@ -45,7 +27,6 @@ const Home: React.FC = () => {
   const [toastOpen, setToastOpen] = useState<boolean>(false);
   const [viewImageUrl, setViewImageUrl] = useState<string | null>(null);
   const [viewModalOpen, setViewModalOpen] = useState<boolean>(false);
-  
 
   const handleCaptureClick = async () => {
     const meta = await saveImageWithLocation();
@@ -82,142 +63,138 @@ const Home: React.FC = () => {
   };
 
   return (
-    <IonPage>
-      <IonHeader>
-        <IonToolbar style={{ background: '#1a1a1a', borderBottom: '1px solid #333333' }}>
-          <IonTitle style={{ color: '#040404' }}><b>Home</b></IonTitle>
-          <IonButtons slot="end">
-            <IonIcon icon={personCircleOutline} style={{ color: '#0d0d0d', fontSize: '24px' }} />
-            <IonLabel style={{ color: '#050404', marginLeft: '8px' }}>{username}</IonLabel>
-          </IonButtons>
-        </IonToolbar>
-      </IonHeader>
+    <IonPage className="home-page">
+      <IonContent fullscreen>
+        <div className="home-bg">
+          <span className="orb orb-1" aria-hidden="true"></span>
+          <span className="orb orb-2" aria-hidden="true"></span>
 
-      <IonContent fullscreen style={{ background: '#000000' }}>
-        {/* Logo */}
-        <div style={{ textAlign: 'center', padding: '20px 12px', marginBottom: '20px' }}>
-          <IonImg src="/assets/images/kg_logo.png" style={{ width: '100px', height: '100px', margin: '0 auto' }} />
-          <h2 style={{ color: '#000', fontSize: '20px', fontWeight: 'bold' }}>Department of Sericulture</h2>
-          <h2 style={{ color: '#000', fontSize: '18px', fontWeight: 'bold' }}>Government of Karnataka</h2>
+          {/* ---------- Top bar ---------- */}
+          <div className="home-topbar">
+            <div className="brand-mark">
+              <img src="/assets/images/kg_logo.png" alt="Sericulture" />
+              <div className="brand-mark-text">
+                <span className="brand-mark-title">Sericulture</span>
+                <span className="brand-mark-sub">GoK</span>
+              </div>
+            </div>
+
+            <button type="button" className="user-chip" aria-label="User">
+              <span className="avatar">{firstLetter}</span>
+              <span className="user-meta">
+                <span className="user-label">Welcome</span>
+                <span className="user-name">{username}</span>
+              </span>
+            </button>
+          </div>
+
+          {/* ---------- Hero greeting ---------- */}
+          <div className="home-hero">
+            <h1 className="greeting-title">Hello, {username}</h1>
+            <p className="greeting-sub">Department of Sericulture · Government of Karnataka</p>
+          </div>
+
+          {/* ---------- Section title ---------- */}
+          <div className="section-title">
+            <span>Quick Actions</span>
+          </div>
+
+          {/* ---------- Action grid ---------- */}
+          <div className="action-grid">
+            <button
+              type="button"
+              className="action-card is-green"
+              onClick={() => history.push('/menu/1')}
+              aria-label="General TSC"
+            >
+              <span className="action-icon"><IonIcon icon={leafOutline} /></span>
+              <span className="action-label">General TSC</span>
+            </button>
+
+            <button
+              type="button"
+              className="action-card is-cyan"
+              onClick={() => history.push('/menu/2')}
+              aria-label="Reeling TSC"
+            >
+              <span className="action-icon"><IonIcon icon={cogOutline} /></span>
+              <span className="action-label">Reeling TSC</span>
+            </button>
+
+            <button
+              type="button"
+              className="action-card is-violet"
+              onClick={handleCaptureClick}
+              aria-label="Capture"
+            >
+              <span className="action-icon"><IonIcon icon={cloudDownloadOutline} /></span>
+              <span className="action-label">Capture</span>
+            </button>
+
+            <button
+              type="button"
+              className="action-card is-amber"
+              onClick={openSavedImages}
+              aria-label="Saved Images"
+            >
+              <span className="action-icon"><IonIcon icon={images} /></span>
+              <span className="action-label">Saved Images</span>
+            </button>
+
+            <button
+              type="button"
+              className="action-card is-indigo"
+              onClick={() => window.location.href = '/dash'}
+              aria-label="Dashboard"
+            >
+              <span className="action-icon"><IonIcon icon={gridOutline} /></span>
+              <span className="action-label">Dashboard</span>
+            </button>
+
+            <button
+              type="button"
+              className="action-card is-rose"
+              onClick={() => {
+                localStorage.clear();
+                history.push('/login');
+              }}
+              aria-label="Logout"
+            >
+              <span className="action-icon"><IonIcon icon={logOutOutline} /></span>
+              <span className="action-label">Logout</span>
+            </button>
+          </div>
         </div>
 
-        {/* 3 Rows, 2 Columns */}
-        <IonGrid>
-
-          {/* Row 1 */}
-          <IonRow>
-            <IonCol size="6">
-              <button style={cardStyle} onClick={() => history.push('/menu/1')}>
-                <IonIcon icon={leaf} style={{ fontSize: 32 }} />
-                General TSC
-              </button>
-            </IonCol>
-          
-             <IonCol size="6">
-              <button style={cardStyle} onClick={handleCaptureClick}>
-                <IonIcon icon={cloudDownloadOutline} style={{ fontSize: 32 }} />
-                Capture
-              </button>
-            </IonCol>
-          </IonRow>
-
-          {/* Row 2 */}
-          <IonRow>
-              <IonCol size="6">
-              <button style={cardStyle} onClick={() => history.push('/menu/2')}>
-                <IonIcon icon={settings} style={{ fontSize: 32 }} />
-                Reeling TSC
-              </button>
-            </IonCol>
-            <IonCol size="6">
-              <button style={cardStyle} onClick={openSavedImages}>
-                <IonIcon icon={images} style={{ fontSize: 32 }} />
-                Saved Images
-              </button>
-            </IonCol>
-          
-          </IonRow>
-
-          {/* Row 3 */}
-          <IonRow>
-            <IonCol size="6">
-              <button style={cardStyle} onClick={() => window.location.href = '/dash'}>
-                <IonIcon icon={personCircleOutline} style={{ fontSize: 32 }} />
-                Dashboard
-              </button>
-            </IonCol>
-          
-            <IonCol size="6">
-              <button
-                style={cardStyle}
-                onClick={() => {
-                  localStorage.clear();
-                  history.push('/login');
-                }}
-              >
-                <IonIcon icon={logOut} style={{ fontSize: 32 }} />
-                Logout
-              </button>
-            </IonCol>
-          </IonRow>
-
-        </IonGrid>
-
         {/* Toast */}
-        <IonToast isOpen={toastOpen} onDidDismiss={() => setToastOpen(false)} message={toastMsg} duration={2500} />
+        <IonToast
+          isOpen={toastOpen}
+          onDidDismiss={() => setToastOpen(false)}
+          message={toastMsg}
+          duration={2500}
+          position="top"
+        />
 
         {/* Saved Images Modal */}
         <IonModal isOpen={showSavedModal} onDidDismiss={() => setShowSavedModal(false)}>
-
           <IonHeader>
-            <IonToolbar color="light">
-              <IonTitle color="dark">Saved Images</IonTitle>
-              <IonButton slot="end" onClick={() => setShowSavedModal(false)}>Close</IonButton>
-            </IonToolbar>
-          </IonHeader>
-          <IonContent className="ion-padding">
-            {savedImages.map((m) => (
-              <div key={m.fileName}>
-                <IonImg src={imageDataUrls[m.fileName]} />
-                <IonButton onClick={() => handleDeleteSaved(m.fileName)}>
-                  <IonIcon icon={trashSharp} />
-                </IonButton>
-              </div>
-            ))}
-          </IonContent>
-        </IonModal>
-         {/* Saved Images Modal */}
-        <IonModal isOpen={showSavedModal} onDidDismiss={() => setShowSavedModal(false)}>
-          <IonHeader>
-            <IonToolbar color="light">
-              <IonTitle color="dark">Saved Images</IonTitle>
-              <IonButton slot="end" onClick={() => setShowSavedModal(false)}>
+            <IonToolbar>
+              <IonTitle>Saved Images</IonTitle>
+              <IonButton slot="end" fill="clear" onClick={() => setShowSavedModal(false)}>
                 Close
               </IonButton>
             </IonToolbar>
           </IonHeader>
-
-          <IonContent style={{ padding: 12 }}>
+          <IonContent>
             {savedImages.length === 0 ? (
-              <p style={{ textAlign: 'center', marginTop: 20 }}>No saved images yet</p>
+              <p className="no-images-message">No saved images yet</p>
             ) : (
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12 }}>
+              <div className="images-grid">
                 {savedImages.map((m) => (
-                  <div
-                    key={m.fileName}
-                    style={{
-                      width: 140,
-                      border: '2px solid #ddd',
-                      borderRadius: '8px',
-                      overflow: 'hidden',
-                      background: '#fff',
-                      cursor: 'pointer'
-                    }}
-                  >
+                  <div key={m.fileName} className="image-card">
                     {imageDataUrls[m.fileName] ? (
                       <IonImg
                         src={imageDataUrls[m.fileName]}
-                        style={{ width: '100%', height: 100, objectFit: 'cover' }}
                         onClick={() => {
                           const url = imageDataUrls[m.fileName];
                           setViewImageUrl(url);
@@ -225,24 +202,14 @@ const Home: React.FC = () => {
                         }}
                       />
                     ) : (
-                      <div
-                        style={{
-                          width: '100%',
-                          height: 100,
-                          background: '#eee',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center'
-                        }}
-                      >
-                        📷
-                      </div>
+                      <div className="image-card-empty">📷</div>
                     )}
-
-                    <div style={{ display: 'flex', justifyContent: 'center', padding: 6 }}>
+                    <div className="image-card-actions">
                       <IonButton
                         title="Delete"
                         size="small"
+                        fill="clear"
+                        color="danger"
                         onClick={() => handleDeleteSaved(m.fileName)}
                       >
                         <IonIcon icon={trashSharp} />
@@ -264,10 +231,11 @@ const Home: React.FC = () => {
           }}
         >
           <IonHeader>
-            <IonToolbar color="light">
-              <IonTitle color="dark">View Image</IonTitle>
+            <IonToolbar>
+              <IonTitle>View Image</IonTitle>
               <IonButton
                 slot="end"
+                fill="clear"
                 onClick={() => {
                   setViewModalOpen(false);
                   setViewImageUrl(null);
@@ -277,7 +245,6 @@ const Home: React.FC = () => {
               </IonButton>
             </IonToolbar>
           </IonHeader>
-
           <IonContent
             className="ion-padding"
             style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}
@@ -292,7 +259,6 @@ const Home: React.FC = () => {
             )}
           </IonContent>
         </IonModal>
-
       </IonContent>
     </IonPage>
   );

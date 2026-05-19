@@ -2,7 +2,7 @@ import { BackButtonEvent, IonCard, IonCardContent, IonCardHeader, IonContent, Io
 import React, { useContext, useEffect, useRef, useState } from 'react';
 import axios from "axios";
 import { IonGrid, IonRow, IonCol } from '@ionic/react';
-import { eye, eyeSharp, lockClosed, personCircle, phonePortrait, phonePortraitOutline, cloudDownloadOutline, images, trashSharp } from "ionicons/icons";
+import { eye, eyeSharp, lockClosed, personCircle, phonePortrait, phonePortraitOutline, cloudDownloadOutline, images, trashSharp, shieldCheckmarkOutline, callOutline, timeOutline } from "ionicons/icons";
 import { useHistory, useLocation } from "react-router-dom";
 import { IonItem, IonLabel, IonInput, IonButton, IonIcon, IonAlert } from '@ionic/react';
 import './Login.mod.css';
@@ -346,212 +346,237 @@ const Login: React.FC = () => {
   }
 
   return (
-    <IonPage>
-      <IonContent fullscreen className="ion-text-center background">
-        <div className="trapezoid"></div>
+    <IonPage className="login-page">
+      <IonContent fullscreen>
+        <div className="login-bg">
+          <span className="orb orb-1" aria-hidden="true"></span>
+          <span className="orb orb-2" aria-hidden="true"></span>
+          <span className="orb orb-3" aria-hidden="true"></span>
 
-        <IonGrid>
-          <IonRow>
-            <IonCol>
-              <IonAlert
-                isOpen={iserror}
-                onDidDismiss={() => setIserror(false)}
-                cssClass="my-custom-class"
-                header={"Error!"}
-                message={message}
-                buttons={["Dismiss"]}
+          <IonAlert
+            isOpen={iserror}
+            onDidDismiss={() => setIserror(false)}
+            cssClass="my-custom-class"
+            header={"Error"}
+            message={message}
+            buttons={["Dismiss"]}
+          />
+          <IonAlert
+            isOpen={gpsAlertOpen}
+            onDidDismiss={() => setGpsAlertOpen(false)}
+            cssClass="gps-alert"
+            header={"Enable GPS"}
+            message={gpsAlertMsg}
+            buttons={[
+              {
+                text: 'OK',
+                role: 'cancel',
+                handler: () => {
+                  setGpsAlertOpen(false);
+                },
+              },
+              {
+                text: 'Open Settings',
+                handler: () => {
+                  if (Capacitor.isNative) {
+                    console.log('Please open Settings > Location to enable GPS');
+                  }
+                  setGpsAlertOpen(false);
+                },
+              },
+            ]}
+          />
+
+          <div className="brand-block">
+            <div className="brand-logo-wrap">
+              <IonImg
+                className="logo-round"
+                src="/assets/images/kg_logo.png"
+                alt="Department of Sericulture"
               />
-              <IonAlert
-                isOpen={gpsAlertOpen}
-                onDidDismiss={() => setGpsAlertOpen(false)}
-                cssClass="gps-alert"
-                header={"Enable GPS"}
-                message={gpsAlertMsg}
-                buttons={[
-                  {
-                    text: 'OK',
-                    role: 'cancel',
-                    handler: () => {
-                      setGpsAlertOpen(false);
-                    },
-                  },
-                  {
-                    text: 'Open Settings',
-                    handler: () => {
-                      // Open device settings
-                      if (Capacitor.isNative) {
-                        // For Android, you could use a plugin to open settings
-                        console.log('Please open Settings > Location to enable GPS');
-                      }
-                      setGpsAlertOpen(false);
-                    },
-                  },
-                ]}
-              />
-            </IonCol>
-          </IonRow>
-
-        </IonGrid>
-
-        <IonRow className="ion-padding ion-margin-top">
-          <IonCol>
-            <div style={{ textAlign: 'center', marginBottom: '30px' }}>
-              <div style={{ 
-                display: 'flex', 
-                justifyContent: 'center', 
-                marginBottom: '20px',
-                animation: 'fadeIn 0.6s ease-in',
-              }}>
-                <IonImg
-                  className='logo-round'
-                  src="/assets/images/kg_logo.png"
-                  alt="Department of Sericulture"
-                ></IonImg>
-              </div>
-              <div className="text-container" style={{ background: 'transparent', boxShadow: 'none', padding: 0 }}>
-                <h2 style={{ color: '#000' }}><b>Department of Sericulture</b></h2>
-                <h2 style={{ marginTop: '-10px', color: '#000' }}><b>Government of Karnataka</b></h2>
-              </div>
             </div>
-          </IonCol>
-        </IonRow>
-        <IonRow style={{ marginTop: '8px' }}>
-          <IonCol></IonCol>
-        </IonRow>
-
-        {showLoginSection && (
-          <div className="login-form" style={{ padding: 12 }}>
-            <IonList>
-              <IonItem>
-                <IonIcon color='black' slot="start" icon={personCircle} aria-hidden="true"></IonIcon>
-                <IonInput labelPlacement="stacked" label="Username" placeholder="Enter username" type="email"
-                  inputmode="email"
-                  value={email}
-                  ref={usernameInputRef}
-                  onIonInput={(e) => setEmail(e.detail.value!)}>
-                </IonInput>
-              </IonItem>
-
-              <IonItem>
-                <IonIcon color='black' slot="start" icon={lockClosed} aria-hidden="true"></IonIcon>
-                <IonInput labelPlacement="stacked" label="Password" placeholder="Enter password" type={showPassword ? 'text' : 'password'}
-                  value={password}
-                  ref={passwordInputRef}
-                  onIonInput={(e) => setPassword(e.detail.value!)}>
-                    <IonButton slot="end" fill="clear" onClick={handlePasswordToggle} aria-label="Toggle password visibility" style={{ '--background': '#ffffff', '--color': '#000000', backgroundColor: '#ffffff' } as any}>
-                  <IonIcon style={{ color: '#000000' }} icon={showPassword ? eyeSharp : eye} />
-                </IonButton>
-                </IonInput>
-                
-              </IonItem>
-
-              {/* <IonItem>
-                <IonIcon color='primary' slot="start" icon={phonePortrait} aria-hidden="true"></IonIcon>
-                <IonInput labelPlacement="stacked" label="Device Id" readonly type="text"
-                  value={deviceId}
-                  onIonInput={(e) => setDeviceId(e.detail.value!)}>
-                </IonInput>
-              </IonItem> */}
-            </IonList>
-
-            <div className="actions" style={{ padding: '12px 0' }}>
-              <IonButton expand="block" onClick={handleLogin} style={{ '--background': '#ffffff', '--color': '#000000', 'color': '#000000', 'backgroundColor': '#ffffff' } as any}>Login</IonButton>
-            </div>
-
-            {/* Capture and Saved Images buttons stacked vertically below login */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginTop: 16 }}>
-              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6 }}>
-                <IonBtn onClick={handleCaptureClick} title="Capture Offline Image" className="circular-btn" aria-label="Capture">
-                  <IonIcon icon={cloudDownloadOutline} />
-                </IonBtn>
-                <div className="button-label">Capture</div>
-              </div>
-              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6 }}>
-                <IonBtn onClick={openSavedImages} title="View Saved Images" className="circular-btn" aria-label="Saved">
-                  <IonIcon icon={images} />
-                </IonBtn>
-                <div className="button-label">Saved</div>
-              </div>
-            </div>
+            <h1 className="brand-title">Department of Sericulture</h1>
+            <p className="brand-subtitle">Government of Karnataka</p>
           </div>
-        )}
 
-        {showVerificationSection && (
-          <IonCard className="verification-card">
-            {/* <IonCardHeader color={'light'} className="verification-header">
-                <h1 style={{ fontSize: '20px', margin: 0, fontWeight: 'bold' }}>Verification</h1>
-            </IonCardHeader> */}
-            <IonCardContent>
-              <IonGrid>
-                <IonRow>
-                  <IonCol>
-                    <IonLabel>Enter the one time password received on your phone ******{phoneNumber}</IonLabel>
-                  </IonCol>
-                </IonRow>
-                <IonRow className="otp-row">
-                  <IonCol>
-                    <div className="otp-inputs">
-                      <input ref={otpRef1} className="otp-input" inputMode="numeric" maxLength={1} value={otpNumber1}
-                        onChange={(e) => handleOtpInput(e, setOtpNumber1, otpNumber1, otpRef2.current, undefined)} />
-                      <input ref={otpRef2} className="otp-input" inputMode="numeric" maxLength={1} value={otpNumber2}
-                        onChange={(e) => handleOtpInput(e, setOtpNumber2, otpNumber2, otpRef3.current, otpRef1.current)} />
-                      <input ref={otpRef3} className="otp-input" inputMode="numeric" maxLength={1} value={otpNumber3}
-                        onChange={(e) => handleOtpInput(e, setOtpNumber3, otpNumber3, otpRef4.current, otpRef2.current)} />
-                      <input ref={otpRef4} className="otp-input" inputMode="numeric" maxLength={1} value={otpNumber4}
-                        onChange={(e) => handleOtpInput(e, setOtpNumber4, otpNumber4, otpRef5.current, otpRef3.current)} />
-                      <input ref={otpRef5} className="otp-input" inputMode="numeric" maxLength={1} value={otpNumber5}
-                        onChange={(e) => handleOtpInput(e, setOtpNumber5, otpNumber5, otpRef6.current, otpRef4.current)} />
-                      <input ref={otpRef6} className="otp-input" inputMode="numeric" maxLength={1} value={otpNumber6}
-                        onChange={(e) => handleOtpInput(e, setOtpNumber6, otpNumber6, null, otpRef5.current)} />
-                    </div>
-                  </IonCol>
-                </IonRow>
-                <IonRow>
-                  <IonCol size='6' className="ion-text-left">
-                    <IonLabel>Valid for {String(minutes).padStart(2, '0')}:{String(seconds).padStart(2, '0')} mins</IonLabel>
+          {showLoginSection && (
+            <>
+              <div className="auth-card login-form">
+                <h2 className="auth-heading">Login</h2>
 
-                  </IonCol>
-                  <IonCol size='6' className="ion-text-right">
-                    <IonButton expand="block" onClick={resendOtp} disabled={isActive}>Resend OTP</IonButton>
-                  </IonCol>
-                </IonRow>
-                <IonRow>
-                  <IonCol>
-                    <IonButton expand="block" onClick={verifyOtp} style={{ '--background': '#ffffff', '--color': '#000000', 'color': '#000000', 'backgroundColor': '#ffffff' } as any}>Verify OTP</IonButton>
-                  </IonCol>
-                </IonRow>
-              </IonGrid>
+                <IonList lines="none">
+                  <IonItem>
+                    <IonIcon slot="start" icon={personCircle} aria-hidden="true" />
+                    <IonInput
+                      labelPlacement="stacked"
+                      label="Username"
+                      placeholder="Enter username"
+                      type="email"
+                      inputmode="email"
+                      value={email}
+                      ref={usernameInputRef}
+                      onIonInput={(e) => setEmail(e.detail.value!)}
+                    />
+                  </IonItem>
 
-            </IonCardContent>
-          </IonCard>
-        )}
+                  <IonItem>
+                    <IonIcon slot="start" icon={lockClosed} aria-hidden="true" />
+                    <IonInput
+                      labelPlacement="stacked"
+                      label="Password"
+                      placeholder="Enter password"
+                      type={showPassword ? 'text' : 'password'}
+                      value={password}
+                      ref={passwordInputRef}
+                      onIonInput={(e) => setPassword(e.detail.value!)}
+                    >
+                      <IonButton
+                        slot="end"
+                        fill="clear"
+                        className="password-toggle"
+                        onClick={handlePasswordToggle}
+                        aria-label="Toggle password visibility"
+                      >
+                        <IonIcon icon={showPassword ? eyeSharp : eye} />
+                      </IonButton>
+                    </IonInput>
+                  </IonItem>
+                </IonList>
+
+                <div className="actions">
+                  <IonButton
+                    expand="block"
+                    className="btn-primary-gradient"
+                    onClick={handleLogin}
+                  >
+                    Sign in
+                  </IonButton>
+                </div>
+              </div>
+
+              <div className="secondary-actions">
+                <button
+                  type="button"
+                  className="action-tile"
+                  onClick={handleCaptureClick}
+                  aria-label="Capture offline image"
+                >
+                  <span className="action-icon">
+                    <IonIcon icon={cloudDownloadOutline} />
+                  </span>
+                  <span className="action-label">Capture</span>
+                </button>
+                <button
+                  type="button"
+                  className="action-tile"
+                  onClick={openSavedImages}
+                  aria-label="View saved images"
+                >
+                  <span className="action-icon">
+                    <IonIcon icon={images} />
+                  </span>
+                  <span className="action-label">Saved</span>
+                </button>
+              </div>
+            </>
+          )}
+
+          {showVerificationSection && (
+            <div className="auth-card verification-card">
+              <div className="otp-shield">
+                <IonIcon icon={shieldCheckmarkOutline} />
+              </div>
+
+              <h2 className="auth-heading otp-title">Verify OTP</h2>
+              <p className="otp-sub">A 6-digit code was sent to</p>
+
+              <div className="otp-phone-chip">
+                <IonIcon icon={callOutline} />
+                <span>+91 •• •••• {phoneNumber}</span>
+              </div>
+
+              <div className="otp-inputs">
+                <input ref={otpRef1} className="otp-input" inputMode="numeric" maxLength={1} value={otpNumber1}
+                  onChange={(e) => handleOtpInput(e, setOtpNumber1, otpNumber1, otpRef2.current, undefined)} />
+                <input ref={otpRef2} className="otp-input" inputMode="numeric" maxLength={1} value={otpNumber2}
+                  onChange={(e) => handleOtpInput(e, setOtpNumber2, otpNumber2, otpRef3.current, otpRef1.current)} />
+                <input ref={otpRef3} className="otp-input" inputMode="numeric" maxLength={1} value={otpNumber3}
+                  onChange={(e) => handleOtpInput(e, setOtpNumber3, otpNumber3, otpRef4.current, otpRef2.current)} />
+                <input ref={otpRef4} className="otp-input" inputMode="numeric" maxLength={1} value={otpNumber4}
+                  onChange={(e) => handleOtpInput(e, setOtpNumber4, otpNumber4, otpRef5.current, otpRef3.current)} />
+                <input ref={otpRef5} className="otp-input" inputMode="numeric" maxLength={1} value={otpNumber5}
+                  onChange={(e) => handleOtpInput(e, setOtpNumber5, otpNumber5, otpRef6.current, otpRef4.current)} />
+                <input ref={otpRef6} className="otp-input" inputMode="numeric" maxLength={1} value={otpNumber6}
+                  onChange={(e) => handleOtpInput(e, setOtpNumber6, otpNumber6, null, otpRef5.current)} />
+              </div>
+
+              <div className="otp-helper-row">
+                <span className="otp-timer">
+                  <IonIcon icon={timeOutline} />
+                  Valid for {String(minutes).padStart(2, '0')}:{String(seconds).padStart(2, '0')}
+                </span>
+                <IonButton
+                  fill="clear"
+                  size="small"
+                  className="otp-resend-btn"
+                  onClick={resendOtp}
+                  disabled={isActive}
+                >
+                  Resend OTP
+                </IonButton>
+              </div>
+
+              <div className="actions">
+                <IonButton
+                  expand="block"
+                  className="btn-primary-gradient"
+                  onClick={verifyOtp}
+                >
+                  Verify OTP
+                </IonButton>
+              </div>
+            </div>
+          )}
+        </div>
+
         <IonModal isOpen={showSavedModal} onDidDismiss={() => setShowSavedModal(false)}>
           <IonHeader>
             <IonToolbar>
               <IonTitle>Saved Location Images</IonTitle>
-              <IonBtn slot="end" onClick={() => setShowSavedModal(false)}>Close</IonBtn>
+              <IonBtn slot="end" fill="clear" onClick={() => setShowSavedModal(false)}>Close</IonBtn>
             </IonToolbar>
           </IonHeader>
-          <IonContent style={{ padding: 12 }}>
+          <IonContent>
             {savedImages.length === 0 ? (
-              <p style={{ textAlign: 'center', marginTop: 20 }}>No saved images yet</p>
+              <div className="saved-empty">
+                <div className="empty-icon">
+                  <IonIcon icon={images} />
+                </div>
+                <p>No saved images yet</p>
+              </div>
             ) : (
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12 }}>
+              <div className="saved-modal-grid">
                 {savedImages.map((m) => (
-                  <div key={m.fileName} style={{ width: 140, border: '2px solid #ddd', borderRadius: '8px', overflow: 'hidden', background: '#fff', cursor: 'pointer', position: 'relative', transition: 'transform 0.2s ease' }} onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.05)'} onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}>
+                  <div key={m.fileName} className="saved-tile">
                     {imageDataUrls[m.fileName] ? (
-                      <IonImg src={imageDataUrls[m.fileName]} style={{ width: '100%', height: 100, objectFit: 'cover', cursor: 'pointer' }} onClick={() => {
-                        const url = imageDataUrls[m.fileName];
-                        if (url) {
-                          setViewImageUrl(url);
-                          setViewModalOpen(true);
-                        }
-                      }} />
+                      <IonImg
+                        className="tile-img"
+                        src={imageDataUrls[m.fileName]}
+                        onClick={() => {
+                          const url = imageDataUrls[m.fileName];
+                          if (url) {
+                            setViewImageUrl(url);
+                            setViewModalOpen(true);
+                          }
+                        }}
+                      />
                     ) : (
-                      <div style={{ width: '100%', height: 100, background: '#eee', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>📷</div>
+                      <div className="tile-placeholder">
+                        <IonIcon icon={images} />
+                      </div>
                     )}
-                    <div style={{ display: 'flex', gap: 8, padding: '6px', justifyContent: 'center' }}>
-                      <IonBtn title="Delete" size="small" color="danger" onClick={() => handleDeleteSaved(m.fileName)}>
+                    <div className="tile-actions">
+                      <IonBtn title="Delete" size="small" fill="clear" color="danger" onClick={() => handleDeleteSaved(m.fileName)}>
                         <IonIcon icon={trashSharp} />
                       </IonBtn>
                     </div>
@@ -566,7 +591,7 @@ const Login: React.FC = () => {
           <IonHeader>
             <IonToolbar>
               <IonTitle>View Image</IonTitle>
-              <IonBtn slot="end" onClick={() => { setViewModalOpen(false); setViewImageUrl(null); }}>Close</IonBtn>
+              <IonBtn slot="end" fill="clear" onClick={() => { setViewModalOpen(false); setViewImageUrl(null); }}>Close</IonBtn>
             </IonToolbar>
           </IonHeader>
           <IonContent className="ion-padding" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
@@ -578,7 +603,7 @@ const Login: React.FC = () => {
           </IonContent>
         </IonModal>
 
-        <IonTst isOpen={toastOpen} onDidDismiss={() => setToastOpen(false)} message={toastMsg} duration={2500} />
+        <IonTst isOpen={toastOpen} onDidDismiss={() => setToastOpen(false)} message={toastMsg} duration={2500} position="top" />
       </IonContent>
     </IonPage>
   );

@@ -4,7 +4,8 @@ import {
   IonMenuButton,IonIcon,IonBackButton,
   IonSelect,IonSelectOption,IonDatetime,IonCol,IonAlert,IonItem,IonImg,IonModal,
 } from "@ionic/react";
-import { camera, eyeSharp, trash, trashSharp } from "ionicons/icons";
+import { camera, eyeSharp, trash, trashSharp, searchOutline } from "ionicons/icons";
+import { IonSpinner } from "@ionic/react";
 import "./ProfileInfoPage.css";
 import axios from "axios";
 import { API_URL_DBT } from "../auth.service";
@@ -29,6 +30,7 @@ const MulberryPage: React.FC = () => {
   const [iserror, setIserror] = useState<boolean>(false);
   const [farmerId, setFarmerId] = useState<number | null>(null);
   const [isUprootingReasonEnabled, setIsUprootingReasonEnabled] = useState(false);
+  const [searching, setSearching] = useState<boolean>(false);
   const [isNurseryEnabled,setIsNurseryEnabled]=useState(false);
   const [showHatchingDatePicker, setShowHatchingDatePicker] =
   useState<boolean>(false);
@@ -55,7 +57,9 @@ const MulberryPage: React.FC = () => {
   const [showNurseryDatePicker, setShowNurseryDatePicker] = useState<boolean>(false); // Picker visibility
 
   const fetchDetails = () => {
+    if (searching) return;
     clearField();
+    setSearching(true);
     const api = axios.create({
       baseURL: API_URL_DBT,
     });
@@ -77,19 +81,15 @@ const MulberryPage: React.FC = () => {
           res.data.content[0].farmerLandDetailsResponses[0];
         console.log(farmerLandDetailsResponse);
 
-        // Set the land details response to state
         setData(farmerLandDetailsResponse);
-
-        // Set farmerId from the land details response
         setFarmerId(farmerLandDetailsResponse.farmerId);
         setFarmerLandDetailsId(farmerLandDetailsResponse.farmerLandDetailsId);
-
-        // Now you can call toggleViewAll with the farmerId
-        // toggleViewAll(farmerLandDetailsResponse.farmerId);
+        setSearching(false);
       })
       .catch((error) => {
         setMessage("Farmer number does not exist");
         setIserror(true);
+        setSearching(false);
       });
   };
 
@@ -789,34 +789,52 @@ const handleSearchInputChange = (e: CustomEvent) => {
   return (
     <IonPage>
       <IonHeader>
-        <IonToolbar>
+        <IonToolbar className="page-toolbar">
           <IonButtons slot="start">
-            <IonBackButton text="Back" slot="start" defaultHref="/" style={{ color: '#000' }} />
-            <IonMenuButton />
-            
+            <IonBackButton text="Back" defaultHref="/menu/1" />
           </IonButtons>
-          <IonTitle style={{ color: '#000000' }}>
-            <b>Mulberry Activity</b>
-          </IonTitle>
+          <IonTitle>Mulberry Activity</IonTitle>
         </IonToolbar>
       </IonHeader>
 
-      <IonContent style={{ '--padding-bottom': '130px' } as any}>
-        <div className="search-container">
-          <IonLabel className="fruits-id-label">Fruits ID</IonLabel>
-          <IonInput
-            ref={inputRef} // Attach ref to IonInput
-            value={searchText}
-            placeholder="Enter Fruits ID"
-            onIonInput={handleSearchInputChange} // Update to use onIonInput
-          /></div>
-          <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '10px', marginTop: '10px' }}>
-          <IonButton style={{ '--background': '#ffffff', '--color': '#000000', color: '#000000', backgroundColor: '#ffffff' } as any} size="small" onClick={fetchDetails}>Search</IonButton>
-
-          {/* Clear button with trash icon */}
-          <IonButton style={{ '--background': '#ffffff', '--color': '#000000', color: '#000000', backgroundColor: '#ffffff' } as any} size="small" fill="clear" onClick={clearSearch}>
-            <IonIcon color="danger" icon={trash} />
-          </IonButton>
+      <IonContent className="page-content">
+        <div className="page-hero-extension" aria-hidden="true"></div>
+        <div className="search-section">
+          <div className="search-input-wrap">
+            <span className="search-label">Fruits ID</span>
+            <IonInput
+              ref={inputRef}
+              value={searchText}
+              placeholder="Enter Fruits ID"
+              onIonInput={handleSearchInputChange}
+            />
+          </div>
+          <div className="search-action-row">
+            <IonButton
+              className={`btn-primary ${searching ? "is-loading" : ""}`}
+              disabled={searching}
+              onClick={fetchDetails}
+            >
+              {searching ? (
+                <>
+                  <IonSpinner name="crescent" className="btn-spinner" />
+                  <span style={{ marginLeft: 8 }}>Searching...</span>
+                </>
+              ) : (
+                <>
+                  <IonIcon icon={searchOutline} slot="start" /> Search
+                </>
+              )}
+            </IonButton>
+            <IonButton
+              className="icon-only-btn danger"
+              onClick={clearSearch}
+              aria-label="Clear"
+              disabled={searching}
+            >
+              <IonIcon icon={trash} />
+            </IonButton>
+          </div>
         </div>
        
         {data && (

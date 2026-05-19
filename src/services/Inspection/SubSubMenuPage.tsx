@@ -1,7 +1,3 @@
-
-
-
-
 import React from 'react';
 import {
   IonPage,
@@ -11,81 +7,60 @@ import {
   IonContent,
   IonButtons,
   IonBackButton,
-  IonGrid,
-  IonRow,
-  IonCol,
+  IonIcon,
 } from '@ionic/react';
+import {
+  personCircleOutline,
+  mapOutline,
+  chevronForwardOutline,
+} from 'ionicons/icons';
 import { useHistory } from 'react-router-dom';
-import './MenuPage.css'; // Ensure you import the CSS file
+import './MenuPage.css';
 
 const SubSubMenuPage: React.FC = () => {
   const history = useHistory();
 
-  // Define sub-submenus for Farmer Profile
-  const farmerProfileSubMenus = [
-    { id: '1', name: 'Profile Info' },
-    { id: '2', name: 'Land Info' },
+  const items = [
+    { id: '1', name: 'Profile Info', icon: personCircleOutline, variant: 'is-green' },
+    { id: '2', name: 'Land Info',    icon: mapOutline,          variant: 'is-cyan'  },
   ];
 
-  
-  // Handle click on the submenu items
-  const handleSubSubMenuClick = (subSubMenuId: string) => {
-    if (subSubMenuId === '1') {
-      history.push('/profile-info'); // Redirect to ProfileInfoPage
-    } else if (subSubMenuId === '2') {
-      history.push('/land-info'); // Redirect to LandInfoPage
-    }
+  const handleClick = (id: string) => {
+    if (id === '1') history.push('/profile-info');
+    else if (id === '2') history.push('/land-info');
   };
 
   return (
     <IonPage>
       <IonHeader>
-        <IonToolbar>
+        <IonToolbar className="page-toolbar">
           <IonButtons slot="start">
-            <IonBackButton text="Back" slot="start" defaultHref="/menu" style={{ color: '#000' }} />
+            <IonBackButton text="Back" defaultHref="/menu/1" />
           </IonButtons>
-          <IonTitle className="menucolor" style={{ color: '#050505', backgroundColor: 'transparent',fontWeight: 'bold' }}>Farmer Profile Submenus</IonTitle>
+          <IonTitle>Farmer Profile</IonTitle>
         </IonToolbar>
       </IonHeader>
-      <IonContent className="menu-content">
-        <IonGrid>
-          <IonRow className="menu-row">
-            {farmerProfileSubMenus.map((subMenu) => (
-              <IonCol size="12" size-md="6" className="menu-col" key={subMenu.id}>
-                <button
-                  style={{
-                    padding: '24px 16px',
-                    borderRadius: '8px',
-                    border: 'none',
-                    background: 'white',
-                    color: '#000',
-                    fontSize: '18px',
-                    fontWeight: '800',
-                    cursor: 'pointer',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    gap: '8px',
-                    boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
-                    width: '100%',
-                    minHeight: '100px'
-                  }}
-                  onClick={() => handleSubSubMenuClick(subMenu.id)}
-                >
-                  {subMenu.name}
-                </button>
-              </IonCol>
-            ))}
-          </IonRow>
-        </IonGrid>
+
+      <IonContent className="page-content">
+        <div className="page-hero-extension" aria-hidden="true"></div>
+        <div className="menu-tile-list">
+          {items.map((item) => (
+            <button
+              key={item.id}
+              type="button"
+              className={`menu-tile ${item.variant}`}
+              onClick={() => handleClick(item.id)}
+              aria-label={item.name}
+            >
+              <span className="tile-icon"><IonIcon icon={item.icon} /></span>
+              <span className="tile-label">{item.name}</span>
+              <span className="tile-chevron"><IonIcon icon={chevronForwardOutline} /></span>
+            </button>
+          ))}
+        </div>
       </IonContent>
     </IonPage>
   );
 };
 
 export default SubSubMenuPage;
-
-
-
-
