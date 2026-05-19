@@ -23,6 +23,9 @@ import {
   IonImg,
   IonModal,
   IonFooter,
+  IonList,
+  IonSearchbar,
+  IonText,
 } from "@ionic/react";
 import {
   trash,
@@ -30,17 +33,21 @@ import {
   camera,
   eyeSharp,
   trashSharp,
+  copy,
 } from "ionicons/icons";
 import "./ProfileInfoPage.css";
 import "./AddDlfPage.css";
 import "./FitnessCert.css";
+import "./UpdateDlfPage.css";
 import Menu from "./Menu";
 import axios from "axios";
 import { API_URL_DBT, API_URL_ChowkiManagment } from "../auth.service";
 import { API_URL_Master_Data } from "../auth.service";
 import { Camera, CameraResultType, CameraSource } from "@capacitor/camera";
+import { useHistory } from "react-router-dom";
 
 const FitnessPage: React.FC = () => {
+  const history = useHistory();
   const [searchText, setSearchText] = useState<string>("");
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [previewImage, setPreviewImage] = useState<string | null>(null);
@@ -51,6 +58,8 @@ const FitnessPage: React.FC = () => {
   const [viewAll, setViewAll] = useState<boolean>(false);
   const [isFCIssued, setIsFCIssued] = useState<boolean>(false);
   const [selectedDate, setSelectedDate] = useState<string>(""); // State for selected date
+  const [tscMasterId, setTscMasterId] = useState<string | null>(null);
+  const [loading, setLoading] = useState<boolean>(false);
   const [isDatePickerOpen, setIsDatePickerOpen] = useState<boolean>(false); // State for date picker visibility
   const [diseaseStatusOptions, setDiseaseStatusOptions] = useState<string[]>([
     "Healthy",
@@ -74,6 +83,7 @@ const FitnessPage: React.FC = () => {
     noOfChandies: "",
     spunFromDate: "",
     spunToDate: "",
+    transactionDate: "",
     fitnessCertificatePath: "",
   });
 
@@ -88,6 +98,7 @@ const FitnessPage: React.FC = () => {
   };
 
   const [showSpunDatePicker, setShowSpunDatePicker] = useState(false);
+  const [showTransactionDatePicker, setShowTransactionDatePicker] = useState<boolean>(false);
 
   interface FCData {
     note: string;
@@ -109,6 +120,43 @@ const FitnessPage: React.FC = () => {
   }
 
   const [showAlert, setShowAlert] = useState<boolean>(false);
+
+  // Pending list modal state
+  const [showModal, setShowModal] = useState<boolean>(false);
+  const [listData, setListData] = useState<any[]>([]);
+  const [listSearchTerm, setListSearchTerm] = useState<string>("");
+  const [showCopyAlert, setShowCopyAlert] = useState<boolean>(false);
+  const [copyMessage, setCopyMessage] = useState<string>("");
+  const [pendingCount, setPendingCount] = useState<number>(0);
+
+  const handleIconClick = async () => {
+    await fetchPendingFitnessCertificates();
+    setShowModal(true);
+  };
+
+  const filteredListData = listData.filter((item) => {
+    const term = listSearchTerm.toLowerCase();
+    return (
+      item?.fruitsId?.toString()?.toLowerCase().includes(term) ||
+      item?.farmerName?.toLowerCase().includes(term) ||
+      item?.raceName?.toLowerCase().includes(term) ||
+      item?.lotNumber?.toString()?.toLowerCase().includes(term)
+    );
+  });
+
+  const copyToClipboard = (text: string) => {
+    navigator.clipboard
+      .writeText(text)
+      .then(() => {
+        setCopyMessage("Fruits ID copied to clipboard");
+        setShowCopyAlert(true);
+      })
+      .catch(() => {
+        setCopyMessage("Failed to copy Fruits ID");
+        setShowCopyAlert(true);
+      });
+  };
+
   const fetchFarmerDetails = () => {
     clearField();
     const api = axios.create({
@@ -240,6 +288,70 @@ const FitnessPage: React.FC = () => {
 
   const clearField = () => {
     setViewAll(false);
+  };
+
+  const getIdList = async () => {
+    try {
+      const response = await axios.get(
+        `${API_URL_Master_Data}userMaster/get/${localStorage.getItem("userMasterId")}`,
+        {
+          headers: {
+            "Content-Type": "application/json",
+            accept: "*/*",
+            Authorization: `Bearer ${localStorage.getItem("jwtToken")}`,
+          },
+        },
+      );
+      const tscId = response.data?.content?.tscMasterId;
+      if (tscId) {
+        setTscMasterId(tscId);
+        return tscId;
+      }
+    } catch (error) {
+      console.error("Error fetching TSC Master ID:", error);
+    }
+    return null;
+  };
+
+  const fetchPendingFitnessCertificates = async (tscIdParam?: string) => {
+    setLoading(true);
+    const tscId = tscIdParam || tscMasterId || (await getIdList());
+    if (!tscId) {
+      setMessage("Unable to determine TSC Master ID.");
+      setIsError(true);
+      setShowAlert(true);
+      setLoading(false);
+      return;
+    }
+
+    try {
+      const response = await axios.get(
+        `${API_URL_ChowkiManagment}chowkimanagement/getPendingFitnessCertificateByTsc/${tscId}`,
+        {
+          headers: {
+            "Content-Type": "application/json",
+            accept: "*/*",
+            Authorization: `Bearer ${localStorage.getItem("jwtToken")}`,
+          },
+        },
+      );
+      const payload = response.data;
+      const rows = Array.isArray(payload)
+        ? payload
+        : payload?.list || payload?.data || payload?.content || payload?.pendingList || [];
+      const count =
+        payload?.pendingCount ??
+        (Array.isArray(payload) ? payload.length : rows.length);
+      setPendingCount(Number(count) || rows.length || 0);
+      setListData(Array.isArray(rows) ? rows : []);
+    } catch (error) {
+      console.error("Error fetching pending fitness certificates:", error);
+      setMessage("Unable to load pending fitness certificates.");
+      setIsError(true);
+      setShowAlert(true);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleFCClick = (saleAndDisposalId: number) => {
@@ -543,6 +655,7 @@ const FitnessPage: React.FC = () => {
           noOfChandies: inspectionData.noOfChandies,
           spunFromDate: inspectionData.spunFromDate,
           spunToDate: inspectionData.spunToDate,
+          transactionDate: inspectionData.transactionDate,
           fitnessCertificatePath: inspectionData.fitnessCertificatePath,
         },
         {
@@ -555,6 +668,7 @@ const FitnessPage: React.FC = () => {
       );
 
       if (fitnessResponse.data.error === 1) {
+        console.log("API returned error:", fitnessResponse.data);
         setMessage(
           fitnessResponse.data.message || "Failed to add fitness info.",
         );
@@ -563,10 +677,41 @@ const FitnessPage: React.FC = () => {
         return;
       }
 
+      console.log("Fitness API response:", fitnessResponse.data);
       fitnessCertificateId = fitnessResponse.data.fitnessCertificateId;
+      console.log("Fitness Certificate ID:", fitnessCertificateId);
+
+      // Show success message for fitness info addition
+      console.log("Setting success message for fitness info");
+      setMessage("Fitness certificate details added successfully!");
+      setIsError(false);
+      setShowAlert(true);
+      
+      // Clear all fields after successful submission
+      setTimeout(() => {
+        setSearchText("");
+        setData(null);
+        setDataList([]);
+        setInspectionData({
+          expectedCocoon: "",
+          lotTestDetails: "",
+          diseaseStatusId: "",
+          noOfChandies: "",
+          spunFromDate: "",
+          spunToDate: "",
+          transactionDate: "",
+          fitnessCertificatePath: "",
+        });
+        setSelectedFile(null);
+        setPreviewImage(null);
+        setShowSpunDatePicker(false);
+        setShowDispatchDatePicker(false);
+        setShowTransactionDatePicker(false);
+      }, 2000);
 
       // STEP 2 — Upload Image (Only if provided)
       if (selectedFile && fitnessCertificateId) {
+        // -------------------------------------------
         // -------------------------------------------
         // 🔴 NEW: Re-check size again before upload
         // -------------------------------------------
@@ -606,11 +751,54 @@ const FitnessPage: React.FC = () => {
           fitnessCertificatePath: newPhotoPath,
         }));
 
-        setMessage("Photo uploaded successfully!");
+        setMessage("Fitness certificate details and photo uploaded successfully!");
         setIsError(false);
         setShowAlert(true);
+        
+        // Clear all fields after successful submission
+        setTimeout(() => {
+          setSearchText("");
+          setData(null);
+          setDataList([]);
+          setInspectionData({
+            expectedCocoon: "",
+            lotTestDetails: "",
+            diseaseStatusId: "",
+            noOfChandies: "",
+            spunFromDate: "",
+            spunToDate: "",
+            transactionDate: "",
+            fitnessCertificatePath: "",
+          });
+          setSelectedFile(null);
+          setPreviewImage(null);
+          setShowSpunDatePicker(false);
+          setShowDispatchDatePicker(false);
+          setShowTransactionDatePicker(false);
+        }, 2000);
       } else {
-        setMessage("Please select or capture an image before uploading.");
+        // No file selected, but fitness info was added successfully
+        // Clear all fields after successful submission
+        setTimeout(() => {
+          setSearchText("");
+          setData(null);
+          setDataList([]);
+          setInspectionData({
+            expectedCocoon: "",
+            lotTestDetails: "",
+            diseaseStatusId: "",
+            noOfChandies: "",
+            spunFromDate: "",
+            spunToDate: "",
+            transactionDate: "",
+            fitnessCertificatePath: "",
+          });
+          setSelectedFile(null);
+          setPreviewImage(null);
+          setShowSpunDatePicker(false);
+          setShowDispatchDatePicker(false);
+          setShowTransactionDatePicker(false);
+        }, 2000);
       }
     } catch (error) {
       console.error("Error:", error);
@@ -635,6 +823,14 @@ const FitnessPage: React.FC = () => {
           <IonTitle>
             <b>Fitness Certificate</b>
           </IonTitle>
+          <IonButton
+            style={{ "--background": "#ffffff", "--color": "#000000", color: "#000000", backgroundColor: "#ffffff" } as any}
+            slot="end"
+            fill="clear"
+            onClick={handleIconClick}
+          >
+            <IonIcon icon={informationCircle} />
+          </IonButton>
         </IonToolbar>
       </IonHeader>
 
@@ -704,6 +900,12 @@ const FitnessPage: React.FC = () => {
                   <IonCardTitle>DFLs Details</IonCardTitle>
                 </IonCardHeader>
                 <IonCardContent>
+                  {index === 0 && (
+                    <div className="details-row">
+                      <IonLabel>Farmer Name:</IonLabel>
+                      <IonInput value={data.farmerName} readonly={true} />
+                    </div>
+                  )}
                   <div className="details-row">
                     <IonLabel>Race:</IonLabel>
                     <IonInput value={data.raceName} readonly={true} />
@@ -880,7 +1082,7 @@ const FitnessPage: React.FC = () => {
                           : "Select Date"}
                       </div>
 
-                      {/* Expected Marker Date Picker */}
+                      {/* Spun From Date Picker */}
                       {showDispatchDatePicker && (
                         <IonModal
                           cssClass="centered-datetime-modal"
@@ -931,7 +1133,7 @@ const FitnessPage: React.FC = () => {
                         </IonModal>
                       )}
 
-                      {/* Spun Date Picker */}
+                      {/* Spun To Date Picker */}
                       {showSpunDatePicker && (
                         <IonModal
                           cssClass="centered-datetime-modal"
@@ -981,7 +1183,72 @@ const FitnessPage: React.FC = () => {
                       )}
                     </div>
 
-                    <div className="file-upload-section">
+                    <div className="details-row">
+                      <IonLabel>Transaction Date:</IonLabel>
+
+                      {/* Transaction Date */}
+                      <div
+                        onClick={() => setShowTransactionDatePicker(true)}
+                        className="date-display"
+                      >
+                        {inspectionData.transactionDate
+                          ? new Date(
+                              inspectionData.transactionDate,
+                            ).toLocaleDateString()
+                          : "Select Date"}
+                      </div>
+
+                      {/* Transaction Date Picker */}
+                      {showTransactionDatePicker && (
+                        <IonModal
+                          cssClass="centered-datetime-modal"
+                          isOpen={showTransactionDatePicker}
+                          onDidDismiss={() => setShowTransactionDatePicker(false)}
+                        >
+                          <IonHeader>
+                            <IonToolbar>
+                              <IonTitle>Select Transaction Date</IonTitle>
+                            </IonToolbar>
+                          </IonHeader>
+                          <IonContent className="ion-padding">
+                            <IonDatetime
+                              presentation="date"
+                              showDefaultButtons={true}
+                              preferWheel={false}
+                              value={
+                                inspectionData.transactionDate ||
+                                new Date().toISOString()
+                              }
+                              onIonChange={(e) => {
+                                handleChange(e, "transactionDate");
+                                setShowTransactionDatePicker(false);
+                              }}
+                              onIonCancel={() => setShowTransactionDatePicker(false)}
+                            />
+                          </IonContent>
+                          <IonFooter>
+                            <IonToolbar>
+                              <IonButton
+                                slot="end"
+                                style={
+                                  {
+                                    "--background": "#ffffff",
+                                    "--color": "#000000",
+                                    color: "#000000",
+                                    backgroundColor: "#ffffff",
+                                  } as any
+                                }
+                                onClick={() => setShowTransactionDatePicker(false)}
+                              >
+                                Close
+                              </IonButton>
+                            </IonToolbar>
+                          </IonFooter>
+                        </IonModal>
+                      )}
+                    </div>
+
+                    {/* <div className="file-upload-section">
                       <IonLabel>Choose File:</IonLabel>
                       <input type="file" onChange={handleFileChange} />
                     </div>
@@ -1066,7 +1333,7 @@ const FitnessPage: React.FC = () => {
                           <IonIcon icon={trashSharp} slot="icon-only" />
                         </IonButton>
                       )}
-                    </div>
+                    </div> */}
 
                     {/* <IonButton expand="block">Submit</IonButton> */}
                     <IonButton
@@ -1082,9 +1349,9 @@ const FitnessPage: React.FC = () => {
                       className="submit-button"
                       onClick={() => handleEdit(data.saleAndDisposalId)}
                       disabled={
-                        !selectedFile ||
                         !inspectionData.spunFromDate ||
                         !inspectionData.spunToDate ||
+                        !inspectionData.transactionDate ||
                         !inspectionData.expectedCocoon ||
                         !inspectionData.lotTestDetails ||
                         !inspectionData.diseaseStatusId ||
@@ -1100,11 +1367,75 @@ const FitnessPage: React.FC = () => {
           ))}
         <IonAlert
           isOpen={showAlert}
-          onDidDismiss={() => setShowAlert(false)}
+          onDidDismiss={() => {
+            console.log("Alert dismissed, showAlert:", showAlert, "message:", message, "isError:", isError);
+            setShowAlert(false);
+          }}
           header={isError ? "Error" : "Success"}
           message={message}
           buttons={["OK"]}
         />
+
+        <IonModal isOpen={showModal} onDidDismiss={() => setShowModal(false)}>
+          <IonHeader>
+            <IonToolbar>
+              <IonTitle>Pending Fitness Certificates</IonTitle>
+              <IonButtons slot="end">
+                <IonButton
+                  style={{ "--background": "#ffffff", "--color": "#000000", color: "#000000", backgroundColor: "#ffffff" } as any}
+                  onClick={() => setShowModal(false)}
+                >
+                  Close
+                </IonButton>
+              </IonButtons>
+            </IonToolbar>
+          </IonHeader>
+          <IonContent>
+            <IonSearchbar
+              value={listSearchTerm}
+              onIonInput={(e) => setListSearchTerm(e.detail.value!)}
+              placeholder="Search Fruits ID"
+              className="custom-searchbar"
+              showClearButton="focus"
+            />
+            <div style={{ padding: '0 16px 8px', fontSize: '0.9rem', color: '#666' }}>
+              Total pending: {pendingCount}
+            </div>
+            <IonList>
+              {filteredListData.map((item, index) => (
+                <IonCard key={index} className="list-card">
+                  <IonCardContent>
+                    <div className="list-item">
+                      <IonText>
+                        <b>Fruits ID:</b> {item.fruitsId}
+                      </IonText>
+                      <IonButton
+                        style={{ "--background": "#ffffff", "--color": "#000000", color: "#000000", backgroundColor: "#ffffff", marginLeft: "10px" } as any}
+                        fill="clear"
+                        onClick={() => copyToClipboard(item.fruitsId)}
+                      >
+                        <IonIcon icon={copy} />
+                      </IonButton>
+                    </div>
+                    <IonText><b>Farmer Name:</b> {item.farmerName}</IonText>
+                    <IonText><b>Race Name:</b> {item.raceName}</IonText>
+                    <IonText><b>Lot Number:</b> {item.lotNumber || item.lotNumberCrc}</IonText>
+                    <IonText><b>Rate per DFLs:</b> {item.ratePerDfls || item.ratePer100Dfls}</IonText>
+                    <IonText><b>Number of DFLs:</b> {item.numbersOfDfls}</IonText>
+                    {/* <IonText><b>Crop Inspection Date:</b> {item.cropInspectionDate || "-"}</IonText> */}
+                  </IonCardContent>
+                </IonCard>
+              ))}
+            </IonList>
+            <IonAlert
+              isOpen={showCopyAlert}
+              onDidDismiss={() => setShowCopyAlert(false)}
+              header="Copy Status"
+              message={copyMessage}
+              buttons={["OK"]}
+            />
+          </IonContent>
+        </IonModal>
       </IonContent>
       <Menu />
     </IonPage>

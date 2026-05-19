@@ -1,0 +1,420 @@
+/* Glowing effect for the logo */
+.logo-round {
+  border-radius: 50%;
+  height: 140px;
+  width: 140px;
+  border: 4px solid rgba(255,255,255,0.06);
+  box-shadow: 0 6px 24px rgba(0,0,0,0.6);
+  animation: none;
+  }
+  
+  @keyframes glow {
+    0%, 100% {
+      box-shadow: 0 0 20px rgba(255, 255, 255, 0.6), 0 0 30px rgba(102, 126, 234, 0.4);
+    }
+    50% {
+      box-shadow: 0 0 30px rgba(255, 255, 255, 0.8), 0 0 50px rgba(102, 126, 234, 0.6);
+    }
+  }
+
+.sericulture-text, .karnataka-text {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin: 8px 0;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  color: #9a9a9a;
+}
+
+  .text-container {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    height: 100%;
+    color: var(--ion-text-color);
+    font-size: 16px;
+    background: var(--ion-color-secondary);
+    padding: 16px;
+    border-radius: 12px;
+    box-shadow: 0 6px 18px rgba(0,0,0,0.6);
+    max-width: 920px;
+    margin: 0 auto;
+    box-sizing: border-box;
+  }
+
+/* Small devices (phones, 600px and down) */
+@media only screen and (max-width: 600px) {
+  .text-container {
+    font-size: 14px;
+  }
+}
+
+/* Medium devices (portrait tablets and large phones, 600px and up) */
+@media only screen and (min-width: 600px) and (max-width: 768px) {
+  .text-container {
+    font-size: 15px;
+  }
+}
+
+/* Large devices (landscape tablets, 768px and up) */
+@media only screen and (min-width: 768px) and (max-width: 992px) {
+  .text-container {
+    font-size: 16px;
+  }
+}
+
+/* Extra large devices (large laptops and desktops, 992px and up) */
+@media only screen and (min-width: 992px) {
+  .text-container {
+    font-size: 18px;
+  }
+}
+
+/* Image Capture Buttons */
+.capture-button-container {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 18px;
+  flex-wrap: wrap;
+  justify-content: center;
+  padding: 12px;
+  background: transparent;
+  border-radius: 10px;
+  margin: 12px 8px;
+  width: 100%;
+  max-width: 920px;
+  box-sizing: border-box;
+}
+
+.capture-button-container ion-button {
+  flex: 0 0 auto;
+  min-width: 120px;
+  font-weight: bold;
+  border-radius: 10px;
+  --padding-start: 14px;
+  --padding-end: 14px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+  transition: all 0.18s ease;
+  --background: #ffffff;
+  --color: #000000;
+  background: #ffffff;
+  color: #000000;
+  border: 1px solid rgba(0,0,0,0.1);
+}
+
+.capture-button-container ion-button:active {
+  transform: translateY(1px);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+/* Modal Styling */
+.modal-header {
+  padding: 16px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border-radius: 8px;
+  margin-bottom: 16px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.modal-header h3 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.images-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 16px;
+  padding: 20px;
+  max-height: 60vh;
+  overflow-y: auto;
+}
+
+.image-card {
+  border: 1px solid rgba(255,255,255,0.04);
+  border-radius: 14px;
+  overflow: hidden;
+  background: var(--ion-color-secondary);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.6);
+  transition: all 0.18s ease;
+}
+
+.image-card:hover {
+  box-shadow: 0 8px 24px rgba(255, 255, 255, 0.25);
+  transform: translateY(-6px) scale(1.02);
+  border-color: #ffffff;
+}
+
+.image-card img {
+  width: 100%;
+  height: 100px;
+  object-fit: cover;
+  display: block;
+}
+
+.image-card-empty {
+  width: 100%;
+  height: 100px;
+  background: linear-gradient(180deg, #171717, #0f0f0f);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  color: #777;
+}
+
+.image-card-actions {
+  display: flex;
+  gap: 4px;
+  padding: 8px;
+  background: #ffffff;
+}
+
+.image-card-actions ion-button {
+  flex: 1;
+  margin: 0;
+  --padding-start: 4px;
+  --padding-end: 4px;
+  --background: #ffffff;
+  --color: #000000;
+  background: #ffffff;
+  color: #000000;
+  font-size: 11px;
+  height: 30px;
+  font-weight: bold;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.modal-footer {
+  padding: 16px;
+  display: flex;
+  gap: 8px;
+}
+
+.modal-footer ion-button {
+  flex: 1;
+  border-radius: 8px;
+  font-weight: bold;
+  --background: #ffffff;
+  --color: #000000;
+  background: #ffffff;
+  color: #000000;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+}
+
+.no-images-message {
+  text-align: center;
+  padding: 32px 16px;
+  color: #999;
+  font-size: 14px;
+}
+
+/* Circular Button Styling */
+.circular-button-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  transition: all 0.3s ease;
+}
+
+.circular-btn {
+  --width: 90px;
+  --height: 90px;
+  --border-radius: 50%;
+  --background: var(--ion-color-secondary);
+  --box-shadow: 0 6px 20px rgba(0,0,0,0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.18s ease;
+}
+
+.circular-btn:first-child {
+    --background: #2b2b2b;
+  }
+
+  .circular-btn:nth-child(1) {
+    --background: #2b2b2b;
+
+.circular-btn ion-icon {
+  font-size: 40px;
+  color: white;
+}
+
+.circular-btn:hover,
+.circular-btn:focus {
+  --box-shadow: 0 8px 30px rgba(102, 126, 234, 0.7);
+  transform: scale(1.15) translateY(-5px);
+}
+
+.circular-btn:active {
+  transform: scale(0.92);
+}
+
+/* Fade in animation */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Image card improvements */
+.image-card img {
+  width: 100%;
+  height: 110px;
+  object-fit: cover;
+  display: block;
+  transition: transform 0.3s ease;
+}
+
+.image-card:hover img {
+  transform: scale(1.05);
+}
+
+.image-card-empty {
+  width: 100%;
+  height: 110px;
+  background: linear-gradient(135deg, #f5f5f5, #e0e0e0);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 28px;
+  color: #ccc;
+  transition: all 0.3s ease;
+}
+
+.image-card-actions {
+  display: flex;
+  gap: 6px;
+  padding: 10px;
+  background: linear-gradient(135deg, #f9f9f9, #f0f0f0);
+  border-top: 1px solid #e0e0e0;
+}
+
+.image-card-actions ion-button {
+  flex: 1;
+  margin: 0;
+  --padding-start: 4px;
+  --padding-end: 4px;
+  font-size: 11px;
+  height: 32px;
+  border-radius: 6px;
+}
+
+/* Modal improvements */
+.modal-header {
+  padding: 16px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border-radius: 8px;
+  margin-bottom: 16px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.modal-header h3 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.modal-footer {
+  padding: 16px;
+  display: flex;
+  gap: 8px;
+}
+
+.modal-footer ion-button {
+  flex: 1;
+  border-radius: 8px;
+  font-weight: 600;
+}
+
+.no-images-message {
+  text-align: center;
+  padding: 40px 16px;
+  color: #999;
+  font-size: 15px;
+  font-weight: 500;
+}
+
+/* Responsive improvements */
+@media only screen and (max-width: 600px) {
+  .text-container {
+    font-size: 14px;
+    padding: 16px;
+  }
+
+  .logo-round {
+    height: 120px;
+    width: 120px;
+  }
+
+  .circular-btn {
+    --width: 80px;
+    --height: 80px;
+  }
+
+  .circular-btn ion-icon {
+    font-size: 36px;
+  }
+
+  .button-label {
+    font-size: 12px;
+  }
+
+  .capture-button-container {
+    margin: 16px 8px;
+    padding: 16px 12px;
+    gap: 16px;
+  }
+}
+
+@media only screen and (min-width: 600px) and (max-width: 768px) {
+  .text-container {
+    font-size: 15px;
+  }
+
+  .logo-round {
+    height: 130px;
+    width: 130px;
+  }
+
+  .circular-btn {
+      --width: 70px;
+      --height: 70px;
+      --border-radius: 50%;
+      --background: #1f1f1f;
+      --box-shadow: 0 6px 18px rgba(0, 0, 0, 0.6);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.18s ease;
+      border: 1px solid rgba(255,255,255,0.03);
+      flex: 0 0 auto;
+    }
+    font-size: 16px;
+  }
+
+  .logo-round {
+    height: 140px;
+    width: 140px;
+  }
+
+  .circular-btn {
+    --width: 90px;
+    --height: 90px;
+  }
+
+  .circular-btn ion-icon {
+    font-size: 40px;
+  }
+}

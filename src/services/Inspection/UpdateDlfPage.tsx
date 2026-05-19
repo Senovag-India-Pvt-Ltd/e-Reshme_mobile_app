@@ -19,10 +19,12 @@ import {
   IonAlert,
   IonModal,
   IonList,
+  IonSearchbar,
   IonItem,
   IonText,
 } from "@ionic/react";
-import { trash, informationCircle, copy } from "ionicons/icons"; // Import the trash and info icons
+import { InputChangeEventDetail } from "@ionic/core";
+import { trash, informationCircle, copy, search } from "ionicons/icons"; // Import the trash and info icons
 import "./ProfileInfoPage.css";
 import "./AddDlfPage.css";
 import "./UpdateDlfPage.css";
@@ -48,6 +50,7 @@ const UpdateDlfPage: React.FC = () => {
   const [fruitsId, setFruitsId] = useState<number | null>(null);
   const [showModal, setShowModal] = useState<boolean>(false); // State to control modal visibility
   const [listData, setListData] = useState<any[]>([]); // State to store list data
+  const [listSearchTerm, setListSearchTerm] = useState<string>("");
   const [tscMasterId, setTscMasterId] = useState<string | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
   const inputRef = useRef<HTMLIonInputElement>(null); // Add useRef for input field
@@ -272,14 +275,14 @@ const UpdateDlfPage: React.FC = () => {
   const [editedItemIndex, setEditedItemIndex] = useState<number | null>(null);
 
   const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement>,
+    e: CustomEvent<InputChangeEventDetail>,
     index: number,
     field: string,
   ) => {
     const updatedDataList = [...dataList];
     updatedDataList[index] = {
       ...updatedDataList[index],
-      [field]: e.target.value,
+      [field]: e.detail.value ?? "",
     };
     setDataList(updatedDataList); // Update specific item in the list
   };
@@ -378,9 +381,9 @@ const UpdateDlfPage: React.FC = () => {
     }
   };
 
-  const handleInputChange = (e: CustomEvent) => {
-    const value = (e.target as HTMLIonInputElement).value!;
-    setSearchText(value);
+  const handleInputChange = (e: CustomEvent<InputChangeEventDetail>) => {
+    const value = e.detail.value;
+    setSearchText(value ?? "");
   };
 
   const fetchListData = () => {
@@ -434,6 +437,17 @@ const UpdateDlfPage: React.FC = () => {
     setShowModal(true);
   };
 
+  const filteredListData = listData.filter((item) => {
+    const term = listSearchTerm.toLowerCase();
+    return (
+      item?.fruitsId?.toString()?.toLowerCase().includes(term) ||
+      item?.raceName?.toLowerCase().includes(term) ||
+      item?.lotNumberCrc?.toString()?.toLowerCase().includes(term) ||
+      item?.grainageMasterName?.toLowerCase().includes(term) ||
+      item?.grainageName?.toLowerCase().includes(term)
+    );
+  });
+
   const copyToClipboard = (text: string) => {
     navigator.clipboard
       .writeText(text)
@@ -455,7 +469,6 @@ const UpdateDlfPage: React.FC = () => {
           <IonButtons slot="start">
             <IonBackButton
               text="Back"
-              slot="start"
               defaultHref="/"
               style={{ color: "#000" }}
             />
@@ -482,7 +495,7 @@ const UpdateDlfPage: React.FC = () => {
         </IonToolbar>
       </IonHeader>
 
-      <IonContent>
+      <IonContent style={{ '--padding-bottom': '130px' } as any}>
         <div className="search-container">
           <IonLabel className="fruits-id-label">Fruits ID</IonLabel>
           <IonInput
@@ -514,6 +527,7 @@ const UpdateDlfPage: React.FC = () => {
             size="small"
             onClick={fetchFarmerDetails}
           >
+            <IonIcon icon={search} slot="start" />
             Search
           </IonButton>
           <IonButton
@@ -539,6 +553,12 @@ const UpdateDlfPage: React.FC = () => {
               <IonCardTitle>DFL Details</IonCardTitle>
             </IonCardHeader>
             <IonCardContent>
+              {index === 0 && (
+                <div className="details-row">
+                  <IonLabel>Farmer Name:</IonLabel>
+                  <IonInput value={data.farmerName} readonly={true} />
+                </div>
+              )}
               <div className="details-row">
                 <IonLabel>Dfls Source:</IonLabel>
                 <IonInput value={data.dflsSource} readonly={true} />
@@ -564,6 +584,10 @@ const UpdateDlfPage: React.FC = () => {
                 <IonLabel>Date of Disposal:</IonLabel>
                 <IonInput value={data.dateOfDisposal} readonly={true} />
               </div>
+              {/* <div className="details-row">
+                <IonLabel>Grainage Name:</IonLabel>
+                <IonInput value={data.grainageMasterName} readonly={true} />
+              </div> */}
 
               {editedItemIndex === index ? (
                 <div className="details-row">
@@ -637,8 +661,15 @@ const UpdateDlfPage: React.FC = () => {
             </IonToolbar>
           </IonHeader>
           <IonContent>
+            <IonSearchbar
+              value={listSearchTerm}
+              onIonInput={(e) => setListSearchTerm(e.detail.value!)}
+              placeholder="Search Fruits ID"
+              className="custom-searchbar"
+              showClearButton="focus"
+            />
             <IonList>
-              {listData.map((item, index) => (
+              {filteredListData.map((item, index) => (
                 <IonCard key={index} className="list-card">
                   <IonCardContent>
                     <div className="list-item">
@@ -652,11 +683,11 @@ const UpdateDlfPage: React.FC = () => {
                             "--color": "#000000",
                             color: "#000000",
                             backgroundColor: "#ffffff",
+                            marginLeft: "10px",
                           } as any
                         }
                         fill="clear"
                         onClick={() => copyToClipboard(item.fruitsId)}
-                        style={{ marginLeft: "10px" }}
                       >
                         <IonIcon icon={copy} />
                       </IonButton>
@@ -665,17 +696,26 @@ const UpdateDlfPage: React.FC = () => {
                       <b>Race Name:</b> {item.raceName}
                     </IonText>
                     <IonText>
-                      <b>Lot Number CRC:</b> {item.lotNumberCrc}
+                      <b>Lot Number:</b> {item.lotNumberCrc}
                     </IonText>
                     <IonText>
                       <b>Name and Address of the Farm:</b>{" "}
                       {item.nameAndAddressOfTheFarm}
                     </IonText>
                     <IonText>
-                      <b>Rate per 100 DFLs:</b> {item.ratePer100Dfls}
+                      <b>Rate per DFLs:</b> {item.ratePer100Dfls}
                     </IonText>
                     <IonText>
                       <b>Number of DFLs:</b> {item.numbersOfDfls}
+                    </IonText>
+                    <IonText>
+                      <b>Inspection Hatching Date:</b> {item.hatchingInspectionDate || item.hatchingDate || '-'}
+                    </IonText>
+                    <IonText>
+                      <b>Date of Disposal:</b> {item.dateOfDisposal || item.dispatchDate || '-'}
+                    </IonText>
+                    <IonText>
+                      <b>Grainage Name:</b> {item.grainageMasterName || item.grainageName || '-'}
                     </IonText>
                   </IonCardContent>
                 </IonCard>

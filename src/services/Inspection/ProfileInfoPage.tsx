@@ -399,7 +399,7 @@ const ProfileInfoPage: React.FC = () => {
         </IonToolbar>
       </IonHeader>
 
-      <IonContent>
+      <IonContent style={{ '--padding-bottom': '130px' } as any}>
         <div className="search-container">
           <IonLabel className="fruits-id-label">Fruits ID</IonLabel>
           <IonInput
@@ -419,7 +419,7 @@ const ProfileInfoPage: React.FC = () => {
         {data && (
           <IonCard className="details-card">
             <IonCardHeader>
-              <IonCardTitle style={{ color: '#000000' }}>Farmer Profile Details</IonCardTitle>
+              <IonCardTitle>Farmer Profile Details</IonCardTitle>
             </IonCardHeader>
             <IonCardContent>
               <div className="details-row">

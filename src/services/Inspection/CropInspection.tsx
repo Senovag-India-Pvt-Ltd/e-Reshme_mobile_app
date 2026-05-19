@@ -1,17 +1,18 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { 
-  IonContent, IonPage, IonCard, IonCardContent, IonCardHeader, 
-  IonCardTitle, IonInput, IonLabel, IonButton, IonHeader, 
-  IonToolbar, IonTitle, IonButtons, IonMenuButton, IonIcon, IonBackButton, 
+import {
+  IonContent, IonPage, IonCard, IonCardContent, IonCardHeader,
+  IonCardTitle, IonInput, IonLabel, IonButton, IonHeader,
+  IonToolbar, IonTitle, IonButtons, IonMenuButton, IonIcon, IonBackButton,
   IonSelect, IonSelectOption, IonDatetime, IonItem,IonCol,
-  IonAlert,
+  IonAlert, IonModal, IonList, IonSearchbar, IonText,
 } from '@ionic/react';
-import { trash } from 'ionicons/icons'; // Import the trash icon
+import { trash, informationCircle, copy } from 'ionicons/icons';
 import './ProfileInfoPage.css';
 import './AddDlfPage.css';
+import './UpdateDlfPage.css';
 import axios from "axios";
 import { useHistory } from 'react-router-dom';
-import { API_URL_DBT,API_URL_ChowkiManagment } from "../auth.service";
+import { API_URL_DBT, API_URL_ChowkiManagment, API_URL_Inspection, API_URL_Master } from "../auth.service";
 import { API_URL_Master_Data } from '../auth.service';
 
 const CropInspectionPage: React.FC = () => {
@@ -28,7 +29,12 @@ const CropInspectionPage: React.FC = () => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [saleAndDisposalId, setChowkiId] = useState<number | null>(null);
   const [dataList, setDataList] = useState<any[]>([]);
-
+  const [tscMasterId, setTscMasterId] = useState<string | null>(null);
+  const [loading, setLoading] = useState<boolean>(false);
+  const [pendingCount, setPendingCount] = useState<number>(0);
+  const [lastAttemptedUrl, setLastAttemptedUrl] = useState<string>("");
+  const [pendingFetchStatus, setPendingFetchStatus] = useState<string>("");
+  const [pendingFetchIds, setPendingFetchIds] = useState<string>("");
 
   interface DocumentUploadProps {
     onUpload: (file: File) => void;
@@ -56,6 +62,13 @@ const [showDispatchDatePicker, setShowDispatchDatePicker] =
   const [uploadSuccess, setUploadSuccess] = useState<boolean>(false);
   const [uploadError, setUploadError] = useState<boolean>(false);
   const [fid,setFid] = useState<string>("");
+
+  // Pending list modal state
+  const [showModal, setShowModal] = useState<boolean>(false);
+  const [listData, setListData] = useState<any[]>([]);
+  const [listSearchTerm, setListSearchTerm] = useState<string>("");
+  const [showCopyAlert, setShowCopyAlert] = useState<boolean>(false);
+  const [copyMessage, setCopyMessage] = useState<string>("");
   const fetchFarmerDetails = () => {
     clearField();
     const api = axios.create({
@@ -109,7 +122,111 @@ const clearField=()=>{
     setShowInspectionFields(false);
     setViewAll(false);
   };
+
   const [fetchError, setFetchError] = useState<boolean>(false);
+
+  const getIdList = async () => {
+    try {
+      const response = await axios.get(
+        `${API_URL_Master_Data}userMaster/get/${localStorage.getItem("userMasterId")}`,
+        {
+          headers: {
+            "Content-Type": "application/json",
+            accept: "*/*",
+            Authorization: `Bearer ${localStorage.getItem("jwtToken")}`,
+          },
+        },
+      );
+      const tscId = response.data?.content?.tscMasterId;
+      if (tscId) {
+        setTscMasterId(tscId);
+        return tscId;
+      }
+    } catch (error) {
+      console.error("Error fetching TSC Master ID:", error);
+    }
+    return null;
+  };
+
+  const normalizePendingPayload = (payload: any) => {
+    const content = payload?.content ?? payload;
+    if (Array.isArray(content)) {
+      return { rows: content, count: content.length };
+    }
+    const rows =
+      content?.pendingList ||
+      content?.list ||
+      content?.data ||
+      (Array.isArray(content?.content) ? content.content : []) ||
+      [];
+    const count =
+      payload?.pendingCount ??
+      content?.pendingCount ??
+      (Array.isArray(rows) ? rows.length : 0);
+    return { rows: Array.isArray(rows) ? rows : [], count };
+  };
+
+  const fetchPendingCropInspections = async (tscIdParam?: string) => {
+    setLoading(true);
+    const tscId = tscIdParam || tscMasterId || (await getIdList());
+    if (!tscId) {
+      setMessage("Unable to determine TSC Master ID.");
+      setIsError(true);
+      setShowAlert(true);
+      setLoading(false);
+      return;
+    }
+
+    try {
+      const token = localStorage.getItem("jwtToken");
+      if (!token) {
+        throw new Error("Missing authorization token.");
+      }
+
+      const url = `${API_URL_ChowkiManagment}chowkimanagement/getpendingCropInspectionByTsc/${tscId}`;
+      console.info(`Fetching pending crop inspections from: ${url}`);
+      console.info(`TSC ID: ${tscId}`);
+
+      const response = await axios.get(url, {
+        headers: {
+          "Content-Type": "application/json",
+          accept: "*/*",
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      console.info("Pending crop inspections response:", response.data);
+      const payload = response.data;
+      const rows = Array.isArray(payload)
+        ? payload
+        : payload?.list || payload?.data || payload?.content || payload?.pendingList || [];
+      const count =
+        payload?.pendingCount ??
+        (Array.isArray(payload) ? payload.length : rows.length);
+
+      setPendingCount(Number(count) || rows.length || 0);
+      setListData(Array.isArray(rows) ? rows : []);
+      setMessage(`Loaded ${count || 0} pending crop inspections.`);
+      setIsError(false);
+    } catch (error: any) {
+      const statusCode = error?.response?.status;
+      console.error("Error fetching pending crop inspections:", error);
+      console.error("Error response:", error?.response?.data);
+      setPendingCount(0);
+      setListData([]);
+
+      if (statusCode === 403) {
+        setMessage("No pending crop inspections available.");
+        setIsError(false);
+      } else {
+        setMessage(`Error: ${statusCode || error?.message}`);
+        setIsError(true);
+        setShowAlert(true);
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const [mountData, setMountData] = useState<any[]>([]);
   const fetchMountList = async () => {
@@ -294,6 +411,34 @@ const toggleViewAll = (i: number) => {
     }
   };
 
+  const handleIconClick = async () => {
+    await fetchPendingCropInspections();
+    setShowModal(true);
+  };
+
+  const filteredListData = listData.filter((item) => {
+    const term = listSearchTerm.toLowerCase();
+    return (
+      item?.fruitsId?.toString()?.toLowerCase().includes(term) ||
+      item?.farmerName?.toLowerCase().includes(term) ||
+      item?.raceName?.toLowerCase().includes(term) ||
+      item?.lotNumber?.toString()?.toLowerCase().includes(term)
+    );
+  });
+
+  const copyToClipboard = (text: string) => {
+    navigator.clipboard
+      .writeText(text)
+      .then(() => {
+        setCopyMessage("Fruits ID copied to clipboard");
+        setShowCopyAlert(true);
+      })
+      .catch(() => {
+        setCopyMessage("Failed to copy Fruits ID");
+        setShowCopyAlert(true);
+      });
+  };
+
   return (
     <IonPage>
       <IonHeader>
@@ -301,13 +446,21 @@ const toggleViewAll = (i: number) => {
           <IonButtons slot="start">
             <IonBackButton text="Back" slot="start" defaultHref="/" style={{ color: '#000' }} />
             <IonMenuButton />
-            
           </IonButtons>
           <IonTitle><b>Crop Inspection</b></IonTitle>
+          <IonButton
+            style={{ '--background': '#ffffff', '--color': '#000000', color: '#000000', backgroundColor: '#ffffff' } as any}
+            slot="end"
+            
+            fill="clear"
+            onClick={handleIconClick}
+          >
+            <IonIcon icon={informationCircle} />
+          </IonButton>
         </IonToolbar>
       </IonHeader>
 
-      <IonContent>
+      <IonContent style={{ '--padding-bottom': '130px' } as any}>
         <div className="search-container">
           <IonLabel className="fruits-id-label">Fruits ID</IonLabel>
           <IonInput
@@ -328,6 +481,13 @@ const toggleViewAll = (i: number) => {
             <IonIcon color="danger" icon={trash} />
           </IonButton>
         </div>
+        {(pendingFetchStatus && pendingFetchStatus !== '403') && (
+          <div style={{ padding: '10px 16px', color: '#c00', fontSize: '0.85rem' }}>
+            {lastAttemptedUrl && <div><strong>Crop pending fetch URL:</strong> {lastAttemptedUrl}</div>}
+            {pendingFetchStatus && <div><strong>Response status:</strong> {pendingFetchStatus}</div>}
+            {pendingFetchIds && <div><strong>Candidate IDs:</strong> {pendingFetchIds}</div>}
+          </div>
+        )}
 
         {dataList && dataList.length > 0 && dataList.map((data, index) => (
   <React.Fragment key={index}> {/* Use React.Fragment with a key if necessary */}
@@ -336,6 +496,12 @@ const toggleViewAll = (i: number) => {
         <IonCardTitle>DFLs Details</IonCardTitle>
       </IonCardHeader>
       <IonCardContent>
+        {index === 0 && (
+          <div className="details-row">
+            <IonLabel>Farmer Name:</IonLabel>
+            <IonInput value={data.farmerName} readonly={true} />
+          </div>
+        )}
         <div className="details-row">
           <IonLabel>Race:</IonLabel>
           <IonInput value={data.raceName} readonly={true} />
@@ -365,12 +531,72 @@ const toggleViewAll = (i: number) => {
 ))}
 
         <IonAlert
-        isOpen={showAlert}
-        onDidDismiss={() => setShowAlert(false)}
-        header={isError ? "Error" : "Success"}
-        message={message}
-        buttons={['OK']}
-      />
+          isOpen={showAlert}
+          onDidDismiss={() => setShowAlert(false)}
+          header={isError ? "Error" : "Success"}
+          message={message}
+          buttons={['OK']}
+        />
+
+        <IonModal isOpen={showModal} onDidDismiss={() => setShowModal(false)}>
+          <IonHeader>
+            <IonToolbar>
+              <IonTitle>Pending Crop Inspections</IonTitle>
+              <IonButtons slot="end">
+                <IonButton
+                  style={{ '--background': '#ffffff', '--color': '#000000', color: '#000000', backgroundColor: '#ffffff' } as any}
+                  onClick={() => setShowModal(false)}
+                >
+                  Close
+                </IonButton>
+              </IonButtons>
+            </IonToolbar>
+          </IonHeader>
+          <IonContent>
+            <IonSearchbar
+              value={listSearchTerm}
+              onIonInput={(e) => setListSearchTerm(e.detail.value!)}
+              placeholder="Search Fruits ID"
+              className="custom-searchbar"
+              showClearButton="focus"
+            />
+            <div style={{ padding: '0 16px 8px', fontSize: '0.9rem', color: '#666' }}>
+              Total pending: {pendingCount}
+            </div>
+            <IonList>
+              {filteredListData.map((item, index) => (
+                <IonCard key={index} className="list-card">
+                  <IonCardContent>
+                    <div className="list-item">
+                      <IonText>
+                        <b>Fruits ID:</b> {item.fruitsId}
+                      </IonText>
+                      <IonButton
+                        style={{ '--background': '#ffffff', '--color': '#000000', color: '#000000', backgroundColor: '#ffffff', marginLeft: '10px' } as any}
+                        fill="clear"
+                        onClick={() => copyToClipboard(item.fruitsId)}
+                      >
+                        <IonIcon icon={copy} />
+                      </IonButton>
+                    </div>
+                    <IonText><b>Farmer Name:</b> {item.farmerName || item.farmerName}</IonText>
+                    <IonText><b>Race Name:</b> {item.raceName}</IonText>
+                    <IonText><b>Lot Number:</b> {item.lotNumber || item.lotNumberCrc}</IonText>
+                    <IonText><b>Rate per DFLs:</b> {item.ratePerDfls || item.ratePer100Dfls}</IonText>
+                    <IonText><b>Number of DFLs:</b> {item.numbersOfDfls}</IonText>
+                  </IonCardContent>
+                </IonCard>
+              ))}
+            </IonList>
+            <IonAlert
+              isOpen={showCopyAlert}
+              onDidDismiss={() => setShowCopyAlert(false)}
+              header="Copy Status"
+              message={copyMessage}
+              buttons={["OK"]}
+            />
+          </IonContent>
+        </IonModal>
       </IonContent>
     </IonPage>
   );

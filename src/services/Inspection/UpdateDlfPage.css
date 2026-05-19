@@ -1,52 +1,126 @@
+/* ── Search container ── */
+.search-container {
+  display: flex;
+  align-items: center;
+  margin: 20px 16px 0 16px;
+  background: #ffffff;
+  border: 1px solid #d0e4f7;
+  border-radius: 10px;
+  padding: 8px 14px;
+  box-shadow: 0 2px 8px rgba(21,101,192,0.08);
+}
+
+.fruits-id-label {
+  font-weight: 700;
+  font-size: 14px;
+  color: #0d2137;
+  min-width: 80px;
+  margin-right: 10px;
+}
+
+/* ── Details card ── */
+.details-card {
+  margin: 16px;
+  border-radius: 12px;
+  box-shadow: 0 3px 14px rgba(21,101,192,0.13);
+  overflow: hidden;
+}
+
+/* ── Details rows ── */
 .details-row {
   display: flex;
   align-items: center;
-  margin-bottom: 15px;
+  margin-bottom: 14px;
+  gap: 10px;
 }
 
 .details-row ion-label {
-  flex: 0 0 30%;
-  margin-right: 10px;
+  flex: 0 0 42%;
+  font-weight: 600;
+  font-size: 13px;
+  color: #0d2137;
 }
 
 .details-row ion-input {
   flex: 1;
+  border: 1px solid #d0e4f7;
+  border-radius: 8px;
+  --padding-start: 10px;
+  --padding-end: 10px;
+  --padding-top: 8px;
+  --padding-bottom: 8px;
+  font-size: 13px;
+  background: #f5f9ff;
+  min-height: 38px;
 }
 
-.search-container {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin-top: 20px;
-}
-
-.fruits-id-label {
-  margin-right: 10px;
-}
-
-.details-card {
-  margin: 20px;
-}
-
+/* ── Pending list modal cards ── */
 .list-card {
-  margin: 10px;
-}
-
-.list-item {
-  display: flex;
-  align-items: center;
-}
-
-.list-item ion-button {
-  margin-left: 10px;
+  margin: 10px 16px;
+  border-radius: 12px;
+  box-shadow: 0 2px 10px rgba(21,101,192,0.1);
+  overflow: hidden;
+  border-left: 4px solid #1565c0;
 }
 
 .list-card ion-card-content {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 8px;
+  padding: 14px 16px;
 }
 
 .list-card ion-text {
-  margin-bottom: 5px;
+  font-size: 13px;
+  color: #333;
+  display: block;
+  line-height: 1.5;
+}
+
+/* ── Fruits ID row with copy button ── */
+.list-item {
+  display: flex;
+  align-items: center;
+  margin-bottom: 4px;
+}
+
+.list-item ion-text {
+  font-size: 14px;
+  font-weight: 700;
+  color: #0d2137;
+}
+
+.list-item ion-button {
+  margin: 0 0 0 6px;
+  --padding-start: 6px;
+  --padding-end: 6px;
+}
+
+/* ── Datetime modal ── */
+.centered-datetime-modal {
+  --height: 80vh;
+  --width: 95vw;
+  --max-width: 500px;
+}
+
+.centered-datetime-modal ion-content {
+  --padding-top: 20px;
+  --padding-bottom: 20px;
+}
+
+.centered-datetime-modal ion-datetime {
+  width: 100%;
+  max-height: 400px;
+  min-height: 420px;
+  margin: 0 auto;
+}
+
+.centered-datetime-modal ion-toolbar {
+  background: #ffffff;
+  border-bottom: 1px solid #d0e4f7;
+}
+
+.centered-datetime-modal ion-footer ion-toolbar {
+  background: #ffffff;
+  border-top: 1px solid #d0e4f7;
 }

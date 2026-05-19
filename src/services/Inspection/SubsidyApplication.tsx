@@ -189,7 +189,7 @@ const toggleInspectionFields = () => {
         </IonToolbar>
       </IonHeader>
 
-      <IonContent>
+      <IonContent style={{ '--padding-bottom': '130px' } as any}>
         <div className="search-container">
           <IonLabel className="fruits-id-label">Fruits ID</IonLabel>
           <IonInput

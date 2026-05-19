@@ -199,7 +199,7 @@ const YourComponent = () => {
         </IonToolbar>
       </IonHeader>
       
-      <IonContent>
+      <IonContent style={{ '--padding-bottom': '130px' } as any}>
         <IonCard className="details-card">
           <IonCardContent>
             <div className="details-row">

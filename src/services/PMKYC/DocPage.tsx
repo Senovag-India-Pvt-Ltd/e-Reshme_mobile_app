@@ -23,7 +23,7 @@ import {
   IonSearchbar,
 } from "@ionic/react";
 import axios from "axios";
-import { useParams, useHistory } from "react-router-dom";
+import { useParams, useHistory, useLocation } from "react-router-dom";
 import "./DocPage.css";
 import DocumentUpload from "./DocumentUpload";
 import Menu from "../Inspection/Menu";
@@ -43,8 +43,10 @@ const DocPage: React.FC = () => {
   }>();
 
   // Get applicationFormId from query params (fallback to applicationDocumentId)
-  const query = new URLSearchParams(window.location.search);
+  const location = useLocation();
+  const query = new URLSearchParams(location.search);
   const applicationFormId = query.get('applicationFormId') || applicationDocumentId;
+  const schemeId = query.get('schemeId');
   const financialDelegation = query.get('financialDelegation') === 'true';
   const schemeAmountQuery = query.get('schemeAmount');
   const eligibleAmountQuery = query.get('eligibleAmount');
@@ -227,11 +229,14 @@ const DocPage: React.FC = () => {
   const [nextsteps, setNextsteps] = useState<any[]>([]);
   const [selectedNextstep, setSelectedNextstep] = useState<string>(""); // Selected username
   const [searchTerm, setSearchTerm] = useState("");
+  const [documentSearchTerm, setDocumentSearchTerm] = useState<string>("");
   const [districtId, setDistrictId] = useState<number | null>(null);
   const [talukId, setTalukId] = useState<number | null>(null);
 
   // New state for Reject Type
   const [rejectType, setRejectType] = useState<string>("");
+  const [showRejectPanel, setShowRejectPanel] = useState<boolean>(false);
+  const [validationErrorMessage, setValidationErrorMessage] = useState<string>("");
 
   useEffect(() => {
     fetchDocuments();
@@ -274,7 +279,33 @@ const DocPage: React.FC = () => {
         },
       })
       .then((res) => {
-        setDocuments(res.data.content?.documentMaster || []);
+        const allDocs = res.data.content?.documentMaster || [];
+
+        if (schemeId && subSchemeId) {
+          axios
+            .get(`${API_URL_Master}master-data/v1/schemeDocumentMaster/get-by-scheme-and-sub-scheme`, {
+              params: {
+                scSchemeDetailsId: schemeId,
+                scSubSchemeDetailsId: subSchemeId,
+              },
+              headers: {
+                Authorization: `Bearer ${localStorage.getItem("jwtToken")}`,
+              },
+            })
+            .then((filterRes: any) => {
+              const mappings = filterRes.data.content?.schemeDocumentMaster || [];
+              const filtered = mappings.map((m: any) => ({
+                documentMasterId: m.documentId,
+                documentMasterName: m.documentMasterName,
+              }));
+              setDocuments(filtered.length > 0 ? filtered : allDocs);
+            })
+            .catch(() => {
+              setDocuments(allDocs);
+            });
+        } else {
+          setDocuments(allDocs);
+        }
       })
       .catch((error) => {
         console.error("Error fetching documents:", error);
@@ -540,55 +571,70 @@ const DocPage: React.FC = () => {
 
 
   const handleSubmit = () => {
+    // Reset the previous validation message
+    setValidationErrorMessage("");
 
-  // ⭐ NEW: Mandatory check for Approval Stage & Username (only when NOT Permanent Reject)
-  // ------------------------------------------------------------------------
-  if (rejectType !== "Permanent") {
+    // If Reject Type is selected, handle rejection-specific validation
+    if (rejectType === "Permanent") {
+      if (!rejectionReason) {
+        setValidationErrorMessage("Selecting a rejection reason is mandatory");
+        setValidationError(true);
+        return;
+      }
+      callPermanentRejectAPI();
+      return;
+    }
+
+    if (rejectType === "Objection") {
+      if (!selectedNextstep) {
+        setValidationErrorMessage("Selecting Approval Stage is mandatory");
+        setValidationError(true);
+        return;
+      }
+      if (!selectedUsername) {
+        setValidationErrorMessage("Selecting Username is mandatory");
+        setValidationError(true);
+        return;
+      }
+      if (!rejectionReason) {
+        setValidationErrorMessage("Selecting a rejection reason is mandatory");
+        setValidationError(true);
+        return;
+      }
+      callObjectionRejectAPI();
+      return;
+    }
+
     if (!selectedNextstep) {
+      setValidationErrorMessage("Selecting Approval Stage is mandatory");
       setValidationError(true);
       return;
     }
+
     if (!selectedUsername) {
+      setValidationErrorMessage("Selecting Username is mandatory");
       setValidationError(true);
       return;
     }
-  }
-  // ------------------------------------------------------------------------
 
-  // If Reject Type is selected, handle accordingly
-  if (rejectType === "Permanent") {
-    if (!rejectionReason) {
-      setValidationError(true);
-      return;
-    }
-    callPermanentRejectAPI();
-    return;
-  }
-  if (rejectType === "Objection") {
-    if (!selectedNextstep || !selectedUsername || !rejectionReason) {
-      setValidationError(true);
-      return;
-    }
-    callObjectionRejectAPI();
-    return;
-  }
-
-  // Existing validation for nextstep (kept as-is)
-  if (!selectedNextstep) {
-    setValidationError(true);
-    return;
-  }
-
-  updateInspectionTaskStatus();
-  setSubmitSuccess(true);
-  setTimeout(() => setSubmitSuccess(false), 3000);
-};
+    updateInspectionTaskStatus();
+    setSubmitSuccess(true);
+    setTimeout(() => setSubmitSuccess(false), 3000);
+  };
 
 
   const handleDocumentSelect = (value: string) => {
     const selected = documents.find((doc) => doc.documentMasterId === value);
     setSelectedDocument(selected || null);
   };
+
+  const filteredDocuments = documents.filter((doc) => {
+    const term = documentSearchTerm.toLowerCase();
+    return (
+      doc.documentMasterName?.toLowerCase().includes(term) ||
+      String(doc.documentMasterId).toLowerCase().includes(term)
+    );
+  });
 
   const filteredUsernames = usernames.filter((user) =>
     user.userName.toLowerCase().includes(searchTerm.toLowerCase())
@@ -616,57 +662,18 @@ const DocPage: React.FC = () => {
       <IonContent className="with-bottom-menu" style={{ ['--padding-bottom' as any]: '180px' } as React.CSSProperties}>
         <IonGrid>
           <IonRow>
-            {/* --- NEW: Reject Type Dropdown --- */}
-            <IonCol size="12">
-              <IonLabel>
-                <b>Reject Type:</b>
-              </IonLabel>
-              <IonSelect
-                value={rejectType}
-                placeholder="Select Reject Type"
-                onIonChange={e => setRejectType(e.detail.value!)}
-              >
-                <IonSelectOption value="">None</IonSelectOption>
-                <IonSelectOption value="Permanent">Permanent</IonSelectOption>
-                <IonSelectOption value="Objection">Objection</IonSelectOption>
-              </IonSelect>
-              
-            </IonCol>
-            {/* --- END NEW --- */}
-
-            <IonCol size="12">
-              <IonLabel>
-                <b>Select Rejection Reason:</b>
-              </IonLabel>
-              {fetchError ? (
-                <p style={{ color: "red" }}>
-                  Failed to fetch rejection reasons. Please try again later.
-                </p>
-              ) : (
-                <IonSelect
-                  value={rejectionReason}
-                  placeholder="Select reason for rejection"
-                  onIonChange={(e) => handleRejectionChange(e.detail.value!)}
-                >
-                  <IonSelectOption value="">None</IonSelectOption>{" "}
-                  {/* Option to deselect */}
-                  {rejectionOptions.map((option) => (
-                    <IonSelectOption
-                      key={option.rejectReasonWorkFlowMasterId}
-                      value={option.rejectReasonWorkFlowMasterId}
-                    >
-                      {option.reason}
-                    </IonSelectOption>
-                  ))}
-                </IonSelect>
-              )}
-            </IonCol>
-
             {/* Document Selection Dropdown */}
             <IonCol size="12">
               <IonLabel>
                 <b>Select Document:</b>
               </IonLabel>
+              <IonSearchbar
+                value={documentSearchTerm}
+                onIonInput={(e) => setDocumentSearchTerm(e.detail.value!)}
+                placeholder="Search documents..."
+                className="custom-searchbar"
+                showClearButton="focus"
+              />
               <IonSelect
                 value={selectedDocument?.documentMasterId || ""}
                 placeholder="Select a document"
@@ -674,7 +681,7 @@ const DocPage: React.FC = () => {
               >
                 <IonSelectOption value="">None</IonSelectOption>{" "}
                 {/* Option to deselect */}
-                {documents.map((doc) => (
+                {filteredDocuments.map((doc) => (
                   <IonSelectOption
                     key={doc.documentMasterId}
                     value={doc.documentMasterId}
@@ -806,6 +813,71 @@ const DocPage: React.FC = () => {
               </IonSelect>
             </IonCol>
 
+            <IonCol size="12">
+              <IonButton
+                style={{ '--background': '#ffffff', '--color': '#000000', color: '#000000', backgroundColor: '#ffffff' } as any}
+                expand="block"
+                onClick={() => {
+                  setShowRejectPanel((prev) => {
+                    const next = !prev;
+                    if (!next) {
+                      setRejectType("");
+                      setRejectionReason("");
+                    }
+                    return next;
+                  });
+                }}
+              >
+                {showRejectPanel ? 'Hide Reject' : 'Reject'}
+              </IonButton>
+            </IonCol>
+
+            {showRejectPanel && (
+              <>
+                <IonCol size="12">
+                  <IonLabel>
+                    <b>Reject Type:</b>
+                  </IonLabel>
+                  <IonSelect
+                    value={rejectType}
+                    placeholder="Select Reject Type"
+                    onIonChange={(e) => setRejectType(e.detail.value!)}
+                  >
+                    <IonSelectOption value="">None</IonSelectOption>
+                    <IonSelectOption value="Permanent">Permanent</IonSelectOption>
+                    <IonSelectOption value="Objection">Objection</IonSelectOption>
+                  </IonSelect>
+                </IonCol>
+
+                <IonCol size="12">
+                  <IonLabel>
+                    <b>Select Rejection Reason:</b>
+                  </IonLabel>
+                  {fetchError ? (
+                    <p style={{ color: 'red' }}>
+                      Failed to fetch rejection reasons. Please try again later.
+                    </p>
+                  ) : (
+                    <IonSelect
+                      value={rejectionReason}
+                      placeholder="Select reason for rejection"
+                      onIonChange={(e) => handleRejectionChange(e.detail.value!)}
+                    >
+                      <IonSelectOption value="">None</IonSelectOption>
+                      {rejectionOptions.map((option) => (
+                        <IonSelectOption
+                          key={option.rejectReasonWorkFlowMasterId}
+                          value={option.rejectReasonWorkFlowMasterId}
+                        >
+                          {option.reason}
+                        </IonSelectOption>
+                      ))}
+                    </IonSelect>
+                  )}
+                </IonCol>
+              </>
+            )}
+
             {/* Styled Location Section */}
             <IonCol size="12" className="location-container">
               <div className="location-box">
@@ -845,7 +917,7 @@ const DocPage: React.FC = () => {
       <IonToast
         isOpen={validationError}
         onDidDismiss={() => setValidationError(false)}
-        message="Selecting Approval Stage is Mandatory"
+        message={validationErrorMessage || "Validation error occurred"}
         duration={3000}
       />
       <IonToast
@@ -864,7 +936,7 @@ const DocPage: React.FC = () => {
         isOpen={showApprovalPowerPopup}
         onDidDismiss={() => setShowApprovalPowerPopup(false)}
         message="Login to Web Application and Generate Sanction Order"
-        duration={4000}
+        duration={8000}
       />
       <Menu />
     </IonPage>

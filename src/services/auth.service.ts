@@ -1,57 +1,9 @@
 import axios from 'axios';
 import jwtDecode from 'jwt-decode';
 
-//const API_URL = 'http://localhost:8001/master-data';
-// const API_URL = 'https://api.senovagseri.com/master-data';
-//const API_URL = 'http://13.200.62.144:8001/master-data/v1';
-
-// export const API_URL_DBT = 'http://13.200.62.144:8013/';
-// const API_URL_Master = 'https://api.senovagseri.com/';
-
-  // export const API_URL = 'https://api.senovagseri.com/';
-
- //export const API_URL_Market = 'http://13.200.62.144:8002/';
 
 
-//  export const API_URL_Master = 'http://13.200.62.144:8001/';
-
-
-//  export const API_URL_Inspection = 'https://api.senovagseri.com/';
-// export const API_URL_DBT = 'https://api.senovagseri.com/';
-// export const API_URL_Market = 'https://api.senovagseri.com/';
-
-// export const API_URL_Master ='https://api.senovagseri.com/';
-
-
-
-//  export const API_URL_Market = 'http://13.200.62.144:8010/';
-//  export const API_URL_Master = 'http://13.200.62.144:8001/';
-// export const API_URL_Inspection = 'http://13.200.62.144:8010/';
-// export const API_URL_DBT = 'http://13.200.62.144:8013/';
-
-
-
-
-
-// export const API_URL_Master = 'http://13.200.62.144:8001/';
-// export const API_URL_Market = 'https://api.senovagseri.com/';
-// export const API_URL_Master = 'https://api.senovagseri.com/';
-// export const API_URL_Master_Data = 'http://localhost:8001/master-data/v1/';
-// export const API_URL_Master_Data = 'http://13.200.62.144:8001/master-data/v1/';
-// export const API_URL_Master_Data = 'https://api.senovagseri.com/master-data/v1/';
-// export const API_URL_Inspection = 'https://api.senovagseri.com/';
-// export const API_URL_DBT = 'https://api.senovagseri.com/';
-// export const API_URL_DBT = 'http://localhost:8000/farmer-registration/v1/';
-// export const API_URL_ChowkiManagment = 'http://localhost:8007/chawki-management/';
-// export const API_URL_ChowkiManagment = 'http://13.200.62.144:8007/chawki-management/';
-// export const API_URL_ChowkiManagment = 'https://api.senovagseri.com/chawki-management/';
-// export const API_URL_DBT = 'http://13.200.62.144:8000/farmer-registration/v1/';
-// export const API_URL_DBT = 'https://api.senovagseri.com/farmer-registration/v1/';
-// export const API_URL_DBT = 'http://13.200.62.144:8100/farmer-registration/v1/';
-
-
-
-//Inspection Link
+//e-reshme Link
 
 export const API_URL_DBT = 'https://e-reshme.karnataka.gov.in/farmer-registration/v1/';
 export const API_URL_ChowkiManagment = 'https://e-reshme.karnataka.gov.in/chawki-management/';
@@ -59,6 +11,8 @@ export const API_URL_Master_Data = 'https://e-reshme.karnataka.gov.in/master-dat
 export const API_URL_Inspection = 'https://e-reshme.karnataka.gov.in/';
 export const API_URL_Market = 'https://e-reshme.karnataka.gov.in/';
 export const API_URL_Master = 'https://e-reshme.karnataka.gov.in/';
+
+// Local Link
 
 // export const API_URL_DBT = 'http://localhost:8000/farmer-registration/v1/';
 // export const API_URL_ChowkiManagment = 'http://localhost:8007/chawki-management/';
@@ -76,28 +30,8 @@ export const API_URL_Master = 'https://e-reshme.karnataka.gov.in/';
 // export const API_URL_DBT = 'https://e-reshme.karnataka.gov.in/';
 
 
-// export const API_URL_Market = 'https://api.senovagseri.com/';
-// export const API_URL_Master = 'https://api.senovagseri.com/';
-// export const API_URL_Master_Data = 'https://api.senovagseri.com/master-data/v1/';
-// export const API_URL_Inspection = 'https://api.senovagseri.com/';
-// export const API_URL_ChowkiManagment = 'http://13.200.62.144:8007/chawki-management/';
-// export const API_URL_DBT = 'https://api.senovagseri.com/farmer-registration/v1/';
 
 
-
-
-// export const API_URL_Inspection = 'https://api.senovagseri.com/';
-// export const API_URL_DBT_ = 'https://api.senovagseri.com/';
-
-// export const API_URL_Market = 'http://localhost:8002/';
-// export const API_URL_Master = 'http://localhost:8001/';
-// export const API_URL_Inspection = 'http://localhost:8010/';
-// export const API_URL_DBT_ = 'http://localhost:8013/';
-
-
-// export const API_URL_Market = 'https://e-reshme.karnataka.gov.in/';
-// export const API_URL_Master = 'https://e-reshme.karnataka.gov.in/';
-// export const API_URL_Inspection = 'https://e-reshme.karnataka.gov.in/';
 export const API_URL_DBT_ = 'https://e-reshme.karnataka.gov.in/';
 
 

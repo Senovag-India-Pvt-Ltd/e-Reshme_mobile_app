@@ -78,7 +78,7 @@ const ReelerListPage: React.FC = () => {
         )}
       </IonHeader>
 
-      <IonContent>
+      <IonContent style={{ '--padding-bottom': '130px' } as any}>
         <IonGrid>
           <IonRow className="card-container">
             {filteredLists.length > 0 ? (

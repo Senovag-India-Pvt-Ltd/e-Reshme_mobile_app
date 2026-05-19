@@ -35,9 +35,10 @@ import { API_URL_Master_Data } from "../auth.service";
 import { Camera, CameraResultType, CameraSource } from "@capacitor/camera";
 import { Geolocation } from "@capacitor/geolocation";
 // import DocumentUpload from './CropInspectionUpload';
-import { useParams } from "react-router-dom";
+import { useParams, useHistory } from "react-router-dom";
 
 const CropInspectionPage: React.FC = () => {
+  const history = useHistory();
   const [searchText, setSearchText] = useState<string>("");
   const { chowkiDetailId, fid, farmerId } = useParams<{
     chowkiDetailId: string;
@@ -108,7 +109,26 @@ const CropInspectionPage: React.FC = () => {
     setData(null);
     setViewAll(false);
     setShowInspectionFields(false);
+  };
+
+  const clearAllFields = () => {
+    setSearchText("");
+    setData(null);
     setViewAll(false);
+    setShowInspectionFields(false);
+    setInspectionFields({
+      cropInspectionTypeId: "",
+      date: new Date().toISOString(),
+      reasonId: "",
+      note: "",
+      cropStatusId: "",
+      mountId: "",
+      cropInspectionPath: "",
+    });
+    setSelectedFile(null);
+    setPreviewImage(null);
+    setLocationData({});
+    setHasCameraCaptureLocation(false);
   };
   const [fetchError, setFetchError] = useState<boolean>(false);
 
@@ -525,7 +545,6 @@ const CropInspectionPage: React.FC = () => {
           setMessage("Data added successfully!");
           setIsError(false);
           setShowAlert(true);
-          clearSearch();
         } else {
           // Show the message from the response if error=1
           setMessage(inspectionResponse.data.message || "Failed to add data.");
@@ -559,7 +578,15 @@ const CropInspectionPage: React.FC = () => {
           }));
 
           setMessage("Inspection details and photo uploaded successfully");
+          setIsError(false);
           setShowAlert(true);
+          setTimeout(() => {
+            clearAllFields();
+          }, 2000);
+        } else {
+          setTimeout(() => {
+            clearAllFields();
+          }, 2000);
         }
       } catch (error) {
         console.error(
@@ -609,7 +636,7 @@ const CropInspectionPage: React.FC = () => {
         </IonToolbar>
       </IonHeader>
 
-      <IonContent>
+      <IonContent style={{ '--padding-bottom': '130px' } as any}>
         {/* <div className="search-container">
           <IonLabel className="fruits-id-label">Fruits ID</IonLabel>
           <IonInput

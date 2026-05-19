@@ -1,22 +1,21 @@
 .subpage-header {
-    background-color: #1a1a1a;
-  }
-  
-  .subpage-title {
-    color: #ffffff;
-    font-size: 1.2em;
-    font-weight: bold;
-  }
-  
-  .menucolor{
-    color: #ffffff;
-    background: #1a1a1a;
-  }
-  
-  
-  
-  .subpage-text {
-    color: #333333;
-    font-size: 1.1em;
-  }
-  
+  background: linear-gradient(135deg, #0d2137 0%, #1565c0 100%);
+}
+
+.subpage-title {
+  color: #ffffff;
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+}
+
+.menucolor {
+  color: #ffffff;
+  background: linear-gradient(135deg, #0d2137 0%, #1565c0 100%);
+}
+
+.subpage-text {
+  color: #333333;
+  font-size: 14px;
+  line-height: 1.5;
+}

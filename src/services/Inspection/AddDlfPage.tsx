@@ -87,7 +87,9 @@ const AddDlfPage: React.FC = () => {
         },
       )
       .then((res) => {
+        console.log("Farmer API Response:", res.data); // Debug log
         const farmerResponses = res.data?.content?.[0]?.farmerResponses || [];
+        console.log("Farmer responses:", farmerResponses); // Debug log
         // setDataList(farmerResponses); // Set all fetched data entries
         setFarmerId(
           farmerResponses.length > 0 ? farmerResponses[0].farmerId : null,
@@ -95,12 +97,22 @@ const AddDlfPage: React.FC = () => {
         setFruitsId(
           farmerResponses.length > 0 ? farmerResponses[0].fruitsId : null,
         );
+        console.log("Fruits ID:", farmerResponses[0]?.fruitsId); // Debug log
         if (farmerResponses?.length > 0) {
-          getAllChowkiDetails(farmerResponses[0].fruitsId);
+          const fruitsIdValue = farmerResponses[0].fruitsId;
+          console.log("Calling getAllChowkiDetails with:", fruitsIdValue, typeof fruitsIdValue);
+          // Convert to string if it's a number, or keep as string
+          const fruitsIdString = typeof fruitsIdValue === 'number' ? fruitsIdValue.toString() : fruitsIdValue;
+          getAllChowkiDetails(fruitsIdString);
+        } else {
+          setMessage("No farmer data found for this Fruits ID");
+          setIsError(true);
+          setShowAlert(true);
         }
       })
       .catch((error) => {
         console.error("Error fetching farmer details:", error);
+        console.error("Error response:", (error as any)?.response); // More detailed error logging
         setMessage("Error fetching farmer details or Farmer ID does not exist");
         setIsError(true);
         setShowAlert(true);
@@ -178,13 +190,15 @@ const AddDlfPage: React.FC = () => {
     setIsEditable(!isEditable);
   };
 
-  const getAllChowkiDetails = (i: number) => {
+  const getAllChowkiDetails = (fruitsId: string) => {
+    const apiUrl = `chowkimanagement/get-sale-disposal-by-fruits-id/${fruitsId}`;
+    console.log("Calling chowki API with URL:", API_URL_ChowkiManagment + apiUrl);
     // setViewAll(!viewAll);
     const api = axios.create({
       baseURL: API_URL_ChowkiManagment,
     });
     api
-      .get(`chowkimanagement/get-sale-disposal-by-fruits-id/${i}`, {
+      .get(apiUrl, {
         headers: {
           "Content-Type": "application/json",
           accept: "*/*",
@@ -192,29 +206,38 @@ const AddDlfPage: React.FC = () => {
         },
       })
       .then((res) => {
-        const chowkiData = res.data[0];
-        setFarmerOtherData({
-          dflsSource: chowkiData.dflsSource,
-          numbersOfDfls: chowkiData.numbersOfDfls,
-          // lotNumberRsp: chowkiData.lotNumberRsp,
-          receiptNo: chowkiData.receiptNo || "",
-          lotNumberCrc: chowkiData.lotNumberCrc,
-          ratePer100Dfls: chowkiData.ratePer100Dfls, // Handle missing receiptNo
-          expectedHatchingDate: chowkiData.expectedHatchingDate,
-          dateOfDisposal: chowkiData.dateOfDisposal, // Handle missing receiptNo
-        });
-        setDataList(res.data);
-        // setData({
-        //   lotNumberCrc: chowkiData.lotNumberCrc,
-        //   ratePer100Dfls: chowkiData.ratePer100Dfls,
-        // });
-        setChowkiId(chowkiData.saleAndDisposalId); // Set chowkiId for submission
+        console.log("Chowki API Response:", res.data); // Debug log
+        console.log("Response data type:", typeof res.data);
+        console.log("Response data length:", Array.isArray(res.data) ? res.data.length : 'not array');
+        if (res.data && res.data.length > 0) {
+          console.log("First item in response:", res.data[0]);
+          const chowkiData = res.data[0];
+          setFarmerOtherData({
+            dflsSource: chowkiData.dflsSource,
+            numbersOfDfls: chowkiData.numbersOfDfls,
+            // lotNumberRsp: chowkiData.lotNumberRsp,
+            receiptNo: chowkiData.receiptNo || "",
+            lotNumberCrc: chowkiData.lotNumberCrc,
+            ratePer100Dfls: chowkiData.ratePer100Dfls, // Handle missing receiptNo
+            expectedHatchingDate: chowkiData.expectedHatchingDate,
+            dateOfDisposal: chowkiData.dateOfDisposal, // Handle missing receiptNo
+          });
+          setDataList(res.data);
+          setChowkiId(chowkiData.saleAndDisposalId); // Set chowkiId for submission
+          setViewAll(true); // Make sure viewAll is set to true to show data
+        } else {
+          console.log("No chowki data found");
+          setMessage("No DFL data found for this Fruits ID");
+          setIsError(true);
+          setShowAlert(true);
+        }
       })
       .catch((error) => {
-        setMessage("Farmer number does not exist");
+        console.error("Error fetching chowki details:", error);
+        setMessage("Error fetching DFL data");
         setIsError(true);
+        setShowAlert(true);
       });
-    setViewAll(!viewAll);
   };
 
   const handleChange = (
@@ -275,7 +298,7 @@ const AddDlfPage: React.FC = () => {
         </IonToolbar>
       </IonHeader>
 
-      <IonContent>
+      <IonContent style={{ '--padding-bottom': '130px' } as any}>
         <div className="search-container">
           <IonLabel className="fruits-id-label">Fruits ID</IonLabel>
           <IonInput
@@ -361,7 +384,9 @@ const AddDlfPage: React.FC = () => {
           </p>
         )}
 
-        {dataList.map((data, index) => (
+        {viewAll && dataList.length > 0 && dataList.map((data, index) => {
+          console.log("Rendering data item:", index, data);
+          return (
           <IonCard key={index} className="details-card">
             <IonCardHeader>
               <IonCardTitle>DFL Details</IonCardTitle>
@@ -397,7 +422,8 @@ const AddDlfPage: React.FC = () => {
               />
             </IonCardContent>
           </IonCard>
-        ))}
+          );
+        })}
       </IonContent>
     </IonPage>
   );

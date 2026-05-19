@@ -1,0 +1,7 @@
+.with-bottom-menu {
+  padding-bottom: calc(160px + env(safe-area-inset-bottom));
+}
+
+.submit-button {
+  margin-bottom: 8px;
+}

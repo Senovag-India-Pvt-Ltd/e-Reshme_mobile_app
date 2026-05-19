@@ -45,7 +45,7 @@
   left: 0;
   right: 0;
   height: 36px;
-  background: #0f0f0f;
+  background: #0d2137;
   border-top: 1px solid rgba(255, 255, 255, 0.03);
   display: flex;
   align-items: center;
@@ -110,8 +110,8 @@
 }
 
 .bottom-tab-bar {
-  --background: #121212;
-  --color: rgba(230, 230, 230, 0.8);
+  --background: #0d2137;
+  --color: rgba(200, 225, 255, 0.8);
   --color-selected: #ffffff;
   border-top: none;
   height: 65px;
@@ -170,8 +170,8 @@
 
 .bottom-tab-button.tab-active {
   --color: #ffffff;
-  background: linear-gradient(135deg, rgba(26, 95, 122, 0.15) 0%, rgba(0, 188, 212, 0.15) 100%);
-  box-shadow: inset 0 0 12px rgba(0, 188, 212, 0.4), 0 0 20px rgba(0, 188, 212, 0.3);
+  background: linear-gradient(135deg, rgba(21, 101, 192, 0.3) 0%, rgba(25, 118, 210, 0.3) 100%);
+  box-shadow: inset 0 0 12px rgba(25, 118, 210, 0.4), 0 0 20px rgba(25, 118, 210, 0.3);
   animation: activeTabGlow 2s ease-in-out infinite;
 }
 

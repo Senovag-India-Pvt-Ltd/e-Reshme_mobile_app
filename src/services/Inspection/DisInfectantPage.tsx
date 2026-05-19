@@ -299,7 +299,7 @@ const handleInputChange = (e: CustomEvent) => {
         </IonToolbar>
       </IonHeader>
 
-      <IonContent>
+      <IonContent style={{ '--padding-bottom': '130px' } as any}>
         <div className="search-container">
           <IonLabel className="fruits-id-label">Fruits ID</IonLabel>
           <IonInput
@@ -320,7 +320,7 @@ const handleInputChange = (e: CustomEvent) => {
         {data && (
           <IonCard className="details-card">
             <IonCardHeader>
-              <IonCardTitle style={{ color: '#000000' }}>Disinfectant Supply</IonCardTitle>
+              <IonCardTitle>Disinfectant Supply</IonCardTitle>
             </IonCardHeader>
             <IonCardContent>
             <div className="details-row">
@@ -354,7 +354,7 @@ const handleInputChange = (e: CustomEvent) => {
                 />
               </div>
               <IonCardHeader>
-              <IonCardTitle style={{ color: '#000000' }}>Add Details</IonCardTitle>
+              <IonCardTitle>Add Details</IonCardTitle>
             </IonCardHeader>
              
                    <IonCol size="12">
