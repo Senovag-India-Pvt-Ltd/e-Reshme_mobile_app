@@ -1,58 +1,88 @@
 .logo-round {
-    width: 120px;
-    border-radius: 50% !important;
-    overflow: hidden;
-    background-color: #fff;
-  }
+  width: 110px;
+  height: 110px;
+  border-radius: 50% !important;
+  overflow: hidden;
+  background-color: transparent;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.45);
+}
   
   .container {
-    margin: 0 auto;
-    text-align: center;
-    padding: 20px;
+      margin: 0 auto;
+      text-align: center;
+      padding: 20px;
+      width: 100%;
+      max-width: 420px;
   }
   
   .image-container {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 10vh;
-    /* Optionally, set the height to fill the viewport */
-  }
-  
-  .trapezoid {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 80%;
-    transform: skewY(-5deg);
-    transform-origin: top left;
-    box-shadow: 0 3px 6px rgba(12, 161, 171, 0.751), 0 3px 6px rgba(49, 175, 10, 0.555);
-    background: 	#00b5d1;
-    background-position: top center;
-    background-attachment: fixed;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: auto;
+      padding: 8px 0 18px 0;
   }
   
   .error {
-    color: red;
+    color: #ff6b6b;
     margin-top: 10px;
   }
   .color{
-    box-shadow: linear-gradient(to right, #43cea2, #185a9d);
+    box-shadow: none;
+    background: #2b2b2b;
   }
 
   .custom-icon {
-    color: #ce8243; /* Use a solid color */
-    /* Remove background and background-clip properties */
+    color: #e6e6e6; /* light icon color */
   }
   
   .custom-button {
-    --background: #43cea2; /* Solid background color */
-    --background-activated: #36a38f; /* Darker shade when active */
-    --background-focused: #36a38f; /* Darker shade when focused */
-    --background-hover: #36a38f; /* Darker shade when hovered */
-    color: white; /* Text color */
+    --background: #222222;
+    --background-activated: #191919;
+    --background-focused: #191919;
+    --background-hover: #2b2b2b;
+    color: #e6e6e6;
+    border-radius: 8px;
+    border: 1px solid rgba(255,255,255,0.03);
+    width: 100%;
+    max-width: 420px;
+    display: block;
+    margin: 8px auto;
+    box-sizing: border-box;
   }
+
+.app-container {
+  margin: 0 auto;
+  max-width: 420px;
+  width: 100%;
+  padding: 18px;
+}
+
+.login-card {
+  background: var(--ion-background-color);
+  color: var(--ion-text-color);
+  padding: 18px;
+  border-radius: 10px;
+  border: 1px solid rgba(255,255,255,0.03);
+}
+
+.login-form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.login-form ion-input,
+.login-form input,
+.login-form ion-select {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+@media (max-width: 420px) {
+  .container, .app-container { padding: 12px; }
+  .logo-round { width: 100px; height: 100px; }
+}
   
   /* Alternatively, apply a gradient */
   .custom-button {
@@ -62,15 +92,179 @@
 
 
   .sky {
-    --background: #43ce9d; /* Solid background color */
-    --background-activated: #36a38f; /* Darker shade when active */
-    --background-focused: #36a38f; /* Darker shade when focused */
-    --background-hover: #36a38f; /* Darker shade when hovered */
-    color: white; /* Text color */
+    --background: #333333;
+    color: #e6e6e6;
   }
 
-  .sky{
-    background: #7843ce;
+  .capture-button-container {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+  }
+
+  .capture-button-container ion-button {
+    flex: 1;
+    min-width: 120px;
+    font-weight: 600;
+    border-radius: 12px;
+    --padding-start: 16px;
+    --padding-end: 16px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    transition: all 0.3s ease;
+  }
+
+  .capture-button-container ion-button:active {
+    transform: translateY(2px);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+  }
+
+  .modal-header {
+    padding: 16px;
+    background: #1a1a1a;
+    color: white;
+    border-radius: 8px;
+    margin-bottom: 16px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  }
+
+  .modal-header h3 {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 600;
+  }
+
+  .images-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+    gap: 12px;
+    padding: 16px;
+    max-height: 60vh;
+    overflow-y: auto;
+  }
+
+  .image-card {
+    border: 1px solid rgba(255,255,255,0.04);
+    border-radius: 10px;
+    overflow: hidden;
+    background: #121212;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.6);
+    transition: all 0.18s ease;
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  .image-card:hover {
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+    transform: translateY(-4px);
+    border-color: #ffffff;
+  }
+
+  .image-card img {
+    width: 100%;
+    height: 100px;
+    object-fit: cover;
+    display: block;
+  }
+
+  .image-card-empty {
+    width: 100%;
+    height: 100px;
+    background: #0f0f0f;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    color: #777;
+  }
+
+  .image-card-actions {
+    display: flex;
+    gap: 4px;
+    padding: 8px;
+    background: #f9f9f9;
+  }
+
+  .image-card-actions ion-button {
+    flex: 1;
+    margin: 0;
+    --padding-start: 4px;
+    --padding-end: 4px;
+    font-size: 11px;
+    height: 30px;
+  }
+
+  .modal-footer {
+    padding: 16px;
+    display: flex;
+    gap: 8px;
+  }
+
+  .modal-footer ion-button {
+    flex: 1;
+    border-radius: 8px;
+    font-weight: 600;
+    --background: #2a2a2a;
+    color: #e6e6e6;
+  }
+
+  .no-images-message {
+    text-align: center;
+    padding: 32px 16px;
+    color: #999;
+    font-size: 14px;
+  }
+
+  /* Circular Button Styling */
+  .circular-button-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .circular-btn {
+    --width: 70px;
+    --height: 70px;
+    --border-radius: 50%;
+    --background: #2b2b2b;
+    --box-shadow: 0 6px 18px rgba(0, 0, 0, 0.6);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+    border: 1px solid rgba(255,255,255,0.03);
+  }
+
+  .circular-btn:first-child {
+    --background: #2b2b2b;
+  }
+
+  .circular-btn:nth-child(1) {
+    --background: #2b2b2b;
+  }
+
+  .circular-btn ion-icon {
+    font-size: 32px;
+    color: #e6e6e6;
+  }
+
+  .circular-btn:hover,
+  .circular-btn:focus {
+    --box-shadow: 0 6px 25px rgba(102, 126, 234, 0.6);
+    transform: scale(1.1) translateY(-2px);
+  }
+
+  .circular-btn:active {
+    transform: scale(0.95);
+  }
+
+  .button-label {
+    margin: 0;
+    font-size: 12px;
+    font-weight: 600;
+    color: #e6e6e6;
+    text-align: center;
   }
   
 

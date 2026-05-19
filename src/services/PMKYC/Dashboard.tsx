@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { IonContent, IonPage, IonGrid, IonRow, IonCol, IonCard, IonCardHeader, IonCardTitle, IonCardContent, IonButtons, IonHeader, IonMenuButton, IonTitle, IonToolbar, IonButton, IonIcon, IonSearchbar } from '@ionic/react';
+import { IonContent, IonPage, IonGrid, IonRow, IonCol, IonCard, IonCardHeader, IonCardTitle, IonCardContent, IonButtons, IonHeader, IonMenuButton, IonTitle, IonToolbar, IonButton, IonIcon, IonSearchbar, IonBackButton } from '@ionic/react';
 import { arrowBack, search } from 'ionicons/icons';
 import axios from 'axios';
 import { useHistory } from 'react-router-dom';
@@ -63,15 +63,15 @@ const HomePage: React.FC = () => {
   );
 
   const boxColors = [
- 'linear-gradient(135deg, #00c6ff 0%, #00c6ff 100%)', // Light Blue to Dark Blue
- 
- ];
+    '#ffffff', // White background
+  ];
 
   return (
     <IonPage>
       <IonHeader>
         <IonToolbar>
           <IonButtons slot="start">
+            <IonBackButton text="Back" slot="start" defaultHref="/homepage" style={{ color: '#000' }} />
             <IonMenuButton />
           </IonButtons>
           <IonTitle><b>User Dashboard</b></IonTitle>
@@ -79,10 +79,7 @@ const HomePage: React.FC = () => {
             <IonButton onClick={() => setShowSearchbar(!showSearchbar)}>
               <IonIcon icon={showSearchbar ? arrowBack : search} />
             </IonButton>
-            <IonButton onClick={handleGoBack}>
-              <IonIcon icon={arrowBack} />
-              Go Back
-            </IonButton>
+            {/* removed redundant Go Back button — use left Back button instead */}
           </IonButtons>
         </IonToolbar>
         {showSearchbar && (
@@ -103,17 +100,20 @@ const HomePage: React.FC = () => {
                 <IonCard 
                           onClick={() => handleBoxClick(item.approvalStageId)} 
                           className="card" 
-                          style={{ background: boxColors[index % boxColors.length] }} // Apply gradient backgrounds
+                          style={{ 
+                            background: '#ffffff',
+                            boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+                            border: 'none'
+                          }}
                         >
-                          <IonCardHeader className="card-header">
-                            <IonCardTitle className="step-name">{item.stepName}</IonCardTitle>
+                          <IonCardHeader className="card-header" style={{ background: '#ffffff', color: '#000' }}>
+                            <IonCardTitle className="step-name" style={{ color: '#000', fontWeight: '800' }}>{item.stepName}</IonCardTitle>
                           </IonCardHeader>
-                          <IonCardContent className="card-content">
-  <h2 className="count">
-    {item.count}
-  </h2>
-</IonCardContent>
-
+                          <IonCardContent className="card-content" style={{ background: '#ffffff', color: '#000' }}>
+                            <h2 className="count" style={{ color: '#000', fontWeight: '800' }}>
+                              {item.count}
+                            </h2>
+                          </IonCardContent>
                         </IonCard>
 
 

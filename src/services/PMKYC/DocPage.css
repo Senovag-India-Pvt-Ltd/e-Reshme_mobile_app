@@ -1,5 +1,5 @@
 .notification-bar {
-    background-color: #faf7f7;/* Blue background color */
+    background-color: #1a1a1a;/* Black background color */
       color: #ffffff; /* White text color */
       padding: 10px; /* Adjust padding as needed */
       border-radius: 8px; /* Rounded corners */
@@ -67,6 +67,22 @@
     }
     
     /* styles.css or your relevant CSS file */
+    .menucolor{
+      color: #ffffff;
+      background: #1a1a1a;
+    }
+
+    /* Ensure pages with bottom menu have extra bottom padding so buttons aren't hidden */
+    .with-bottom-menu {
+      /* fallback for non-Ionic browsers */
+      padding-bottom: calc(160px + env(safe-area-inset-bottom));
+      /* Ionic-specific padding via CSS variable will be set on IonContent inline style */
+    }
+
+    /* Make submit button more visible above the tab bar */
+    .submit-button {
+      margin-bottom: 8px;
+    }
   .custom-searchbar {
     height: 40px !important; /* Set smaller height */
     font-size: 10px !important; /* Adjust font size */

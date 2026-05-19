@@ -6,17 +6,14 @@
 }
 
 .details-row ion-label {
-  flex: 0 0 30%; 
+  flex: 0 0 30%;
   margin-right: 10px;
 }
 
 .details-row ion-select,
 .details-row ion-input {
-  flex: 1; 
+  flex: 1;
 }
-
-
-
 
 .card-container {
   margin: 0;
@@ -26,9 +23,11 @@
 .card {
   border-radius: 10px;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
   cursor: pointer;
-  color: #3d3a3a; 
+  color: #3d3a3a;
 }
 
 .card:hover {
@@ -41,7 +40,7 @@
 }
 
 .card-title {
-  font-size: 1.2rem; 
+  font-size: 1.2rem;
   font-weight: bold;
   text-align: center;
 }
@@ -65,3 +64,58 @@
   margin-top: 1rem;
 }
 
+.centered-datetime-modal {
+  --height: 80vh;
+  --width: 95vw;
+  --max-width: 500px;
+  --offset-top: 8vh;
+}
+
+.centered-datetime-modal .modal-wrapper {
+  top: 15vh !important;
+  transform: translateY(0) !important;
+}
+
+.centered-datetime-modal ion-modal .modal-wrapper {
+  top: 15vh !important;
+  transform: translateY(0) !important;
+}
+
+.centered-datetime-modal ion-content {
+  --padding-top: 20px;
+  --padding-bottom: 20px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.centered-datetime-modal ion-datetime {
+  width: 100%;
+  max-height: 400px;
+  min-height: 420px;
+  margin: 0 auto;
+}
+
+.centered-datetime-modal ion-datetime .datetime-month-year {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.centered-datetime-modal ion-content {
+  overflow: auto;
+}
+
+.centered-datetime-modal ion-toolbar {
+  background: #ffffff;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.centered-datetime-modal ion-header {
+  padding-top: 15px;
+}
+
+.centered-datetime-modal ion-footer ion-toolbar {
+  background: #ffffff;
+  border-top: 1px solid #e0e0e0;
+}

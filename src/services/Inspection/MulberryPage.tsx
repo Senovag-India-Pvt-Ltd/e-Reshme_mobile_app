@@ -197,8 +197,17 @@ const MulberryPage: React.FC = () => {
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0]; // Get the first file from the file input
     if (file) {
-      setSelectedFile(file); // Set the selected file to the state
-      setPreviewImage(URL.createObjectURL(file)); // Set preview image for viewing
+        (async () => {
+          try {
+            const compressed = await compressImageFile(file, 2);
+            setSelectedFile(compressed); // Set compressed file
+            setPreviewImage(URL.createObjectURL(compressed)); // Set preview image for viewing
+          } catch (err) {
+            console.error('Compression error, using original file:', err);
+            setSelectedFile(file);
+            setPreviewImage(URL.createObjectURL(file));
+          }
+        })();
     }  
   };
   
@@ -208,6 +217,82 @@ const MulberryPage: React.FC = () => {
 
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
+
+    // Helper: convert File to data URL
+    const fileToDataURL = (file: File): Promise<string> => {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result as string);
+        reader.onerror = (e) => reject(e);
+        reader.readAsDataURL(file);
+      });
+    };
+
+    // Helper: compress image File to max 2 MB
+    const compressImageFile = async (file: File, maxSizeMB = 2): Promise<File> => {
+      const maxSize = maxSizeMB * 1024 * 1024;
+
+      if (!file.type.startsWith('image/')) {
+        return file;
+      }
+
+      if (file.size <= maxSize) return file;
+
+      const dataUrl = await fileToDataURL(file);
+      const img = document.createElement('img');
+      img.src = dataUrl;
+
+      await new Promise((resolve, reject) => {
+        img.onload = () => resolve(true);
+        img.onerror = (e) => reject(e);
+      });
+
+      const canvas = document.createElement('canvas');
+      let [width, height] = [img.naturalWidth, img.naturalHeight];
+
+      const maxDim = 1600;
+      if (Math.max(width, height) > maxDim) {
+        const scale = maxDim / Math.max(width, height);
+        width = Math.round(width * scale);
+        height = Math.round(height * scale);
+      }
+
+      canvas.width = width;
+      canvas.height = height;
+      const ctx = canvas.getContext('2d');
+      if (!ctx) return file;
+
+      ctx.drawImage(img, 0, 0, width, height);
+
+      let quality = 0.92;
+      let blob: Blob | null = null;
+
+      for (let i = 0; i < 8; i++) {
+        blob = await new Promise<Blob | null>((resolve) => {
+          canvas.toBlob((b) => resolve(b), file.type === 'image/png' ? 'image/jpeg' : file.type, quality);
+        });
+
+        if (!blob) break;
+        if (blob.size <= maxSize) break;
+
+        quality = Math.max(0.4, quality - 0.12);
+
+        if (i === 3) {
+          width = Math.round(width * 0.8);
+          height = Math.round(height * 0.8);
+          canvas.width = width;
+          canvas.height = height;
+          ctx.drawImage(img, 0, 0, width, height);
+        }
+      }
+
+      if (blob && blob.size <= file.size) {
+        const newFile = new File([blob], file.name.replace(/\.[^/.]+$/, '') + '.jpg', { type: 'image/jpeg' });
+        return newFile.size <= maxSize ? newFile : file;
+      }
+
+      return file;
+    };
     }
   };
 
@@ -706,10 +791,11 @@ const handleSearchInputChange = (e: CustomEvent) => {
       <IonHeader>
         <IonToolbar>
           <IonButtons slot="start">
-            <IonMenuButton /><IonBackButton defaultHref="/" />
+            <IonBackButton text="Back" slot="start" defaultHref="/" style={{ color: '#000' }} />
+            <IonMenuButton />
             
           </IonButtons>
-          <IonTitle>
+          <IonTitle style={{ color: '#000000' }}>
             <b>Mulberry Activity</b>
           </IonTitle>
         </IonToolbar>
@@ -725,10 +811,10 @@ const handleSearchInputChange = (e: CustomEvent) => {
             onIonInput={handleSearchInputChange} // Update to use onIonInput
           /></div>
           <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '10px', marginTop: '10px' }}>
-          <IonButton size="small" onClick={fetchDetails}>Search</IonButton>
+          <IonButton style={{ '--background': '#ffffff', '--color': '#000000', color: '#000000', backgroundColor: '#ffffff' } as any} size="small" onClick={fetchDetails}>Search</IonButton>
 
           {/* Clear button with trash icon */}
-          <IonButton size="small" fill="clear" onClick={clearSearch}>
+          <IonButton style={{ '--background': '#ffffff', '--color': '#000000', color: '#000000', backgroundColor: '#ffffff' } as any} size="small" fill="clear" onClick={clearSearch}>
             <IonIcon color="danger" icon={trash} />
           </IonButton>
         </div>
@@ -736,7 +822,7 @@ const handleSearchInputChange = (e: CustomEvent) => {
         {data && (
           <IonCard className="details-card">
             <IonCardHeader>
-              <IonCardTitle>Mulberry Variety Details</IonCardTitle>
+              <IonCardTitle style={{ color: '#000000' }}>Mulberry Variety Details</IonCardTitle>
             </IonCardHeader>
             <IonCardContent>
               <div className="details-row">
@@ -765,12 +851,12 @@ const handleSearchInputChange = (e: CustomEvent) => {
               </div>
 
               {!viewAll ? (
-                <IonButton expand="full" onClick={toggleViewAll}>
+                <IonButton style={{ '--background': '#ffffff', '--color': '#000000', color: '#000000', backgroundColor: '#ffffff' } as any} expand="full" onClick={toggleViewAll}>
                   Add Details
                 </IonButton>
               ) : (
                 <>
-                  <IonButton expand="full" onClick={toggleViewAll}>
+                  <IonButton style={{ '--background': '#ffffff', '--color': '#000000', color: '#000000', backgroundColor: '#ffffff' } as any} expand="full" onClick={toggleViewAll}>
                     Hide
                   </IonButton>
 
@@ -848,7 +934,7 @@ const handleSearchInputChange = (e: CustomEvent) => {
                         }}
                         onIonCancel={() => setShowUprootingDatePicker(false)}
                       />
-                      <IonButton onClick={() => setShowUprootingDatePicker(false)}>Close</IonButton>
+                      <IonButton style={{ '--background': '#ffffff', '--color': '#000000', color: '#000000', backgroundColor: '#ffffff' } as any} onClick={() => setShowUprootingDatePicker(false)}>Close</IonButton>
                       </IonModal>
                     )}
                   </div>)}</div>
@@ -891,7 +977,7 @@ const handleSearchInputChange = (e: CustomEvent) => {
                         }}
                         onIonCancel={() => setShowNurseryDatePicker(false)}
                       />
-                      <IonButton onClick={() => setShowNurseryDatePicker(false)}>Close</IonButton>
+                      <IonButton style={{ '--background': '#ffffff', '--color': '#000000', color: '#000000', backgroundColor: '#ffffff' } as any} onClick={() => setShowNurseryDatePicker(false)}>Close</IonButton>
                       </IonModal>
                     )}
                   </div>
@@ -936,20 +1022,20 @@ const handleSearchInputChange = (e: CustomEvent) => {
                       <input type="file" onChange={handleFileChange} ref={fileInputRef} /></div>
                       <div>
 
-                      <IonButton onClick={handleCaptureImage} color="primary">
+                      <IonButton style={{ '--background': '#ffffff', '--color': '#000000', color: '#000000', backgroundColor: '#ffffff' } as any} onClick={handleCaptureImage}>
                       <IonIcon icon={camera} slot="icon-only" />
                       </IonButton>
 
                       {previewImage && (
                         <>
-                          <IonButton onClick={() => setIsModalOpen(true)} color="secondary">
+                          <IonButton style={{ '--background': '#ffffff', '--color': '#000000', color: '#000000', backgroundColor: '#ffffff' } as any} onClick={() => setIsModalOpen(true)}>
                           <IonIcon icon={eyeSharp} slot="icon-only" />
                           </IonButton>
                           <IonModal isOpen={isModalOpen} onDidDismiss={() => setIsModalOpen(false)}>
                             <IonHeader>
                               <IonToolbar>
                                 <IonTitle>View File</IonTitle>
-                                <IonButton onClick={() => setIsModalOpen(false)} slot="end" fill="clear">
+                                <IonButton style={{ '--background': '#ffffff', '--color': '#000000', color: '#000000', backgroundColor: '#ffffff' } as any} onClick={() => setIsModalOpen(false)} slot="end" fill="clear">
                                   Close
                                 </IonButton>
                               </IonToolbar>
@@ -964,7 +1050,7 @@ const handleSearchInputChange = (e: CustomEvent) => {
                       )}
 
                       {selectedFile && (
-                        <IonButton onClick={handleClearFile} color="danger">
+                        <IonButton style={{ '--background': '#ffffff', '--color': '#000000', color: '#000000', backgroundColor: '#ffffff' } as any} onClick={handleClearFile}>
                           <IonIcon icon={trashSharp} slot="icon-only" />
                         </IonButton>
                       )}
@@ -1010,7 +1096,7 @@ const handleSearchInputChange = (e: CustomEvent) => {
                         }}
                         onIonCancel={() => setShowHatchingDatePicker(false)}
                       />
-                      <IonButton onClick={() => setShowHatchingDatePicker(false)}>Close</IonButton>
+                      <IonButton style={{ '--background': '#ffffff', '--color': '#000000', color: '#000000', backgroundColor: '#ffffff' } as any} onClick={() => setShowHatchingDatePicker(false)}>Close</IonButton>
                       </IonModal>
                     )}
                   </div>)}</div>
@@ -1018,7 +1104,7 @@ const handleSearchInputChange = (e: CustomEvent) => {
       </>
     )}
 
-              <IonButton onClick={handleEdit}>
+              <IonButton style={{ '--background': '#ffffff', '--color': '#000000', color: '#000000', backgroundColor: '#ffffff' } as any} onClick={handleEdit}>
                 {isEditable ? "Save" : "Edit"}
               </IonButton>
              

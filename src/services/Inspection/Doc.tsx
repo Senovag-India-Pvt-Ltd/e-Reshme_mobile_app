@@ -13,6 +13,7 @@ import {
   IonButtons,
   IonHeader,
   IonMenuButton,
+  IonBackButton,
   IonTitle,
   IonToolbar,
   IonToast,
@@ -30,10 +31,11 @@ import { useParams, useHistory } from "react-router-dom";
 import "./Doc.css";
 
 import { API_URL_DBT } from '../auth.service';
-import { arrowBack, camera, trashSharp, eyeSharp } from "ionicons/icons";
+import { arrowBack, camera, trashSharp, eyeSharp, fileTrayStackedOutline } from "ionicons/icons";
 import { Plugins } from '@capacitor/core';
 import { CameraResultType, CameraSource } from '@capacitor/camera';
 import { Geolocation } from '@capacitor/geolocation';
+import { getSavedImages, readImageDataUrl, getImageFileAsBlob, deleteImage, SavedImageMeta } from '../imageStorage';
 
 const Doc: React.FC = () => {
   const { reelerId } = useParams<{ reelerId: string }>();
@@ -55,6 +57,9 @@ const Doc: React.FC = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalFile, setModalFile] = useState<{ url: string; name: string } | null>(null);
   const [isImageUploaded, setIsImageUploaded] = useState<boolean>(false);
+  const [isSavedModalOpen, setIsSavedModalOpen] = useState(false);
+  const [savedList, setSavedList] = useState<SavedImageMeta[]>([]);
+  const [savedDataUrls, setSavedDataUrls] = useState<Record<string, string>>({});
 
   useEffect(() => {
     fetchCurrentLocation();
@@ -80,12 +85,11 @@ const Doc: React.FC = () => {
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.files && event.target.files.length > 0) {
-      const filesArray = Array.from(event.target.files).map((file) => ({
-        url: URL.createObjectURL(file),
-        name: file.name,
-        file: file,
-      }));
-      setSelectedFiles((prevFiles) => [...prevFiles, ...filesArray]);
+      Array.from(event.target.files).forEach(async (file) => {
+        const compressed = await compressImageFile(file, 2);
+        const url = URL.createObjectURL(compressed);
+        setSelectedFiles((prevFiles) => [...prevFiles, { url, name: compressed.name, file: compressed }]);
+      });
     }
   };
 
@@ -99,11 +103,18 @@ const Doc: React.FC = () => {
       });
 
       if (capturedPhoto && capturedPhoto.webPath) {
+        const response = await fetch(capturedPhoto.webPath);
+        const blob = await response.blob();
+        let file = new File([blob], 'captured_image.jpg', { type: blob.type });
+        
+        // Compress to 2 MB
+        file = await compressImageFile(file, 2);
+        
         const position = await Geolocation.getCurrentPosition();
         const { latitude, longitude } = position.coords;
 
         const img = new Image();
-        img.src = capturedPhoto.webPath;
+        img.src = URL.createObjectURL(file);
         img.onload = () => {
           const canvas = document.createElement('canvas');
           const ctx = canvas.getContext('2d');
@@ -132,8 +143,19 @@ const Doc: React.FC = () => {
           ctx.fillStyle = 'white';
           ctx.font = 'bold 30px Arial';
 
-          ctx.fillText(`Latitude: ${latitude}`, 10, 50);
-          ctx.fillText(`Longitude: ${longitude}`, 10, 90);
+          // Add date and time to watermark
+          const dateTimeStr = new Date().toLocaleString('en-IN', {
+            year: 'numeric',
+            month: '2-digit',
+            day: '2-digit',
+            hour: '2-digit',
+            minute: '2-digit',
+            second: '2-digit',
+            hour12: false,
+          });
+          ctx.fillText(`${dateTimeStr}`, 10, 50);
+          ctx.fillText(`Latitude: ${latitude}`, 10, 90);
+          ctx.fillText(`Longitude: ${longitude}`, 10, 130);
 
           const newImageUrl = canvas.toDataURL('image/jpeg', 0.7);
 
@@ -241,21 +263,94 @@ const Doc: React.FC = () => {
     }
   };
 
+  // Helper: convert File to data URL
+  const fileToDataURL = (file: File): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result as string);
+      reader.onerror = (e) => reject(e);
+      reader.readAsDataURL(file);
+    });
+  };
+
+  // Helper: compress image File to max 2 MB
+  const compressImageFile = async (file: File, maxSizeMB = 2): Promise<File> => {
+    const maxSize = maxSizeMB * 1024 * 1024;
+
+    if (!file.type.startsWith('image/')) {
+      return file;
+    }
+
+    if (file.size <= maxSize) return file;
+
+    const dataUrl = await fileToDataURL(file);
+    const img = document.createElement('img');
+    img.src = dataUrl;
+
+    await new Promise((resolve, reject) => {
+      img.onload = () => resolve(true);
+      img.onerror = (e) => reject(e);
+    });
+
+    const canvas = document.createElement('canvas');
+    let [width, height] = [img.naturalWidth, img.naturalHeight];
+
+    const maxDim = 1600;
+    if (Math.max(width, height) > maxDim) {
+      const scale = maxDim / Math.max(width, height);
+      width = Math.round(width * scale);
+      height = Math.round(height * scale);
+    }
+
+    canvas.width = width;
+    canvas.height = height;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return file;
+
+    ctx.drawImage(img, 0, 0, width, height);
+
+    let quality = 0.92;
+    let blob: Blob | null = null;
+
+    for (let i = 0; i < 8; i++) {
+      blob = await new Promise<Blob | null>((resolve) => {
+        canvas.toBlob((b) => resolve(b), file.type === 'image/png' ? 'image/jpeg' : file.type, quality);
+      });
+
+      if (!blob) break;
+      if (blob.size <= maxSize) break;
+
+      quality = Math.max(0.4, quality - 0.12);
+
+      if (i === 3) {
+        width = Math.round(width * 0.8);
+        height = Math.round(height * 0.8);
+        canvas.width = width;
+        canvas.height = height;
+        ctx.drawImage(img, 0, 0, width, height);
+      }
+    }
+
+    if (blob && blob.size <= file.size) {
+      const newFile = new File([blob], file.name.replace(/\.[^/.]+$/, '') + '.jpg', { type: 'image/jpeg' });
+      return newFile.size <= maxSize ? newFile : file;
+    }
+
+    return file;
+  };
+
   return (
     <IonPage>
       <IonHeader>
         <IonToolbar>
           <IonButtons slot="start">
-            <IonMenuButton />
+            <IonBackButton text="Back" defaultHref="/list" style={{ color: '#000' }} />
           </IonButtons>
-          <IonTitle>
+          <IonTitle style={{ color: '#000000' }}>
             <b>Inspection</b>
           </IonTitle>
           <IonButtons slot="end">
-            <IonButton onClick={() => history.goBack()}>
-              <IonIcon icon={arrowBack} />
-              Go Back
-            </IonButton>
+            <IonMenuButton />
           </IonButtons>
         </IonToolbar>
       </IonHeader>
@@ -291,29 +386,40 @@ const Doc: React.FC = () => {
             </IonCol>
             <IonCol size="12" className="location-container">
               <IonLabel className="location-label">Capture Image:</IonLabel>
-              <label htmlFor="fileInput" className="capture-label">(Max: 2mb)</label>
+              <label htmlFor="fileInput" className="capture-label">(Max: 5MB)</label>
               <input type="file" multiple onChange={handleFileChange} ref={fileInputRef} />
-              <IonButton onClick={handleCameraCapture} className='cld'>
+              <IonButton style={{ '--background': '#ffffff', '--color': '#000000', color: '#000000', backgroundColor: '#ffffff' } as any} onClick={async () => {
+                const list = await getSavedImages();
+                setSavedList(list);
+                const map: Record<string, string> = {};
+                await Promise.all(list.map(async (m) => {
+                  const d = await readImageDataUrl(m.fileName);
+                  if (d) map[m.fileName] = d;
+                }));
+                setSavedDataUrls(map);
+                setIsSavedModalOpen(true);
+              }}>Use Saved Image</IonButton>
+              <IonButton style={{ '--background': '#ffffff', '--color': '#000000', color: '#000000', backgroundColor: '#ffffff' } as any} onClick={handleCameraCapture} className='cld'>
                 <IonIcon icon={camera} slot="icon-only" />
               </IonButton>
               {selectedFiles.length > 0 && (
                 <>
-                  <IonButton onClick={handleClear} className='bd'>
+                  <IonButton style={{ '--background': '#ffffff', '--color': '#000000', color: '#000000', backgroundColor: '#ffffff' } as any} onClick={handleClear} className='bd'>
                     <IonIcon icon={trashSharp} slot="icon-only" />
                   </IonButton>
                   {selectedFiles.map((file, index) => (
-                    <IonButton key={index} onClick={() => handleViewFile(file)} className='bd'>
+                    <IonButton style={{ '--background': '#ffffff', '--color': '#000000', color: '#000000', backgroundColor: '#ffffff' } as any} key={index} onClick={() => handleViewFile(file)} className='bd'>
                       <IonIcon icon={eyeSharp} slot="icon-only" />{index + 1}
                     </IonButton>
                   ))}
-                  <IonButton onClick={uploadFile} className='bd'>
+                  <IonButton style={{ '--background': '#ffffff', '--color': '#000000', color: '#000000', backgroundColor: '#ffffff' } as any} onClick={uploadFile} className='bd'>
                     Upload Image
                   </IonButton>
                 </>
               )}
             </IonCol>
             <IonCol size="12">
-              <IonButton expand="block" onClick={handleSubmit} disabled={!isImageUploaded}>
+              <IonButton style={{ '--background': '#ffffff', '--color': '#000000', color: '#000000', backgroundColor: '#ffffff' } as any} expand="block" onClick={handleSubmit} disabled={!isImageUploaded}>
                 Submit
               </IonButton>
             </IonCol>
@@ -355,6 +461,65 @@ const Doc: React.FC = () => {
         </IonHeader>
         <IonContent>
           {modalFile && !modalFile.name.endsWith('.pdf') && <IonImg src={modalFile.url} />}
+        </IonContent>
+      </IonModal>
+
+      <IonModal isOpen={isSavedModalOpen} onDidDismiss={() => setIsSavedModalOpen(false)}>
+        <IonHeader>
+          <IonToolbar>
+            <IonTitle>Saved Images</IonTitle>
+            <IonButton slot="end" onClick={() => setIsSavedModalOpen(false)}>Close</IonButton>
+          </IonToolbar>
+        </IonHeader>
+        <IonContent style={{ padding: 12 }}>
+          {savedList.length === 0 && <p>No saved images</p>}
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12 }}>
+            {savedList.map((m) => (
+              <div key={m.fileName} style={{ width: 140, border: '2px solid #ddd', borderRadius: '8px', overflow: 'hidden', padding: 6, background: '#fff' }}>
+                {savedDataUrls[m.fileName] ? (
+                  <IonImg src={savedDataUrls[m.fileName]} style={{ width: '100%', height: 100, objectFit: 'cover' }} />
+                ) : (
+                  <div style={{ width: '100%', height: 100, background: '#eee', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>📷</div>
+                )}
+                <div style={{ display: 'flex', gap: 8, marginTop: 6, justifyContent: 'center' }}>
+                  <IonButton title="View" size="small" onClick={() => {
+                    const url = savedDataUrls[m.fileName];
+                    if (url) {
+                      setModalFile({ url, name: m.fileName });
+                      setIsModalOpen(true);
+                      setIsSavedModalOpen(false);
+                    }
+                  }}>
+                    <IonIcon icon={eyeSharp} />
+                  </IonButton>
+                  <IonButton title="Use" size="small" onClick={async () => {
+                    try {
+                      const blob = await getImageFileAsBlob(m.fileName);
+                      if (!blob) throw new Error('Unable to read file');
+                      const file = new File([blob], m.fileName, { type: 'image/jpeg' });
+                      const url = URL.createObjectURL(file);
+                      setSelectedFiles((prevFiles) => [...prevFiles, { url, name: m.fileName, file }]);
+                      setIsSavedModalOpen(false);
+                    } catch (err) {
+                      console.error('Failed to use saved image', err);
+                    }
+                  }}>
+                    <IonIcon icon={fileTrayStackedOutline} />
+                  </IonButton>
+                  <IonButton title="Delete" size="small" onClick={async () => {
+                    await deleteImage(m.fileName);
+                    const updated = await getSavedImages();
+                    setSavedList(updated);
+                    const map = { ...savedDataUrls };
+                    delete map[m.fileName];
+                    setSavedDataUrls(map);
+                  }}>
+                    <IonIcon icon={trashSharp} />
+                  </IonButton>
+                </div>
+              </div>
+            ))}
+          </div>
         </IonContent>
       </IonModal>
     </IonPage>

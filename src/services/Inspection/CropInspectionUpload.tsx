@@ -28,11 +28,11 @@ const DocumentUpload: React.FC<DocumentUploadProps> = ({ onUpload, docId }) => {
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.files && event.target.files.length > 0) {
-      const filesArray = Array.from(event.target.files).map((file) => ({
-        url: URL.createObjectURL(file),
-        name: file.name,
-      }));
-      setSelectedFiles((prevFiles) => [...prevFiles, ...filesArray]);
+      Array.from(event.target.files).forEach(async (file) => {
+        const compressed = await compressImageFile(file, 2);
+        const url = URL.createObjectURL(compressed);
+        setSelectedFiles((prevFiles) => [...prevFiles, { url, name: compressed.name }]);
+      });
     }
   };
 
@@ -105,13 +105,20 @@ const DocumentUpload: React.FC<DocumentUploadProps> = ({ onUpload, docId }) => {
       });
   
       if (capturedPhoto && capturedPhoto.webPath) {
+        const response = await fetch(capturedPhoto.webPath);
+        const blob = await response.blob();
+        let file = new File([blob], 'captured_image.jpg', { type: blob.type });
+        
+        // Compress to 2 MB
+        file = await compressImageFile(file, 2);
+        
         // Get the current position
         const position = await Geolocation.getCurrentPosition();
         const { latitude, longitude } = position.coords;
   
         // Create a new image element
         const img = new Image();
-        img.src = capturedPhoto.webPath;
+        img.src = URL.createObjectURL(file);
         img.onload = () => {
           // Create a canvas to draw the image and text
           const canvas = document.createElement('canvas');
@@ -188,9 +195,85 @@ const DocumentUpload: React.FC<DocumentUploadProps> = ({ onUpload, docId }) => {
     setModalFile(null);
   };
 
+  // Helper: convert File to data URL
+  const fileToDataURL = (file: File): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result as string);
+      reader.onerror = (e) => reject(e);
+      reader.readAsDataURL(file);
+    });
+  };
+
+  // Helper: compress image File to max 2 MB
+  const compressImageFile = async (file: File, maxSizeMB = 2): Promise<File> => {
+    const maxSize = maxSizeMB * 1024 * 1024;
+
+    if (!file.type.startsWith('image/')) {
+      return file;
+    }
+
+    if (file.size <= maxSize) return file;
+
+    const dataUrl = await fileToDataURL(file);
+    const img = document.createElement('img');
+    img.src = dataUrl;
+
+    await new Promise((resolve, reject) => {
+      img.onload = () => resolve(true);
+      img.onerror = (e) => reject(e);
+    });
+
+    const canvas = document.createElement('canvas');
+    let [width, height] = [img.naturalWidth, img.naturalHeight];
+
+    const maxDim = 1600;
+    if (Math.max(width, height) > maxDim) {
+      const scale = maxDim / Math.max(width, height);
+      width = Math.round(width * scale);
+      height = Math.round(height * scale);
+    }
+
+    canvas.width = width;
+    canvas.height = height;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return file;
+
+    ctx.drawImage(img, 0, 0, width, height);
+
+    let quality = 0.92;
+    let blob: Blob | null = null;
+
+    for (let i = 0; i < 8; i++) {
+      blob = await new Promise<Blob | null>((resolve) => {
+        canvas.toBlob((b) => resolve(b), file.type === 'image/png' ? 'image/jpeg' : file.type, quality);
+      });
+
+      if (!blob) break;
+      if (blob.size <= maxSize) break;
+
+      quality = Math.max(0.4, quality - 0.12);
+
+      if (i === 3) {
+        width = Math.round(width * 0.8);
+        height = Math.round(height * 0.8);
+        canvas.width = width;
+        canvas.height = height;
+        ctx.drawImage(img, 0, 0, width, height);
+      }
+    }
+
+    if (blob && blob.size <= file.size) {
+      const newFile = new File([blob], file.name.replace(/\.[^/.]+$/, '') + '.jpg', { type: 'image/jpeg' });
+      return newFile.size <= maxSize ? newFile : file;
+    }
+
+    return file;
+  };
+
   return (
     <div>
-      <label htmlFor="fileInput">(Max:2mb)</label>
+      <label htmlFor="fileInput">(Max: 5MB)</label>
       <input type="file" multiple onChange={handleFileChange} ref={fileInputRef} />
       <IonButton onClick={handleCameraCapture} className='cld'>
         <IonIcon icon={camera} slot="icon-only" />

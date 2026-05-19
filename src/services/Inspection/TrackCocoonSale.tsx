@@ -298,7 +298,8 @@ const [isReadyToSubmit, setIsReadyToSubmit] = useState(false); // To control whe
       <IonHeader>
         <IonToolbar>
           <IonButtons slot="start">
-            <IonMenuButton /><IonBackButton defaultHref="/" /> 
+            <IonBackButton text="Back" slot="start" defaultHref="/" style={{ color: '#000' }} />
+            <IonMenuButton />
             
           </IonButtons>
           <IonTitle><b>Track Cocoon Sale</b></IonTitle>
@@ -315,19 +316,19 @@ const [isReadyToSubmit, setIsReadyToSubmit] = useState(false); // To control whe
             onIonInput={handleInputChange} // Update to use onIonInput
           /></div>
           <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '10px', marginTop: '10px' }}>
-          <IonButton size="small" onClick={fetchFarmerDetails}>Search</IonButton>
+          <IonButton style={{ '--background': '#ffffff', '--color': '#000000', color: '#000000', backgroundColor: '#ffffff' } as any} size="small" onClick={fetchFarmerDetails}>Search</IonButton>
 
           {/* Clear button with trash icon */}
-          <IonButton size="small" fill="clear" onClick={clearSearch}>
+          <IonButton style={{ '--background': '#ffffff', '--color': '#000000', color: '#000000', backgroundColor: '#ffffff' } as any} size="small" fill="clear" onClick={clearSearch}>
             <IonIcon color="danger" icon={trash} />
           </IonButton>
         </div>
 
-        <IonButton expand="block" onClick={handleVerify}>
+        <IonButton style={{ '--background': '#ffffff', '--color': '#000000', color: '#000000', backgroundColor: '#ffffff' } as any} expand="block" onClick={handleVerify}>
           Verify
         </IonButton>
         {dataList.some(data => !data.auctionDate) && (
-      <IonButton expand="block" onClick={() => add(saleAndDisposal)}>
+      <IonButton style={{ '--background': '#ffffff', '--color': '#000000', color: '#000000', backgroundColor: '#ffffff' } as any} expand="block" onClick={() => add(saleAndDisposal)}>
         Add
       </IonButton>
     )}

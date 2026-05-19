@@ -192,19 +192,103 @@ const ReelerInfoPage: React.FC = () => {
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
-      setSelectedFile(file);
+        (async () => {
+          try {
+            const compressed = await compressImageFile(file, 2);
+            setSelectedFile(compressed);
+          } catch (err) {
+            console.error('Compression error, using original file:', err);
+            setSelectedFile(file);
+          }
+        })();
     }
   };
 
-  return (
-    <IonPage>
+  // Helper: convert File to data URL
+  const fileToDataURL = (file: File): Promise<string> => {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result as string);
+        reader.onerror = (e) => reject(e);
+        reader.readAsDataURL(file);
+      });
+    };
+
+    // Helper: compress image File to max 2 MB
+    const compressImageFile = async (file: File, maxSizeMB = 2): Promise<File> => {
+      const maxSize = maxSizeMB * 1024 * 1024;
+
+      if (!file.type.startsWith('image/')) {
+        return file;
+      }
+
+      if (file.size <= maxSize) return file;
+
+      const dataUrl = await fileToDataURL(file);
+      const img = document.createElement('img');
+      img.src = dataUrl;
+
+      await new Promise((resolve, reject) => {
+        img.onload = () => resolve(true);
+        img.onerror = (e) => reject(e);
+      });
+
+      const canvas = document.createElement('canvas');
+      let [width, height] = [img.naturalWidth, img.naturalHeight];
+
+      const maxDim = 1600;
+      if (Math.max(width, height) > maxDim) {
+        const scale = maxDim / Math.max(width, height);
+        width = Math.round(width * scale);
+        height = Math.round(height * scale);
+      }
+
+      canvas.width = width;
+      canvas.height = height;
+      const ctx = canvas.getContext('2d');
+      if (!ctx) return file;
+
+      ctx.drawImage(img, 0, 0, width, height);
+
+      let quality = 0.92;
+      let blob: Blob | null = null;
+
+      for (let i = 0; i < 8; i++) {
+        blob = await new Promise<Blob | null>((resolve) => {
+          canvas.toBlob((b) => resolve(b), file.type === 'image/png' ? 'image/jpeg' : file.type, quality);
+        });
+
+        if (!blob) break;
+        if (blob.size <= maxSize) break;
+
+        quality = Math.max(0.4, quality - 0.12);
+
+        if (i === 3) {
+          width = Math.round(width * 0.8);
+          height = Math.round(height * 0.8);
+          canvas.width = width;
+          canvas.height = height;
+          ctx.drawImage(img, 0, 0, width, height);
+        }
+      }
+
+      if (blob && blob.size <= file.size) {
+        const newFile = new File([blob], file.name.replace(/\.[^/.]+$/, '') + '.jpg', { type: 'image/jpeg' });
+        return newFile.size <= maxSize ? newFile : file;
+      }
+
+      return file;
+    };
+
+    return (
+      <IonPage>
       <IonHeader>
         <IonToolbar>
           <IonButtons slot="start">
-            <IonMenuButton /><IonBackButton defaultHref="/" /> 
-            
+            <IonMenuButton />
+            <IonBackButton text="Back" slot="start" defaultHref="/" style={{ color: '#000' }} />
           </IonButtons>
-          <IonTitle><b>Reeler Profile Info</b></IonTitle>
+          <IonTitle style={{ color: '#000000' }}><b>Reeler Profile Info</b></IonTitle>
         </IonToolbar>
       </IonHeader>
 
@@ -219,10 +303,10 @@ const ReelerInfoPage: React.FC = () => {
           /></div>
           <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '10px', marginTop: '10px' }}>
 
-          <IonButton size="small" onClick={fetchReelerDetails}>Search</IonButton>
+          <IonButton style={{ '--background': '#ffffff', '--color': '#000000', color: '#000000', backgroundColor: '#ffffff' } as any} size="small" onClick={fetchReelerDetails}>Search</IonButton>
 
           {/* Clear button with trash icon */}
-          <IonButton size="small" fill="clear" onClick={clearSearch}>
+          <IonButton style={{ '--background': '#ffffff', '--color': '#000000', color: '#000000', backgroundColor: '#ffffff' } as any} size="small" fill="clear" onClick={clearSearch}>
             <IonIcon color="danger"  icon={trash} />
           </IonButton>
         </div>
@@ -230,7 +314,7 @@ const ReelerInfoPage: React.FC = () => {
         {data && (
           <IonCard className="details-card">
             <IonCardHeader>
-              <IonCardTitle>Reeler Profile Details</IonCardTitle>
+              <IonCardTitle style={{ color: '#000000' }}>Reeler Profile Details</IonCardTitle>
             </IonCardHeader>
             <IonCardContent>
               <div className="details-row">
@@ -250,12 +334,12 @@ const ReelerInfoPage: React.FC = () => {
                 />
               </div>
               {!viewAll ? (
-                <IonButton expand="full" onClick={() => reelerId !== null && toggleViewAll(reelerId)}>
+                <IonButton style={{ '--background': '#ffffff', '--color': '#000000', color: '#000000', backgroundColor: '#ffffff' } as any} expand="full" onClick={() => reelerId !== null && toggleViewAll(reelerId)}>
                   View All
                 </IonButton>
               ) : (
                 <>
-                  <IonButton expand="full" onClick={() => reelerId !== null && toggleViewAll(reelerId)}>
+                  <IonButton style={{ '--background': '#ffffff', '--color': '#000000', color: '#000000', backgroundColor: '#ffffff' } as any} expand="full" onClick={() => reelerId !== null && toggleViewAll(reelerId)}>
                     Hide
                   </IonButton>
                   <div className="details-row">
@@ -349,7 +433,7 @@ const ReelerInfoPage: React.FC = () => {
                   
                 </>
               )}
-              <IonButton onClick={handleEdit}>
+              <IonButton style={{ '--background': '#ffffff', '--color': '#000000', color: '#000000', backgroundColor: '#ffffff' } as any} onClick={handleEdit}>
                 {isEditable ? 'Save' : 'Edit'}
               </IonButton>
             </IonCardContent>

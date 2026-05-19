@@ -1,6 +1,9 @@
+import React, { useEffect } from 'react';
 import { IonApp, IonRouterOutlet, IonSplitPane, setupIonicReact } from '@ionic/react';
 import { IonReactRouter } from '@ionic/react-router';
 import { Redirect, Route } from 'react-router-dom';
+import { App as CapacitorApp } from '@capacitor/app';
+import { Capacitor } from '@capacitor/core';
 
 /* Core CSS required for Ionic components to work properly */
 import '@ionic/react/css/core.css';
@@ -57,7 +60,54 @@ import Logout from './pages/Logout/Logout';
 
 setupIonicReact();
 
-const App: React.FC = () => (
+const App: React.FC = () => {
+  useEffect(() => {
+    if (Capacitor.isNative) {
+      const handler = CapacitorApp.addListener('backButton', () => {
+        try {
+          const histState: any = window.history.state;
+          const idx = histState && histState.idx;
+
+          // If React Router history index is available, use it to decide
+          if (typeof idx === 'number') {
+            if (idx > 0) {
+              window.history.back();
+              return;
+            } else {
+              // idx === 0 => first entry
+              if (window.location.pathname === '/login' || window.location.pathname === '/') {
+                CapacitorApp.exitApp();
+              } else {
+                // fallback to back (may navigate within app)
+                window.history.back();
+              }
+              return;
+            }
+          }
+
+          // If idx not available, attempt a safe back then exit only if still at root
+          window.history.back();
+          setTimeout(() => {
+            if (window.location.pathname === '/login' || window.location.pathname === '/') {
+              CapacitorApp.exitApp();
+            }
+          }, 300);
+        } catch (e) {
+          try {
+            window.history.back();
+          } catch (_) {
+            CapacitorApp.exitApp();
+          }
+        }
+      });
+      return () => {
+        handler.remove();
+      };
+    }
+    return;
+  }, []);
+
+  return (
   <IonApp>
     <IonReactRouter>
       <IonSplitPane contentId="main">
@@ -165,5 +215,5 @@ const App: React.FC = () => (
     </IonReactRouter>
   </IonApp>
 );
-
+}
 export default App;

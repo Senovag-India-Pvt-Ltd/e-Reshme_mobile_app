@@ -14,7 +14,7 @@ const SubMenuPage: React.FC = () => {
           </IonButtons>
           <IonTitle className="menucolor"><b>Menu {menuId} - Sub Menu {submenuId}</b></IonTitle>
           <IonButtons slot="end">
-            <IonBackButton defaultHref={`/menu/${menuId}`} />
+            <IonBackButton text="Back" slot="start" defaultHref={`/menu/${menuId}`} style={{ color: '#000' }} />
           </IonButtons>
         </IonToolbar>
       </IonHeader>

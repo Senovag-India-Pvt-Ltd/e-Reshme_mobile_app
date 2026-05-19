@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { IonContent, IonPage, IonCard, IonCardContent, IonCardHeader, IonCardTitle, IonCol, IonGrid, IonRow, IonHeader, IonMenuButton, IonTitle, IonToolbar, IonButton, IonIcon, IonLabel, IonButtons, IonSearchbar } from '@ionic/react';
+import { IonContent, IonPage, IonCard, IonCardContent, IonCardHeader, IonCardTitle, IonCol, IonGrid, IonRow, IonHeader, IonMenuButton, IonTitle, IonToolbar, IonButton, IonIcon, IonLabel, IonButtons, IonSearchbar, IonBackButton } from '@ionic/react';
 import axios from 'axios';
 import { useParams, useHistory } from 'react-router-dom';
 import { API_URL_DBT } from '../auth.service';
@@ -46,11 +46,6 @@ const ReelerListPage: React.FC = () => {
   };
 
   
-
-  const handleGoBack = () => {
-    history.goBack();
-  };
-
   const filteredLists = lists.filter(item =>
     item.name.toLowerCase().includes(searchText.toLowerCase()) ||
     item.fruitsId.toLowerCase().includes(searchText.toLowerCase()) ||
@@ -63,17 +58,15 @@ const ReelerListPage: React.FC = () => {
       <IonHeader>
         <IonToolbar>
           <IonButtons slot="start">
-            <IonMenuButton />
+            <IonBackButton text="Back" defaultHref="/list" style={{ color: '#000' }} />
           </IonButtons>
-          <IonTitle><b>List Page</b></IonTitle>
+
+          <IonTitle style={{ color: '#000000' }}><b>List Page</b></IonTitle>
           <IonButtons slot="end">
-            <IonButton onClick={() => setShowSearchbar(!showSearchbar)}>
+            <IonButton style={{ '--background': '#ffffff', '--color': '#000000', color: '#000000', backgroundColor: '#ffffff' } as any} onClick={() => setShowSearchbar(!showSearchbar)}>
               <IonIcon icon={showSearchbar ? arrowBack : search} />
             </IonButton>
-            <IonButton onClick={handleGoBack}>
-              <IonIcon icon={arrowBack} />
-              Go Back
-            </IonButton>
+            <IonMenuButton />
           </IonButtons>
         </IonToolbar>
         {showSearchbar && (
@@ -92,8 +85,8 @@ const ReelerListPage: React.FC = () => {
               filteredLists.map((item, index) => (
                 <IonCol size="12" key={index}>
                   <IonCard className="card" >
-                    <IonCardHeader>
-                      <IonCardTitle><IonIcon icon={personCircle} /> <b>Reeler Name:</b> {item.name}</IonCardTitle>
+                    <IonCardHeader style={{ '--background': '#ffffff', backgroundColor: '#ffffff' } as any}>
+                      <IonCardTitle style={{ color: '#000000', '--background': '#ffffff', backgroundColor: '#ffffff' } as any}><IonIcon icon={personCircle} /> <b>Reeler Name:</b> {item.name}</IonCardTitle>
                     </IonCardHeader>
                     <IonCardContent>
                       <IonLabel><IonIcon icon={barcode} /> <span style={{ fontSize: '15px' }}><b>FID:</b></span> {item.fruitsId}</IonLabel><br />
@@ -103,6 +96,7 @@ const ReelerListPage: React.FC = () => {
                     </IonCardContent>
                       <IonCardContent>
                         <IonButton
+                          style={{ '--background': '#ffffff', '--color': '#000000', color: '#000000', backgroundColor: '#ffffff' } as any}
                           expand="full"
                           className="gradient-button"
                           onClick={() => handleUploadDocumentsClick(item.reelerId, item.approvalStageId, item.subSchemeId)}

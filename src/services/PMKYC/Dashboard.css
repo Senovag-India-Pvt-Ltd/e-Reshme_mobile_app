@@ -7,6 +7,20 @@
     font-size: min(4vw, 1.1rem); /* Adjust font size based on card width */
   }
   
+.card {
+    background-color: #ffffff !important;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1) !important;
+    border: none !important;
+  }
+
+  ion-card.card {
+    --background: #ffffff !important;
+    background: #ffffff !important;
+    background-color: #ffffff !important;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1) !important;
+    border: none !important;
+  }
+
   .card-content {
     display: flex;
     justify-content: center;
@@ -19,27 +33,17 @@
   
   .step-name {
     font-size: min(4vw, 1.1rem) !important; /* Adjust font size based on card width */
-    color: transparent; /* Make the text color transparent */
-    background:  linear-gradient(135deg, #1c1b1b 20%, #1c1b1b 50%);
-   
-   /* background:linear-gradient(135deg, #00c6ff 0%, #00c6ff 100%) ; */
-    -webkit-background-clip: text; /* Apply the background gradient to text */
-    background-clip: text; /* Apply the background gradient to text */
+    color: #000000 !important; /* Black text for white background */
     text-align: center;
     font-weight: bold !important;
   }
-  
+
   .count {
     font-size: min(5vw, 1.5rem) !important; /* Adjust font size based on card width */
     font-weight: bold !important;
-    color: transparent; /* Make the text color transparent */
-    background: linear-gradient(135deg, #0c0c0c 20%, #0c0c0c 50%); /* Gradient color */
-    -webkit-background-clip: text; /* Apply the background gradient to text */
-    background-clip: text; /* Apply the background gradient to text */
+    color: #000000 !important; /* Black text for white background */
     margin: 7px;
     text-align: center;
-   
-   
   }
 
   .searchbar {

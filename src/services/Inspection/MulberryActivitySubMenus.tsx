@@ -14,13 +14,8 @@ import {
   IonGrid,
   IonRow,
   IonCol,
-  IonCard,
-  IonCardHeader,
-  IonCardTitle,
-  IonCardContent,
 } from '@ionic/react';
 import { useHistory } from 'react-router-dom';
-import './MenuPage.css'; // Ensure you import the CSS file
 
 const MulberrybMenuPage: React.FC = () => {
   const history = useHistory();
@@ -53,28 +48,38 @@ const MulberrybMenuPage: React.FC = () => {
       <IonHeader>
         <IonToolbar>
           <IonButtons slot="start">
-            <IonBackButton defaultHref="/menu" />
+            <IonBackButton text="Back" slot="start" defaultHref="/menu" style={{ color: '#000' }} />
           </IonButtons>
           <IonTitle className="menucolor">Farmer Profile Submenus</IonTitle>
         </IonToolbar>
       </IonHeader>
-      <IonContent className="menu-content"> {/* Add the menu-content class */}
+      <IonContent className="menu-content">
         <IonGrid>
           <IonRow className="menu-row">
             {cropSubMenus.map((subMenu) => (
               <IonCol size="12" size-md="6" className="menu-col" key={subMenu.id}>
-                <IonCard
-                  button
-                  className="menu-button" // Add the menu-button class
+                <button
+                  style={{
+                    padding: '16px 12px',
+                    borderRadius: '8px',
+                    border: 'none',
+                    background: 'white',
+                    color: '#000',
+                    fontSize: '14px',
+                    fontWeight: '800',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '8px',
+                    boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+                    width: '100%'
+                  }}
                   onClick={() => handleSubSubMenuClick(subMenu.id)}
                 >
-                  <IonCardHeader>
-                    <IonCardTitle className="menu-label">{subMenu.name}</IonCardTitle>
-                  </IonCardHeader>
-                  <IonCardContent>
-                    {/* Add any additional description or icons here if needed */}
-                  </IonCardContent>
-                </IonCard>
+                  {subMenu.name}
+                </button>
               </IonCol>
             ))}
           </IonRow>

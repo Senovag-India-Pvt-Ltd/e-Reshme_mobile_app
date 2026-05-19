@@ -190,7 +190,7 @@ const YourComponent = () => {
       <IonHeader>
         <IonToolbar>
           <IonButtons slot="start">
-            <IonBackButton defaultHref="/dashboard" />
+            <IonBackButton text="Back" slot="start" defaultHref="/dashboard" style={{ color: '#000' }} />
             <IonMenuButton />
           </IonButtons>
           <IonTitle>
@@ -301,7 +301,7 @@ const YourComponent = () => {
                 placeholder="Enter Fruits ID"
                 onIonChange={e => setSearchText(e.detail.value!)}
               />
-              <IonButton size="small" onClick={fetchReelerDetails}><IonIcon color="danger"  icon={search} /></IonButton>
+              <IonButton size="small" onClick={fetchReelerDetails}><IonIcon icon={search} /></IonButton>
     
              
               {data && (

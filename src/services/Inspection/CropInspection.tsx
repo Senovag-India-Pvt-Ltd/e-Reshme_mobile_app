@@ -299,7 +299,8 @@ const toggleViewAll = (i: number) => {
       <IonHeader>
         <IonToolbar>
           <IonButtons slot="start">
-            <IonMenuButton /><IonBackButton defaultHref="/" /> 
+            <IonBackButton text="Back" slot="start" defaultHref="/" style={{ color: '#000' }} />
+            <IonMenuButton />
             
           </IonButtons>
           <IonTitle><b>Crop Inspection</b></IonTitle>
@@ -317,13 +318,13 @@ const toggleViewAll = (i: number) => {
           /></div>
          <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '10px', marginTop: '10px' }}>
 
-          <IonButton id="searchButton" size="small" onClick={() => {
+          <IonButton style={{ '--background': '#ffffff', '--color': '#000000', color: '#000000', backgroundColor: '#ffffff' } as any} id="searchButton" size="small" onClick={() => {
             document.querySelector('input').blur(); // Add this line to blur the input field
             fetchFarmerDetails();
           }}>Search</IonButton>
 
           {/* Clear button with trash icon */}
-          <IonButton size="small" fill="clear" onClick={clearSearch}>
+          <IonButton style={{ '--background': '#ffffff', '--color': '#000000', color: '#000000', backgroundColor: '#ffffff' } as any} size="small" fill="clear" onClick={clearSearch}>
             <IonIcon color="danger" icon={trash} />
           </IonButton>
         </div>
@@ -355,7 +356,7 @@ const toggleViewAll = (i: number) => {
           <IonLabel>Rate per 100 DFLs:</IonLabel>
           <IonInput value={data.ratePer100Dfls} readonly={true} />
         </div>
-        <IonButton expand="block" onClick={() => handleAddDetailsClick(data.saleAndDisposalId ?? 0,fid ?? 0,farmerId ?? 0)}>
+        <IonButton style={{ '--background': '#ffffff', '--color': '#000000', color: '#000000', backgroundColor: '#ffffff' } as any} expand="block" onClick={() => handleAddDetailsClick(data.saleAndDisposalId ?? 0,fid ?? 0,farmerId ?? 0)}>
           Inspection
         </IonButton>
       </IonCardContent>

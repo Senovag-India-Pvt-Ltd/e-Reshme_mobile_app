@@ -182,7 +182,7 @@ const toggleInspectionFields = () => {
       <IonHeader>
         <IonToolbar>
           <IonButtons slot="start">
-            <IonBackButton defaultHref="/" /> {/* Back button added */}
+            <IonBackButton text="Back" slot="start" defaultHref="/" style={{ color: '#000' }} /> {/* Back button added */}
             <IonMenuButton />
           </IonButtons>
           <IonTitle><b>Subsidy Application</b></IonTitle>

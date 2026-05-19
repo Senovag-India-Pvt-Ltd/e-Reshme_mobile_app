@@ -5,11 +5,19 @@
   
   .card {
     border-radius: 10px;
-    background-color: #ebe3e3;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    background-color: #ffffff !important;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1) !important;
     transition: transform 0.2s ease, box-shadow 0.2s ease;
     cursor: pointer;
-    color: #131212; /* Ensure text is visible on gradient background */
+    color: #000000; /* Black text on white background */
+  }
+
+  ion-card.card {
+    --background: #ffffff !important;
+    background: #ffffff !important;
+    background-color: #ffffff !important;
+    border-radius: 10px !important;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1) !important;
   }
   
   .card:hover {
@@ -26,6 +34,7 @@
     font-weight: bold;
     text-align: center;
     font-size: 1.2rem; /* Default font size */
+    color: #000000;
   }
   
   .card-content {
@@ -33,10 +42,56 @@
     
     text-align: left;
     font-size: 1.2rem;
+    color: #000000;
+  }
+
+  /* Ensure all text and icons inside cards are visible (black) */
+  .card ion-label,
+  .card ion-text,
+  .card p,
+  .card span,
+  .card div,
+  .card small,
+  .card b,
+  .card strong {
+    color: #000000 !important;
+  }
+
+  .card ion-icon {
+    color: #000000 !important;
+    opacity: 0.95 !important;
+  }
+
+  /* Buttons inside cards: white background with black text */
+  .gradient-button {
+    background: #ffffff !important;
+    color: #000000 !important;
+    border-radius: 8px !important;
+    --background: #ffffff !important;
+    --color: #000000 !important;
+    border: 1px solid rgba(0,0,0,0.05) !important;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15) !important;
+    font-weight: bold !important;
+  }
+
+  /* Make sure gradient-button text stays black even with strong .card color rules */
+  .card .gradient-button,
+  .card .gradient-button * {
+    color: #000000 !important;
+    font-weight: bold !important;
   }
   
   .ion-radio-group {
     margin: 1rem 0;
+  }
+
+  /* Ensure pages with bottom Menu have enough padding so controls aren't hidden */
+  .with-bottom-menu {
+    padding-bottom: calc(160px + env(safe-area-inset-bottom));
+  }
+
+  .submit-button {
+    margin-bottom: 8px;
   }
   
   .ion-radio-group ion-item {

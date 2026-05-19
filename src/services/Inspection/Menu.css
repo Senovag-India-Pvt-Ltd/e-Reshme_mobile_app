@@ -1,72 +1,335 @@
-.menu-content {
-    --ion-background-color: #fffbfb;
+/* Hide old bottom menu and show new home button only */
+.bottom-menu-container {
+  display: none !important;
+}
+
+/* Bottom home menu for non-home pages */
+.bottom-home-menu {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 1000;
+  width: 100%;
+  background: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-top: 1px solid #e0e0e0;
+  padding-bottom: max(0, env(safe-area-inset-bottom));
+}
+
+.bottom-menu-container {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 1000;
+  width: 100%;
+  transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+  user-select: none;
+}
+
+.bottom-menu-container.collapsed {
+  transform: translateY(100%);
+}
+
+.bottom-menu-container.expanded {
+  transform: translateY(0);
+}
+
+/* Drag Handle - visible when collapsed */
+.drag-handle {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 36px;
+  background: #0f0f0f;
+  border-top: 1px solid rgba(255, 255, 255, 0.03);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: grab;
+  user-select: none;
+  box-shadow: 0 -6px 20px rgba(0, 0, 0, 0.6);
+  border-radius: 12px 12px 0 0;
+  transition: all 0.18s ease;
+}
+
+.drag-handle:active {
+  cursor: grabbing;
+}
+
+.drag-handle:hover {
+  background: #111111;
+  box-shadow: 0 -8px 28px rgba(0, 0, 0, 0.7);
+}
+
+.drag-icon {
+  font-size: 18px;
+  color: #e6e6e6;
+  animation: none;
+}
+
+@keyframes dragPulse {
+  0%, 100% {
+    transform: translateY(0);
   }
-  
-  .menu-header {
-    --background: linear-gradient(135deg, #a6a6a6, #ffffff);
-    --color: #333;
+  50% {
+    transform: translateY(-5px);
   }
-  
-  .menu-title {
-    font-weight: bold;
-    font-size: 1.5em;
-    color: #646060;
-    text-shadow: 1px 1px 2px #000;
+}
+
+/* Drag Handle Bar - visible when expanded */
+.drag-handle-bar {
+  height: 8px;
+  background: #1a1a1a;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: grab;
+  user-select: none;
+  position: relative;
+  border-radius: 4px 4px 0 0;
+  transition: all 0.3s ease;
+}
+
+.drag-handle-bar:hover {
+  background: #222222;
+}
+
+.drag-handle-bar:active {
+  cursor: grabbing;
+}
+
+.drag-handle-bar .drag-icon {
+  font-size: 12px;
+  color: white;
+  margin-top: -2px;
+}
+
+.bottom-tab-bar {
+  --background: #121212;
+  --color: rgba(230, 230, 230, 0.8);
+  --color-selected: #ffffff;
+  border-top: none;
+  height: 65px;
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.1);
+  padding-bottom: max(8px, env(safe-area-inset-bottom));
+  overflow-x: auto;
+  overflow-y: hidden;
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
+}
+
+.bottom-tab-bar::-webkit-scrollbar {
+  height: 3px;
+}
+
+.bottom-tab-bar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.bottom-tab-bar::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: 2px;
+}
+
+.bottom-tab-button {
+  --padding-bottom: 6px;
+  --padding-end: 6px;
+  --padding-start: 6px;
+  --padding-top: 6px;
+  --ripple-color: rgba(255, 255, 255, 0.3);
+  flex: 0 0 auto;
+  min-width: 70px;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 2px;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  position: relative;
+  padding: 0 8px;
+}
+
+.bottom-tab-button:hover {
+  --color: #ffffff;
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.bottom-tab-button.tab-selected {
+  --color: #ffffff;
+}
+
+.bottom-tab-button.tab-active {
+  --color: #ffffff;
+  background: linear-gradient(135deg, rgba(26, 95, 122, 0.15) 0%, rgba(0, 188, 212, 0.15) 100%);
+  box-shadow: inset 0 0 12px rgba(0, 188, 212, 0.4), 0 0 20px rgba(0, 188, 212, 0.3);
+  animation: activeTabGlow 2s ease-in-out infinite;
+}
+
+@keyframes activeTabGlow {
+  0%, 100% {
+    box-shadow: inset 0 0 12px rgba(0, 188, 212, 0.4), 0 0 20px rgba(0, 188, 212, 0.3);
   }
-  
-  .menu-item {
-    --ion-background-color:#07b0f9;
-    background-color: #e0e0e0;
-    border-radius: 6px;
-    margin: 10px;
-    padding: 10px;
-    display: flex;
-    align-items: center;
-    color: #444;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    transition: transform 0.2s, background-color 0.2s;
+  50% {
+    box-shadow: inset 0 0 16px rgba(0, 188, 212, 0.6), 0 0 28px rgba(0, 188, 212, 0.45);
   }
-  
-  .menu-item:hover {
-    transform: scale(1.05);
-    background-color: #d0d0d0;
+}
+
+.bottom-tab-button::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 0;
+  height: 3px;
+  background: linear-gradient(90deg, transparent, rgba(102, 126, 234, 0.6), transparent);
+  border-radius: 2px;
+  transition: width 0.3s ease;
+}
+
+.bottom-tab-button.tab-active::after,
+.bottom-tab-button.tab-selected::after {
+  width: 50%;
+  background: linear-gradient(90deg, transparent, rgba(0, 188, 212, 0.9), transparent);
+  box-shadow: 0 0 8px rgba(0, 188, 212, 0.8);
+}
+
+.tab-icon {
+  font-size: 22px;
+  color: inherit;
+  transition: all 0.3s ease;
+}
+
+.bottom-tab-button:hover .tab-icon,
+.bottom-tab-button.tab-selected .tab-icon {
+  font-size: 24px;
+}
+
+.tab-label {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+  text-transform: uppercase;
+  color: inherit;
+  white-space: nowrap;
+  max-width: 80px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  transition: all 0.18s ease;
+  line-height: 1;
+}
+
+.bottom-tab-button:hover .tab-label,
+.bottom-tab-button.tab-selected .tab-label {
+  font-size: 8px;
+}
+
+.bottom-tab-button[title]:hover::before {
+  content: attr(title);
+  position: absolute;
+  bottom: 73px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(255,255,255,0.06);
+  color: #e6e6e6;
+  padding: 6px 10px;
+  border-radius: 6px;
+  font-size: 10px;
+  white-space: nowrap;
+  z-index: 10001;
+  font-weight: 600;
+  pointer-events: none;
+  animation: tooltipFadeIn 0.2s ease;
+}
+
+@keyframes tooltipFadeIn {
+  from {
+    opacity: 0;
+    transform: translateX(-50%) translateY(5px);
   }
-  
-  .menu-icon {
-    font-size: 36px;
-    margin-right: 15px;
-    color: #6a6a6a;
+  to {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
   }
-  
-  .menu-label {
-    font-weight: bold;
-    font-size: 1.1em;
-    color: #020202;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .bottom-tab-bar {
+    height: 60px;
   }
-  
-  .user-info {
-    display: flex;
-    align-items: center;
-    color: #186072;
+
+  .bottom-tab-button {
+    min-width: 65px;
+    padding: 0 6px;
   }
-  
-  .user-info ion-icon {
-    margin-right: 8px;
+
+  .tab-label {
+    font-size: 7px;
+    max-width: 60px;
   }
-  
-  @media (max-width: 600px) {
-    .menu-item {
-      flex-direction: column;
-      align-items: center;
-      padding: 20px;
-    }
-  
-    .menu-icon {
-      font-size: 30px;
-      margin-bottom: 10px;
-    }
-  
-    .menu-label {
-      font-size: 0.9em;
-    }
+
+  .tab-icon {
+    font-size: 20px;
   }
+
+  .bottom-tab-button:hover .tab-icon,
+  .bottom-tab-button.tab-selected .tab-icon {
+    font-size: 22px;
+  }
+
+  .drag-handle {
+    height: 36px;
+  }
+
+  .drag-icon {
+    font-size: 18px;
+  }
+}
+
+@media (max-width: 480px) {
+  .bottom-tab-bar {
+    height: 58px;
+  }
+
+  .bottom-tab-button {
+    min-width: 60px;
+    padding: 0 5px;
+  }
+
+  .tab-label {
+    font-size: 6px;
+    max-width: 55px;
+  }
+
+  .tab-icon {
+    font-size: 18px;
+  }
+
+  .bottom-tab-button:hover .tab-icon,
+  .bottom-tab-button.tab-selected .tab-icon {
+    font-size: 20px;
+  }
+
+  .bottom-tab-button::after {
+    width: 45% !important;
+  }
+
+  .drag-handle {
+    height: 34px;
+  }
+
+  .drag-icon {
+    font-size: 16px;
+  }
+}

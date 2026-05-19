@@ -12,7 +12,6 @@ import {
   IonButton,
   IonButtons,
   IonHeader,
-  IonMenuButton,
   IonTitle,
   IonToolbar,
   IonToast,
@@ -27,6 +26,7 @@ import axios from "axios";
 import { useParams, useHistory } from "react-router-dom";
 import "./DocPage.css";
 import DocumentUpload from "./DocumentUpload";
+import Menu from "../Inspection/Menu";
 import {
   API_URL_DBT,
   API_URL_DBT_,
@@ -510,33 +510,80 @@ const DocPage: React.FC = () => {
     }
   };
 
+  // const handleSubmit = () => {
+  //   // If Reject Type is selected, handle accordingly
+  //   if (rejectType === "Permanent") {
+  //     if (!rejectionReason) {
+  //       setValidationError(true);
+  //       return;
+  //     }
+  //     callPermanentRejectAPI();
+  //     return;
+  //   }
+  //   if (rejectType === "Objection") {
+  //     if (!selectedNextstep || !selectedUsername || !rejectionReason) {
+  //       setValidationError(true);
+  //       return;
+  //     }
+  //     callObjectionRejectAPI();
+  //     return;
+  //   }
+  //   // ...existing code...
+  //   if (!selectedNextstep) {
+  //     setValidationError(true);
+  //     return;
+  //   }
+  //   updateInspectionTaskStatus();
+  //   setSubmitSuccess(true);
+  //   setTimeout(() => setSubmitSuccess(false), 3000);
+  // };
+
+
   const handleSubmit = () => {
-    // If Reject Type is selected, handle accordingly
-    if (rejectType === "Permanent") {
-      if (!rejectionReason) {
-        setValidationError(true);
-        return;
-      }
-      callPermanentRejectAPI();
-      return;
-    }
-    if (rejectType === "Objection") {
-      if (!selectedNextstep || !selectedUsername || !rejectionReason) {
-        setValidationError(true);
-        return;
-      }
-      callObjectionRejectAPI();
-      return;
-    }
-    // ...existing code...
+
+  // ⭐ NEW: Mandatory check for Approval Stage & Username (only when NOT Permanent Reject)
+  // ------------------------------------------------------------------------
+  if (rejectType !== "Permanent") {
     if (!selectedNextstep) {
       setValidationError(true);
       return;
     }
-    updateInspectionTaskStatus();
-    setSubmitSuccess(true);
-    setTimeout(() => setSubmitSuccess(false), 3000);
-  };
+    if (!selectedUsername) {
+      setValidationError(true);
+      return;
+    }
+  }
+  // ------------------------------------------------------------------------
+
+  // If Reject Type is selected, handle accordingly
+  if (rejectType === "Permanent") {
+    if (!rejectionReason) {
+      setValidationError(true);
+      return;
+    }
+    callPermanentRejectAPI();
+    return;
+  }
+  if (rejectType === "Objection") {
+    if (!selectedNextstep || !selectedUsername || !rejectionReason) {
+      setValidationError(true);
+      return;
+    }
+    callObjectionRejectAPI();
+    return;
+  }
+
+  // Existing validation for nextstep (kept as-is)
+  if (!selectedNextstep) {
+    setValidationError(true);
+    return;
+  }
+
+  updateInspectionTaskStatus();
+  setSubmitSuccess(true);
+  setTimeout(() => setSubmitSuccess(false), 3000);
+};
+
 
   const handleDocumentSelect = (value: string) => {
     const selected = documents.find((doc) => doc.documentMasterId === value);
@@ -552,13 +599,13 @@ const DocPage: React.FC = () => {
       <IonHeader>
         <IonToolbar>
           <IonButtons slot="start">
-            <IonMenuButton />
+            {/* Removed IonMenuButton since we're using bottom tab menu */}
           </IonButtons>
           <IonTitle>
             <b>Documents</b>
           </IonTitle>
           <IonButtons slot="end">
-            <IonButton onClick={() => history.goBack()}>
+            <IonButton style={{ '--background': '#ffffff', '--color': '#000000', color: '#000000', backgroundColor: '#ffffff' } as any} onClick={() => history.goBack()}>
               <IonIcon icon={arrowBack} />
               Go Back
             </IonButton>
@@ -566,7 +613,7 @@ const DocPage: React.FC = () => {
         </IonToolbar>
       </IonHeader>
 
-      <IonContent>
+      <IonContent className="with-bottom-menu" style={{ ['--padding-bottom' as any]: '180px' } as React.CSSProperties}>
         <IonGrid>
           <IonRow>
             {/* --- NEW: Reject Type Dropdown --- */}
@@ -641,13 +688,13 @@ const DocPage: React.FC = () => {
             {/* Show Card for Selected Document */}
             {selectedDocument && (
               <IonCol size="8">
-                <IonCard className="notification-bar">
-                  <IonCardHeader>
+                <IonCard className="notification-bar" style={{ '--background': '#ffffff', '--color': '#000000', background: '#ffffff', color: '#000000' } as any}>
+                  <IonCardHeader style={{ color: '#000000', fontWeight: 800 }}>
                     <IonCardTitle>
                       Documents: {selectedDocument.documentMasterName}
                     </IonCardTitle>
                   </IonCardHeader>
-                  <IonCardContent>
+                  <IonCardContent style={{ color: '#000000' }}>
                     <DocumentUpload
                       onUpload={(file) => console.log(file)}
                       docId={selectedDocument.documentMasterId}
@@ -674,7 +721,7 @@ const DocPage: React.FC = () => {
             </IonCol>
 
             {/* Eligible Subsidy Input */}
-            <IonCol size="12">
+            {/* <IonCol size="12">
               <IonLabel>
                 <b>Eligible Subsidy:</b>
               </IonLabel>
@@ -683,7 +730,7 @@ const DocPage: React.FC = () => {
                 placeholder="Enter Eligible Subsidy Amount"
                 onIonChange={(e) => setEligibleSubsidy(e.detail.value!)}
               />
-            </IonCol>
+            </IonCol> */}
 
             {/* Username Dropdown */}
             {/* <IonCol size="12">
@@ -786,7 +833,7 @@ const DocPage: React.FC = () => {
 
             {/* Submit Button */}
             <IonCol size="12">
-              <IonButton expand="block" onClick={handleSubmit} disabled={isSubmitDisabled}>
+              <IonButton style={{ '--background': '#ffffff', '--color': '#000000', color: '#000000', backgroundColor: '#ffffff' } as any} expand="block" className="submit-button" onClick={handleSubmit} disabled={isSubmitDisabled}>
                 Submit
               </IonButton>
             </IonCol>
@@ -819,6 +866,7 @@ const DocPage: React.FC = () => {
         message="Login to Web Application and Generate Sanction Order"
         duration={4000}
       />
+      <Menu />
     </IonPage>
   );
 };

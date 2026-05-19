@@ -291,10 +291,11 @@ const handleInputChange = (e: CustomEvent) => {
       <IonHeader>
         <IonToolbar>
           <IonButtons slot="start">
-            <IonMenuButton /><IonBackButton defaultHref="/" /> 
+            <IonBackButton text="Back" slot="start" defaultHref="/" style={{ color: '#000' }} />
+            <IonMenuButton />
             
           </IonButtons>
-          <IonTitle><b>Supply of Disinfectants</b></IonTitle>
+          <IonTitle style={{ color: '#000000' }}><b>Supply of Disinfectants</b></IonTitle>
         </IonToolbar>
       </IonHeader>
 
@@ -308,10 +309,10 @@ const handleInputChange = (e: CustomEvent) => {
             onIonInput={handleInputChange} // Update to use onIonInput
           /></div>
           <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '10px', marginTop: '10px' }}>
-          <IonButton size="small" onClick={fetchFarmerDetails}>Search</IonButton>
+          <IonButton style={{ '--background': '#ffffff', '--color': '#000000', color: '#000000', backgroundColor: '#ffffff' } as any} size="small" onClick={fetchFarmerDetails}>Search</IonButton>
 
           {/* Clear button with trash icon */}
-          <IonButton size="small" fill="clear" onClick={clearSearch}>
+          <IonButton style={{ '--background': '#ffffff', '--color': '#000000', color: '#000000', backgroundColor: '#ffffff' } as any} size="small" fill="clear" onClick={clearSearch}>
             <IonIcon color="danger" icon={trash} />
           </IonButton>
         </div>
@@ -319,7 +320,7 @@ const handleInputChange = (e: CustomEvent) => {
         {data && (
           <IonCard className="details-card">
             <IonCardHeader>
-              <IonCardTitle>Disinfectant Supply</IonCardTitle>
+              <IonCardTitle style={{ color: '#000000' }}>Disinfectant Supply</IonCardTitle>
             </IonCardHeader>
             <IonCardContent>
             <div className="details-row">
@@ -353,7 +354,7 @@ const handleInputChange = (e: CustomEvent) => {
                 />
               </div>
               <IonCardHeader>
-              <IonCardTitle>Add Details</IonCardTitle>
+              <IonCardTitle style={{ color: '#000000' }}>Add Details</IonCardTitle>
             </IonCardHeader>
              
                    <IonCol size="12">
@@ -434,7 +435,7 @@ const handleInputChange = (e: CustomEvent) => {
                                     }}
                                     onIonCancel={() => setShowDispatchDatePicker(false)}
                                 />
-                                <IonButton onClick={() => setShowDispatchDatePicker(false)}>Close</IonButton>
+                                <IonButton style={{ '--background': '#ffffff', '--color': '#000000', color: '#000000', backgroundColor: '#ffffff' } as any} onClick={() => setShowDispatchDatePicker(false)}>Close</IonButton>
                                 </IonModal>
                             )}
                         </div>
@@ -450,7 +451,7 @@ const handleInputChange = (e: CustomEvent) => {
                     />
                   </div>
 
-                  <IonButton expand="full"  onclick={handleEdit}>Save</IonButton>
+                  <IonButton style={{ '--background': '#ffffff', '--color': '#000000', color: '#000000', backgroundColor: '#ffffff' } as any} expand="full"  onClick={handleEdit}>Save</IonButton>
 
                   
             </IonCardContent>

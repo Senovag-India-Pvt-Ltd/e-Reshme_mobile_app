@@ -383,7 +383,8 @@ const toggleViewAll = () => {
       <IonHeader>
         <IonToolbar>
           <IonButtons slot="start">
-           <IonMenuButton /><IonBackButton defaultHref="/" />
+           <IonBackButton text="Back" slot="start" defaultHref="/" style={{ color: '#000' }} />
+           <IonMenuButton />
           </IonButtons>
           <IonTitle>
             <b>Land Info</b>
@@ -402,10 +403,10 @@ const toggleViewAll = () => {
           /></div>
           <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '10px', marginTop: '10px' }}>
 
-          <IonButton  size="small" onClick={()=>{fetchDetails();}}>Search</IonButton>
+          <IonButton style={{ '--background': '#ffffff', '--color': '#000000', color: '#000000', backgroundColor: '#ffffff' } as any}  size="small" onClick={()=>{fetchDetails();}}>Search</IonButton>
 
           {/* Clear button with trash icon */}
-            <IonButton size="small" fill="clear" onClick={handleClear}>
+            <IonButton style={{ '--background': '#ffffff', '--color': '#000000', color: '#000000', backgroundColor: '#ffffff' } as any} size="small" fill="clear" onClick={handleClear}>
             <IonIcon color="danger" icon={trash} />
           </IonButton>
         </div>
@@ -433,7 +434,7 @@ const toggleViewAll = () => {
                   // onIonChange={e => handleChange(e, 'village')}
                 />     
               </div>
-              <IonButton expand="full" onClick={toggleViewAll}>
+              <IonButton style={{ '--background': '#ffffff', '--color': '#000000', color: '#000000', backgroundColor: '#ffffff' } as any} expand="full" onClick={toggleViewAll}>
                 {viewAll ? "Hide" : "Edit"}
               </IonButton>
                 {/* <IonButton expand="full" onClick={() => toggleViewAll(viewAll ? null : farmerId)}>
@@ -578,7 +579,7 @@ const toggleViewAll = () => {
 
                 </>
               )}
-              <IonButton onClick={handleEdit}>
+              <IonButton style={{ '--background': '#ffffff', '--color': '#000000', color: '#000000', backgroundColor: '#ffffff' } as any} onClick={handleEdit}>
                 {isEditable ? "Save" : "Save"}
               </IonButton>
               {/* <IonButton color="danger" onClick={handleClear}>
