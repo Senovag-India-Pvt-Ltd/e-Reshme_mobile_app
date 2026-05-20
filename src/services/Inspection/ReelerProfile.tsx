@@ -5,7 +5,8 @@ import {
   IonToolbar, IonTitle, IonButtons, IonMenuButton, IonIcon, IonBackButton, useIonViewWillLeave, 
   IonAlert
 } from '@ionic/react';
-import { trash } from 'ionicons/icons'; // Import the trash icon
+import { trash, searchOutline, refreshOutline, personOutline, checkmarkCircle } from 'ionicons/icons';
+import { IonSpinner } from '@ionic/react';
 import './ProfileInfoPage.css';
 import axios from 'axios';
 import { API_URL_DBT } from '../auth.service';
@@ -283,168 +284,172 @@ const ReelerInfoPage: React.FC = () => {
     return (
       <IonPage>
       <IonHeader>
-        <IonToolbar>
+        <IonToolbar className="page-toolbar">
           <IonButtons slot="start">
-            <IonMenuButton />
-            <IonBackButton text="Back" slot="start" defaultHref="/" style={{ color: '#000' }} />
+            <IonBackButton text="Back" defaultHref="/menu/2" />
           </IonButtons>
-          <IonTitle style={{ color: '#000000' }}><b>Reeler Profile Info</b></IonTitle>
+          <IonTitle>Reeler Profile Info</IonTitle>
+          <IonButtons slot="end">
+            <IonButton fill="clear" onClick={clearSearch} aria-label="Refresh">
+              <IonIcon icon={refreshOutline} />
+            </IonButton>
+          </IonButtons>
         </IonToolbar>
       </IonHeader>
 
-      <IonContent style={{ '--padding-bottom': '130px' } as any}>
-        <div className="search-container">
-          <IonLabel className="fruits-id-label">Fruits ID</IonLabel>
-          <IonInput
-            ref={inputRef} // Attach ref to IonInput
-            value={searchText}
-            placeholder="Enter Fruits ID"
-            onIonInput={handleInputChange} // Update to use onIonInput
-          /></div>
-          <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '10px', marginTop: '10px' }}>
+      <IonContent className="page-content">
+        <div className="page-hero-extension" aria-hidden="true"></div>
 
-          <IonButton style={{ '--background': '#ffffff', '--color': '#000000', color: '#000000', backgroundColor: '#ffffff' } as any} size="small" onClick={fetchReelerDetails}>Search</IonButton>
-
-          {/* Clear button with trash icon */}
-          <IonButton style={{ '--background': '#ffffff', '--color': '#000000', color: '#000000', backgroundColor: '#ffffff' } as any} size="small" fill="clear" onClick={clearSearch}>
-            <IonIcon color="danger"  icon={trash} />
-          </IonButton>
+        <div className="search-section">
+          <div className="search-input-wrap">
+            <span className="search-label">Fruits ID</span>
+            <IonInput
+              ref={inputRef}
+              value={searchText}
+              placeholder="Enter Fruits ID"
+              onIonInput={handleInputChange}
+            />
+          </div>
+          <div className="search-action-row">
+            <IonButton className="btn-primary" onClick={fetchReelerDetails}>
+              <IonIcon icon={searchOutline} slot="start" /> Search
+            </IonButton>
+            <IonButton className="icon-only-btn danger" onClick={clearSearch} aria-label="Clear">
+              <IonIcon icon={trash} />
+            </IonButton>
+          </div>
         </div>
 
         {data && (
-          <IonCard className="details-card">
-            <IonCardHeader>
-              <IonCardTitle>Reeler Profile Details</IonCardTitle>
-            </IonCardHeader>
-            <IonCardContent>
-              <div className="details-row">
-                <IonLabel>Reeler Name:</IonLabel>
-                <IonInput
-                  value={data.reelerName}
-                  readonly={true} // Set to always be readonly
-                  // onIonChange={e => handleChange(e, 'reelername')}
-                />
+          <div className="result-card">
+            <div className="result-head">
+              <div className="result-avatar">
+                <IonIcon icon={personOutline} />
               </div>
-              <div className="details-row">
-                <IonLabel>Address:</IonLabel>
-                <IonInput
-                  value={data.address}
-                  readonly={true} // Set to always be readonly
-                  // onIonChange={e => handleChange(e, 'farmerNameInKannada')}
-                />
+              <div className="result-head-text">
+                <span className="result-eyebrow">Reeler Profile</span>
+                <h3 className="result-title">{data.reelerName || '—'}</h3>
               </div>
-              {!viewAll ? (
-                <IonButton style={{ '--background': '#ffffff', '--color': '#000000', color: '#000000', backgroundColor: '#ffffff' } as any} expand="full" onClick={() => reelerId !== null && toggleViewAll(reelerId)}>
-                  View All
-                </IonButton>
-              ) : (
+            </div>
+
+            <div className="result-body">
+              <div className="info-row">
+                <label className="info-label">Reeler Name</label>
+                <IonInput value={data.reelerName} readonly={true} />
+              </div>
+              <div className="info-row">
+                <label className="info-label">Address</label>
+                <IonInput value={data.address} readonly={true} />
+              </div>
+
+              {viewAll && (
                 <>
-                  <IonButton style={{ '--background': '#ffffff', '--color': '#000000', color: '#000000', backgroundColor: '#ffffff' } as any} expand="full" onClick={() => reelerId !== null && toggleViewAll(reelerId)}>
-                    Hide
-                  </IonButton>
-                  <div className="details-row">
-                    <IonLabel>Father's/Husband Name:</IonLabel>
-                    <IonInput
-                      value={farmerOtherData?.fatherName}
-                      readonly={true}
-                      // onIonChange={e => handleChange(e, 'fathersname')}
-                    />
+                  <div className="info-row">
+                    <label className="info-label">Father's / Husband's Name</label>
+                    <IonInput value={farmerOtherData?.fatherName} readonly={true} />
                   </div>
-                 
-                  <div className="details-row">
-                    <IonLabel>Caste:</IonLabel>
-                    <IonInput
-                      value={farmerOtherData?.title}
-                      readonly={true}
-                      // onIonChange={e => handleChange(e, 'caste')}
-                    />
+                  <div className="info-row">
+                    <label className="info-label">Caste</label>
+                    <IonInput value={farmerOtherData?.title} readonly={true} />
                   </div>
-                  <IonCol size="12">
-                    <div className="details-row">
-                      <IonLabel>
-                        <b>Select Tsc:</b>
-                      </IonLabel>
-                      {fetchError ? (
-                        <p style={{ color: 'red' }}>Failed to fetch Tsc list. Please try again later.</p>
-                      ) : (
-                        <IonSelect
+
+                  <div className="info-row">
+                    <label className="info-label">Select TSC</label>
+                    {fetchError ? (
+                      <p className="info-error">Failed to fetch TSC list. Please try again later.</p>
+                    ) : (
+                      <IonSelect
                         value={farmerOtherData?.tscMasterId}
-                        disabled={!isEditable} 
-                        placeholder="Select Tsc"
+                        disabled={!isEditable}
+                        placeholder="Select TSC"
+                        interface="action-sheet"
                         onIonChange={(e) => setFarmerOtherData({
                           ...farmerOtherData,
-                          tscMasterId: e.detail.value  // Properly update tscMasterId when a new value is selected
+                          tscMasterId: e.detail.value
                         })}
                       >
-                        <IonSelectOption value="">None</IonSelectOption> 
+                        <IonSelectOption value="">None</IonSelectOption>
                         {tscListData.map((tsc) => (
                           <IonSelectOption key={tsc.tscMasterId} value={tsc.tscMasterId}>
                             {tsc.name}
                           </IonSelectOption>
                         ))}
                       </IonSelect>
-                      
-                      )}
-                    </div>
-                  </IonCol>
+                    )}
+                  </div>
 
-                  <div className="details-row">
-                    <IonLabel>Mobile Number:</IonLabel>
+                  <div className="info-row">
+                    <label className="info-label">Mobile Number</label>
                     <IonInput
                       value={farmerOtherData?.mobileNumber}
                       readonly={!isEditable}
                       onIonChange={e => handleChange(e, 'mobileNumber')}
                     />
                   </div>
-                  <div className="details-row">
-                    <IonLabel>North East:</IonLabel>
+                  <div className="info-row">
+                    <label className="info-label">North East</label>
                     <IonInput
                       value={farmerOtherData?.mahajarNorthEast}
                       readonly={!isEditable}
                       onIonChange={e => handleChange(e, 'mahajarNorthEast')}
                     />
                   </div>
-                  <div className="details-row">
-                    <IonLabel>North West:</IonLabel>
+                  <div className="info-row">
+                    <label className="info-label">North West</label>
                     <IonInput
                       value={farmerOtherData?.mahajarNorthWest}
                       readonly={!isEditable}
                       onIonChange={e => handleChange(e, 'mahajarNorthWest')}
                     />
                   </div>
-                  <div className="details-row">
-                    <IonLabel>South East:</IonLabel>
+                  <div className="info-row">
+                    <label className="info-label">South East</label>
                     <IonInput
                       value={farmerOtherData?.mahajarSouthEast}
                       readonly={!isEditable}
                       onIonChange={e => handleChange(e, 'mahajarSouthEast')}
                     />
                   </div>
-                  <div className="details-row">
-                    <IonLabel>South West:</IonLabel>
+                  <div className="info-row">
+                    <label className="info-label">South West</label>
                     <IonInput
                       value={farmerOtherData?.mahajarSouthWest}
                       readonly={!isEditable}
                       onIonChange={e => handleChange(e, 'mahajarSouthWest')}
                     />
                   </div>
-                  
-                  {/* File upload input for Farmer Photo */}
-                  
                 </>
               )}
-              <IonButton style={{ '--background': '#ffffff', '--color': '#000000', color: '#000000', backgroundColor: '#ffffff' } as any} onClick={handleEdit}>
-                {isEditable ? 'Save' : 'Edit'}
+            </div>
+
+            <div className="result-actions">
+              <IonButton
+                expand="block"
+                className="btn-result-primary is-active"
+                onClick={() => reelerId !== null && toggleViewAll(reelerId)}
+              >
+                {viewAll ? 'Hide Details' : 'View All Details'}
               </IonButton>
-            </IonCardContent>
-          </IonCard>
+              <IonButton
+                expand="block"
+                className="btn-result-secondary"
+                onClick={handleEdit}
+              >
+                {isEditable ? (
+                  <><IonIcon icon={checkmarkCircle} slot="start" /> Save Changes</>
+                ) : 'Edit Details'}
+              </IonButton>
+            </div>
+          </div>
         )}
-         <IonAlert
+
+        <IonAlert
           isOpen={showAlert}
           onDidDismiss={() => setShowAlert(false)}
           header={isError ? "Error" : "Success"}
           message={message}
           buttons={['OK']}
+          cssClass={`app-alert ${isError ? 'app-alert--error' : 'app-alert--success'}`}
         />
       </IonContent>
     </IonPage>

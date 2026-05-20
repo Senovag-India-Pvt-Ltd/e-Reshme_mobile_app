@@ -266,13 +266,7 @@ const ProfileInfoPage: React.FC = () => {
   
 
   const toggleViewAll = (i: number) => {
-    // If already showing details, just hide them
-    if (viewAll) {
-      setViewAll(false);
-      return;
-    }
-    if (loadingDetails) return;
-    setLoadingDetails(true);
+    setViewAll(!viewAll);
     const api = axios.create({
       baseURL: API_URL_DBT
     });
@@ -288,14 +282,10 @@ const ProfileInfoPage: React.FC = () => {
       setFarmerOtherData(prev => ({ ...prev, ...res.data.content }));
       setFarmerId(res.data.content[0].farmerId);
       setTscMasterId(res.data.content.tscName);
-      setViewAll(true);
-      setLoadingDetails(false);
     })
     .catch(error => {
       setMessage("Farmer number does not exist");
       setIsError(true);
-      setShowAlert(true);
-      setLoadingDetails(false);
     });
   };
   // Hide button logic extracted here

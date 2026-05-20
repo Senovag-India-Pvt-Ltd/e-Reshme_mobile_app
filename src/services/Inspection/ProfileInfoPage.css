@@ -438,22 +438,36 @@
 }
 
 .modal-list-card {
+  position: relative;
   background: var(--app-surface);
   border: 1px solid var(--app-border);
-  border-radius: 16px;
-  padding: 14px 16px 12px;
+  border-radius: 18px;
+  padding: 18px 18px 14px;
   box-shadow:
-    0 8px 18px rgba(8, 32, 71, 0.06),
-    0 1px 3px rgba(8, 32, 71, 0.04);
+    0 10px 24px rgba(8, 32, 71, 0.08),
+    0 2px 6px rgba(8, 32, 71, 0.04);
+  overflow: hidden;
   transition: box-shadow var(--duration-base) var(--ease-out-soft),
               border-color var(--duration-base) var(--ease-out-soft),
               transform var(--duration-fast) var(--ease-out-soft);
 }
+/* Subtle gradient accent at the top of each card */
+.modal-list-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: var(--grad-primary);
+  opacity: 0.85;
+}
 .modal-list-card:hover {
-  border-color: rgba(37, 99, 235, 0.24);
+  border-color: rgba(37, 99, 235, 0.30);
   box-shadow:
-    0 12px 24px rgba(8, 32, 71, 0.10),
-    0 2px 6px rgba(8, 32, 71, 0.05);
+    0 16px 32px rgba(8, 32, 71, 0.12),
+    0 4px 10px rgba(8, 32, 71, 0.06);
+  transform: translateY(-1px);
 }
 .modal-list-card:active { transform: scale(0.99); }
 
@@ -461,25 +475,29 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 10px;
-  padding-bottom: 10px;
-  margin-bottom: 10px;
+  gap: 12px;
+  padding-bottom: 14px;
+  margin-bottom: 14px;
   border-bottom: 1px solid var(--app-border);
 }
 
 .modal-list-fid {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 4px;
   min-width: 0;
   flex: 1;
 }
 
+.modal-list-fid > .info-label {
+  color: var(--ion-color-primary) !important;
+}
+
 .modal-list-fid-value {
-  font-size: 15px;
-  font-weight: 700;
-  color: var(--ion-color-primary);
-  letter-spacing: -0.005em;
+  font-size: 18px;
+  font-weight: 800;
+  color: var(--app-text);
+  letter-spacing: -0.015em;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -590,17 +608,86 @@
   font-weight: 700;
 }
 
-/* Searchbar inside modals — pick up brand tokens */
-.custom-searchbar {
-  --background: var(--app-surface-2);
-  --color: var(--app-text);
-  --placeholder-color: var(--app-text-subtle);
-  --border-radius: 14px;
-  --box-shadow: none;
-  --icon-color: var(--app-text-muted);
-  padding: 14px 16px 8px;
-  font-family: var(--app-font-sans);
+/* Searchbar inside modals — kept for backward compat */
+ion-searchbar.custom-searchbar {
+  --background: var(--app-surface-2) !important;
+  --color: var(--app-text) !important;
+  --placeholder-color: var(--app-text-subtle) !important;
+  --border-radius: 14px !important;
+  --box-shadow: none !important;
+  --icon-color: var(--app-text-muted) !important;
+  --clear-button-color: var(--app-text-muted) !important;
+  padding: 14px 16px 8px !important;
+  font-family: var(--app-font-sans) !important;
+  contain: none;
 }
+ion-searchbar.custom-searchbar .searchbar-input-container,
+ion-searchbar.custom-searchbar .searchbar-input {
+  background: var(--app-surface-2) !important;
+  border: 1px solid var(--app-border) !important;
+  border-radius: 14px !important;
+  box-shadow: none !important;
+  font-family: var(--app-font-sans) !important;
+  color: var(--app-text) !important;
+}
+
+/* Custom plain-input search — gives us full control over the look */
+.modal-search {
+  position: relative;
+  margin: 14px 18px 8px;
+  display: flex;
+  align-items: center;
+  background: var(--app-surface-2);
+  border: 1.5px solid var(--app-border);
+  border-radius: 14px;
+  padding: 12px 14px;
+  gap: 10px;
+  transition: border-color var(--duration-base) var(--ease-out-soft),
+              box-shadow var(--duration-base) var(--ease-out-soft);
+}
+.modal-search:focus-within {
+  border-color: var(--ion-color-primary);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.14);
+}
+.modal-search ion-icon {
+  font-size: 18px;
+  color: var(--app-text-muted) !important;
+  flex-shrink: 0;
+}
+.modal-search input {
+  flex: 1;
+  min-width: 0;
+  border: none;
+  outline: none;
+  background: transparent;
+  font-family: var(--app-font-sans);
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--app-text);
+  letter-spacing: -0.005em;
+}
+.modal-search input::placeholder {
+  color: var(--app-text-subtle);
+  font-weight: 500;
+}
+.modal-search .clear-btn {
+  display: none;
+  background: var(--app-border);
+  border: none;
+  border-radius: 50%;
+  width: 22px;
+  height: 22px;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  flex-shrink: 0;
+  color: var(--app-text-muted);
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1;
+}
+.modal-search.has-value .clear-btn { display: inline-flex; }
+.modal-search .clear-btn:hover { background: var(--app-border-strong); }
 
 /* ──────────────────────────────────────────────────────────
    Select trigger — looks like an input but opens a modal/picker

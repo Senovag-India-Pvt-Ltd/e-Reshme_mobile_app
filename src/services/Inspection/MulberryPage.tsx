@@ -4,7 +4,7 @@ import {
   IonMenuButton,IonIcon,IonBackButton,
   IonSelect,IonSelectOption,IonDatetime,IonCol,IonAlert,IonItem,IonImg,IonModal,
 } from "@ionic/react";
-import { camera, eyeSharp, trash, trashSharp, searchOutline, refreshOutline } from "ionicons/icons";
+import { camera, eyeSharp, trash, trashSharp, searchOutline, refreshOutline, leafOutline } from "ionicons/icons";
 import { IonSpinner } from "@ionic/react";
 import "./ProfileInfoPage.css";
 import axios from "axios";
@@ -843,45 +843,52 @@ const handleSearchInputChange = (e: CustomEvent) => {
         </div>
        
         {data && (
-          <IonCard className="details-card">
-            <IonCardHeader>
-              <IonCardTitle>Mulberry Variety Details</IonCardTitle>
-            </IonCardHeader>
-            <IonCardContent>
-              <div className="details-row">
-                <IonLabel>Survey No:</IonLabel>
-                <IonInput
-                  value={data.surveyNumber}
-                  readonly={true} // Set to always be readonly
-                  // onIonChange={e => handleChange(e, 'farmername')}
-                />
+          <div className="result-card">
+            <div className="result-head">
+              <div className="result-avatar is-accent-green">
+                <IonIcon icon={leafOutline} />
               </div>
-              <div className="details-row">
-                <IonLabel>Village Name:</IonLabel>
-                <IonInput
-                  value={data.villageName}
-                  readonly={true} // Set to always be readonly
-                  // onIonChange={e => handleChange(e, 'village')}
-                />
+              <div className="result-head-text">
+                <span className="result-eyebrow">Mulberry Variety Details</span>
+                <h3 className="result-title">{data.villageName || 'Farmer Land'}</h3>
               </div>
-              <div className="details-row">
-                <IonLabel>TSC:</IonLabel>
-                <IonInput
-                  value={data.tsc}
-                  readonly={true} // Set to always be readonly
-                  // onIonChange={e => handleChange(e, 'village')}
-                />
+            </div>
+
+            <div className="result-body">
+              <div className="info-row">
+                <label className="info-label">Survey No</label>
+                <IonInput value={data.surveyNumber} readonly={true} />
+              </div>
+              <div className="info-row">
+                <label className="info-label">Village Name</label>
+                <IonInput value={data.villageName} readonly={true} />
+              </div>
+              <div className="info-row">
+                <label className="info-label">TSC</label>
+                <IonInput value={data.tsc} readonly={true} />
               </div>
 
               {!viewAll ? (
-                <IonButton style={{ '--background': '#ffffff', '--color': '#000000', color: '#000000', backgroundColor: '#ffffff' } as any} expand="full" onClick={toggleViewAll}>
-                  Add Details
-                </IonButton>
+                <div className="result-actions" style={{ padding: '12px 0 0' }}>
+                  <IonButton
+                    className="btn-result-primary is-active"
+                    expand="block"
+                    onClick={toggleViewAll}
+                  >
+                    Add Details
+                  </IonButton>
+                </div>
               ) : (
                 <>
-                  <IonButton style={{ '--background': '#ffffff', '--color': '#000000', color: '#000000', backgroundColor: '#ffffff' } as any} expand="full" onClick={toggleViewAll}>
-                    Hide
-                  </IonButton>
+                  <div className="result-actions" style={{ padding: '12px 0 14px' }}>
+                    <IonButton
+                      className="btn-result-secondary"
+                      expand="block"
+                      onClick={toggleViewAll}
+                    >
+                      Hide
+                    </IonButton>
+                  </div>
 
     {/* {farmerOtherData && (
       <> */}
@@ -1127,12 +1134,18 @@ const handleSearchInputChange = (e: CustomEvent) => {
       </>
     )}
 
-              <IonButton style={{ '--background': '#ffffff', '--color': '#000000', color: '#000000', backgroundColor: '#ffffff' } as any} onClick={handleEdit}>
-                {isEditable ? "Save" : "Edit"}
-              </IonButton>
-             
-            </IonCardContent>
-          </IonCard>
+              <div className="result-actions" style={{ paddingTop: 12 }}>
+                <IonButton
+                  className="btn-result-primary is-active"
+                  expand="block"
+                  onClick={handleEdit}
+                >
+                  {isEditable ? "Save" : "Edit"}
+                </IonButton>
+              </div>
+
+            </div>
+          </div>
         )}
         <IonAlert
           isOpen={showAlert}

@@ -12,7 +12,6 @@ import {
   IonBackButton,
   IonAlert,
   IonModal,
-  IonSearchbar,
   IonSpinner,
 } from "@ionic/react";
 import { InputChangeEventDetail } from "@ionic/core";
@@ -663,13 +662,26 @@ const UpdateDlfPage: React.FC = () => {
             </IonToolbar>
           </IonHeader>
           <IonContent>
-            <IonSearchbar
-              value={listSearchTerm}
-              onIonInput={(e) => setListSearchTerm(e.detail.value!)}
-              placeholder="Search Fruits ID"
-              className="custom-searchbar"
-              showClearButton="focus"
-            />
+            <div className={`modal-search ${listSearchTerm ? 'has-value' : ''}`}>
+              <IonIcon icon={search} />
+              <input
+                type="text"
+                value={listSearchTerm}
+                onChange={(e) => setListSearchTerm(e.target.value)}
+                placeholder="Search Fruits ID"
+                aria-label="Search Fruits ID"
+              />
+              {listSearchTerm && (
+                <button
+                  type="button"
+                  className="clear-btn"
+                  onClick={() => setListSearchTerm('')}
+                  aria-label="Clear"
+                >
+                  ✕
+                </button>
+              )}
+            </div>
             <div className="modal-list">
               {filteredListData.map((item, index) => (
                 <div key={index} className="modal-list-card">

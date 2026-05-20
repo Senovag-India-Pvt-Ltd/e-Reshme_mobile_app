@@ -60,6 +60,7 @@ const FitnessPage: React.FC = () => {
 
   const [dataList, setDataList] = useState<any[]>([]);
   const [data, setData] = useState<any>(null);
+  const [farmerData, setFarmerData] = useState<any>(null);
   const [viewAll, setViewAll] = useState<boolean>(false);
   const [isFCIssued, setIsFCIssued] = useState<boolean>(false);
   const [selectedDate, setSelectedDate] = useState<string>(""); // State for selected date
@@ -183,15 +184,24 @@ const FitnessPage: React.FC = () => {
         },
       )
       .then((res) => {
-        console.log(res.data.content[0].farmerResponses[0]);
-        setDataList([res.data.content[0].farmerResponses[0]]);
-        setFarmerId(res.data.content[0].farmerResponses[0].farmerId);
-        toggleViewAll(res.data.content[0].farmerResponses[0].fruitsId);
+        const firstFarmer = res.data?.content?.[0]?.farmerResponses?.[0] || null;
+        if (firstFarmer) {
+          setFarmerData(firstFarmer);
+          setFarmerId(firstFarmer.farmerId);
+          toggleViewAll(firstFarmer.fruitsId);
+        } else {
+          setDataList([]);
+          setFarmerData(null);
+          setMessage("No farmer found for this Fruits ID");
+          setIsError(true);
+          setShowAlert(true);
+        }
         setSearching(false);
       })
       .catch((error) => {
         setMessage("Farmer number does not exist");
         setIsError(true);
+        setShowAlert(true);
         setSearching(false);
       });
   };
@@ -235,14 +245,13 @@ const FitnessPage: React.FC = () => {
   }, []);
 
   const toggleViewAll = (i: number) => {
-    // setViewAll(!viewAll);
     const api = axios.create({
       baseURL: API_URL_ChowkiManagment,
     });
 
     api
       .get(
-        `chowkimanagement/getInspectioninfoForFarmerFromSaleDisposalOfDFls/${i}`,
+        `chowkimanagement/getInspectioninfoForFarmerForFitnessCertificate/${i}`,
         {
           headers: {
             "Content-Type": "application/json",
@@ -255,7 +264,6 @@ const FitnessPage: React.FC = () => {
         if (res.data && res.data.length > 0) {
           const chowkiData = res.data[0];
 
-          // Setting specific fields using setData with the first item for other logic
           setData({
             dflsSource: chowkiData.dflsSource,
             numbersOfDfls: chowkiData.numbersOfDfls,
@@ -264,19 +272,27 @@ const FitnessPage: React.FC = () => {
             raceName: chowkiData.raceName,
             price: chowkiData.price,
             lotNumberCrc: chowkiData.lotNumberCrc,
-            ratePer100Dfls: chowkiData.ratePer100Dfls, // Handle missing receiptNo
+            ratePer100Dfls: chowkiData.ratePer100Dfls,
           });
 
           setChowkiId(chowkiData.saleAndDisposalId);
-          setDataList(res.data); // <-- Update this line to use the entire data array
+          setDataList(res.data);
         } else {
-          setMessage("No data found for the given farmer ID");
-          setIsError(true);
+          // No DFLs eligible for FC — farmer card still shows
+          setDataList([]);
+          setMessage(
+            "No DFLs pending Fitness Certificate for this farmer. All inspected lots may already have an FC issued.",
+          );
+          setIsError(false);
+          setShowAlert(true);
         }
       })
       .catch((error) => {
-        setMessage("Farmer number does not exist");
+        console.error("Error fetching FC-eligible DFLs:", error);
+        setDataList([]);
+        setMessage("Unable to fetch DFL details. Please try again.");
         setIsError(true);
+        setShowAlert(true);
       });
   };
 
@@ -292,11 +308,13 @@ const FitnessPage: React.FC = () => {
   const clearSearch = () => {
     setSearchText("");
     setDataList([]);
+    setFarmerData(null);
     setViewAll(false);
-    // setShowInspectionFields(false);
   };
 
   const clearField = () => {
+    setFarmerData(null);
+    setDataList([]);
     setViewAll(false);
   };
 
@@ -325,9 +343,29 @@ const FitnessPage: React.FC = () => {
 
   const fetchPendingFitnessCertificates = async (tscIdParam?: string) => {
     setLoading(true);
-    const tscId = tscIdParam || tscMasterId || (await getIdList());
-    if (!tscId) {
-      setMessage("Unable to determine TSC Master ID.");
+    const rawTscId = tscIdParam || tscMasterId || (await getIdList());
+    // Strict numeric validation — backend expects Long, so refuse "undefined"/"null"/non-numeric strings.
+    const numericTscId =
+      rawTscId != null && rawTscId !== "undefined" && rawTscId !== "null"
+        ? Number(rawTscId)
+        : NaN;
+    if (!Number.isFinite(numericTscId) || numericTscId <= 0) {
+      setPendingCount(0);
+      setListData([]);
+      setMessage(
+        "Your user profile does not have a TSC Master ID assigned. Please contact your administrator.",
+      );
+      setIsError(true);
+      setShowAlert(true);
+      setLoading(false);
+      return;
+    }
+
+    const token = localStorage.getItem("jwtToken");
+    if (!token || token === "null" || token === "undefined") {
+      setPendingCount(0);
+      setListData([]);
+      setMessage("Your session has expired. Please sign in again.");
       setIsError(true);
       setShowAlert(true);
       setLoading(false);
@@ -336,12 +374,12 @@ const FitnessPage: React.FC = () => {
 
     try {
       const response = await axios.get(
-        `${API_URL_ChowkiManagment}chowkimanagement/getPendingFitnessCertificateByTsc/${tscId}`,
+        `${API_URL_ChowkiManagment}chowkimanagement/getPendingFitnessCertificateByTsc/${numericTscId}`,
         {
           headers: {
             "Content-Type": "application/json",
             accept: "*/*",
-            Authorization: `Bearer ${localStorage.getItem("jwtToken")}`,
+            Authorization: `Bearer ${token}`,
           },
         },
       );
@@ -354,10 +392,27 @@ const FitnessPage: React.FC = () => {
         (Array.isArray(payload) ? payload.length : rows.length);
       setPendingCount(Number(count) || rows.length || 0);
       setListData(Array.isArray(rows) ? rows : []);
-    } catch (error) {
+    } catch (error: any) {
+      const statusCode = error?.response?.status;
       console.error("Error fetching pending fitness certificates:", error);
-      setMessage("Unable to load pending fitness certificates.");
-      setIsError(true);
+      console.error("Error response:", error?.response?.data);
+      setPendingCount(0);
+      setListData([]);
+
+      if (statusCode === 401 || statusCode === 403) {
+        setMessage(
+          "Your session is invalid or has expired. Please sign out and sign in again.",
+        );
+        setIsError(true);
+      } else if (statusCode === 404) {
+        setMessage("No pending fitness certificates found for your TSC.");
+        setIsError(false);
+      } else {
+        setMessage(
+          `Unable to load pending fitness certificates${statusCode ? ` (status ${statusCode})` : ""}. Please try again.`,
+        );
+        setIsError(true);
+      }
       setShowAlert(true);
     } finally {
       setLoading(false);
@@ -880,6 +935,42 @@ const FitnessPage: React.FC = () => {
             </IonButton>
           </div>
         </div>
+
+        {farmerData && (
+          <div className="result-card">
+            <div className="result-head">
+              <div className="result-avatar">
+                {(farmerData.fullName?.[0] || 'F').toUpperCase()}
+              </div>
+              <div className="result-head-text">
+                <span className="result-eyebrow">Farmer Found</span>
+                <h3 className="result-title">{farmerData.fullName || '—'}</h3>
+              </div>
+            </div>
+            <div className="result-body">
+              <div className="info-row">
+                <label className="info-label">Fruits ID</label>
+                <IonInput value={farmerData.fruitsId} readonly={true} />
+              </div>
+              <div className="info-row">
+                <label className="info-label">Address</label>
+                <IonInput value={farmerData.address || '—'} readonly={true} />
+              </div>
+              {farmerData.villageName && (
+                <div className="info-row">
+                  <label className="info-label">Village</label>
+                  <IonInput value={farmerData.villageName} readonly={true} />
+                </div>
+              )}
+              {farmerData.fatherName && (
+                <div className="info-row">
+                  <label className="info-label">Father / Husband Name</label>
+                  <IonInput value={farmerData.fatherName} readonly={true} />
+                </div>
+              )}
+            </div>
+          </div>
+        )}
 
         {dataList &&
           dataList.length > 0 &&

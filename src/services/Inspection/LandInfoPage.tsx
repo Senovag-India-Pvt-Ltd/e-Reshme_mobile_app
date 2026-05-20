@@ -438,180 +438,161 @@ const toggleViewAll = () => {
       
 
         {showLandDetails && data && (
-          <IonCard className="details-card">
-            <IonCardHeader>
-              <IonCardTitle>Farmer Land Details</IonCardTitle>
-            </IonCardHeader>
-            <IonCardContent>
-              <div className="details-row">
-                <IonLabel>Survey No:</IonLabel>
-                <IonInput
-                  value={data.surveyNumber}
-                  readonly={true} // Set to always be readonly
-                  // onIonChange={e => handleChange(e, 'farmername')}
-                />
+          <div className="result-card">
+            <div className="result-head">
+              <div className="result-avatar is-accent-green">L</div>
+              <div className="result-head-text">
+                <span className="result-eyebrow">Land Details</span>
+                <h3 className="result-title">{data.villageName || 'Farmer Land'}</h3>
               </div>
-              <div className="details-row">
-                <IonLabel>Village Name:</IonLabel>
-                <IonInput
-                  value={data.villageName}
-                  readonly={true} // Set to always be readonly
-                  // onIonChange={e => handleChange(e, 'village')}
-                />     
+            </div>
+
+            <div className="result-body">
+              <div className="info-row">
+                <label className="info-label">Survey No</label>
+                <IonInput value={data.surveyNumber} readonly={true} />
               </div>
-              <IonButton style={{ '--background': '#ffffff', '--color': '#000000', color: '#000000', backgroundColor: '#ffffff' } as any} expand="full" onClick={toggleViewAll}>
-                {viewAll ? "Hide" : "Edit"}
-              </IonButton>
-                {/* <IonButton expand="full" onClick={() => toggleViewAll(viewAll ? null : farmerId)}>
-                  {viewAll ? "Hide" : "View All"}
-                </IonButton> */}
+              <div className="info-row">
+                <label className="info-label">Village Name</label>
+                <IonInput value={data.villageName} readonly={true} />
+              </div>
 
-            
-
-                  {viewAll && (
-                    <>
-                  <div className="details-row">
-                    <IonLabel>Mulberry Area:</IonLabel>
+              {viewAll && (
+                <>
+                  <div className="info-row">
+                    <label className="info-label">Mulberry Area</label>
                     <IonInput
                       value={farmerOtherData?.mulberryArea}
                       onIonChange={(e) => handleChange(e, "mulberryArea")}
                     />
                   </div>
 
+                  <div className="info-row">
+                    <label className="info-label">Source Of Mulberry</label>
+                    {fetchError ? (
+                      <p className="info-error">Failed to fetch Mulberry list. Please try again later.</p>
+                    ) : (
+                      <IonSelect
+                        value={farmerOtherData?.mulberrySourceId}
+                        disabled={!isEditable}
+                        placeholder="Select Mulberry Source"
+                        interface="action-sheet"
+                        onIonChange={(e) => setFarmerOtherData({ ...farmerOtherData, mulberrySourceId: e.detail.value! })}
+                      >
+                        <IonSelectOption value="">None</IonSelectOption>
+                        {mulberrySourceData.map((source) => (
+                          <IonSelectOption key={source.mulberrySourceId} value={source.mulberrySourceId}>
+                            {source.mulberrySourceName}
+                          </IonSelectOption>
+                        ))}
+                      </IonSelect>
+                    )}
+                  </div>
 
-               
-                  <IonCol size="12">
-              <div className="details-row">
-                <IonLabel>
-                  <b>Select Source Of Mulberry:</b>
-                </IonLabel>
-                {fetchError ? (
-                  <p style={{ color: 'red' }}>Failed to fetch Mulberry list. Please try again later.</p>
-                ) : (
-                  <IonSelect
-                    value={farmerOtherData?.mulberrySourceId}
-                    disabled={!isEditable} // Disable if not editable
-                    placeholder="Select Mulberry Source"
-                    onIonChange={(e) =>setFarmerOtherData ({...farmerOtherData,mulberrySourceId:e.detail.value!})}
-                  >
-                    <IonSelectOption value="">None</IonSelectOption> {/* Option to deselect */}
-                    {mulberrySourceData.map((source) => (
-                      <IonSelectOption key={source.mulberrySourceId} value={source.mulberrySourceId}>
-                        {source.mulberrySourceName}
-                      </IonSelectOption>
-                    ))}
-                  </IonSelect>
-                )}
-              </div>
-            </IonCol>
+                  <div className="info-row">
+                    <label className="info-label">Mulberry Variety</label>
+                    {fetchError ? (
+                      <p className="info-error">Failed to fetch Mulberry list. Please try again later.</p>
+                    ) : (
+                      <IonSelect
+                        value={farmerOtherData?.mulberryVarietyId}
+                        disabled={!isEditable}
+                        placeholder="Select Mulberry Variety"
+                        interface="action-sheet"
+                        onIonChange={(e) => setFarmerOtherData({ ...farmerOtherData, mulberryVarietyId: e.detail.value! })}
+                      >
+                        <IonSelectOption value="">None</IonSelectOption>
+                        {mulberryVarietyData.map((variety) => (
+                          <IonSelectOption key={variety.mulberryVarietyId} value={variety.mulberryVarietyId}>
+                            {variety.mulberryVarietyName}
+                          </IonSelectOption>
+                        ))}
+                      </IonSelect>
+                    )}
+                  </div>
 
-            <IonCol size="12">
-              <div className="details-row">
-                <IonLabel>
-                  <b>Select Mulberry Variety:</b>
-                </IonLabel>
-                {fetchError ? (
-                  <p style={{ color: 'red' }}>Failed to fetch Mulberry list. Please try again later.</p>
-                ) : (
-                  <IonSelect
-                    value={farmerOtherData?.mulberryVarietyId}
-                    disabled={!isEditable} // Disable if not editable
-                    placeholder="Select Mulberry Source"
-                    onIonChange={(e) => setFarmerOtherData({...farmerOtherData,mulberryVarietyId:e.detail.value!})}
-                  >
-                    <IonSelectOption value="">None</IonSelectOption> {/* Option to deselect */}
-                    {mulberryVarietyData.map((variety) => (
-                      <IonSelectOption key={variety.mulberryVarietyId} value={variety.mulberryVarietyId}>
-                        {variety.mulberryVarietyName}
-                      </IonSelectOption>
-                    ))}
-                  </IonSelect>
-                )}
-              </div>
-            </IonCol>
+                  <div className="info-row">
+                    <label className="info-label">Silk Worm Variety</label>
+                    {fetchError ? (
+                      <p className="info-error">Failed to fetch Mulberry list. Please try again later.</p>
+                    ) : (
+                      <IonSelect
+                        value={farmerOtherData?.silkWormVarietyId}
+                        disabled={!isEditable}
+                        placeholder="Select Silk Worm Variety"
+                        interface="action-sheet"
+                        onIonChange={(e) => setFarmerOtherData({ ...farmerOtherData, silkWormVarietyId: e.detail.value! })}
+                      >
+                        <IonSelectOption value="">None</IonSelectOption>
+                        {silkWormVarietyData.map((silk) => (
+                          <IonSelectOption key={silk.silkWormVarietyId} value={silk.silkWormVarietyId}>
+                            {silk.silkWormVarietyName}
+                          </IonSelectOption>
+                        ))}
+                      </IonSelect>
+                    )}
+                  </div>
 
-            <IonCol size="12">
-              <div className="details-row">
-                <IonLabel>
-                  <b>Select Silk Worm Variety:</b>
-                </IonLabel>
-                {fetchError ? (
-                  <p style={{ color: 'red' }}>Failed to fetch Mulberry list. Please try again later.</p>
-                ) : (
-                  <IonSelect
-                    value={farmerOtherData?.silkWormVarietyId}
-                    disabled={!isEditable} // Disable if not editable
-                    placeholder="Select Mulberry Source"
-                    onIonChange={(e) => setFarmerOtherData({...farmerOtherData,silkWormVarietyId:e.detail.value!})}
-                  >
-                    <IonSelectOption value="">None</IonSelectOption> {/* Option to deselect */}
-                    {silkWormVarietyData.map((silk) => (
-                      <IonSelectOption key={silk.silkWormVarietyId} value={silk.silkWormVarietyId}>
-                        {silk.silkWormVarietyName}
-                      </IonSelectOption>
-                    ))}
-                  </IonSelect>
-                )}
-              </div>
-            </IonCol>
+                  <div className="info-row">
+                    <label className="info-label">Roof Type</label>
+                    {fetchError ? (
+                      <p className="info-error">Failed to fetch Mulberry list. Please try again later.</p>
+                    ) : (
+                      <IonSelect
+                        value={farmerOtherData?.roofTypeId}
+                        disabled={!isEditable}
+                        placeholder="Select Roof Type"
+                        interface="action-sheet"
+                        onIonChange={(e) => setFarmerOtherData({ ...farmerOtherData, roofTypeId: e.detail.value! })}
+                      >
+                        <IonSelectOption value="">None</IonSelectOption>
+                        {roofTypeData.map((roof) => (
+                          <IonSelectOption key={roof.roofTypeId} value={roof.roofTypeId}>
+                            {roof.roofTypeName}
+                          </IonSelectOption>
+                        ))}
+                      </IonSelect>
+                    )}
+                  </div>
 
-            <IonCol size="12">
-              <div className="details-row">
-                <IonLabel>
-                  <b>Select Roof Type:</b>
-                </IonLabel>
-                {fetchError ? (
-                  <p style={{ color: 'red' }}>Failed to fetch Mulberry list. Please try again later.</p>
-                ) : (
-                  <IonSelect
-                    value={farmerOtherData?.roofTypeId}
-                    disabled={!isEditable} // Disable if not editable
-                    placeholder="Select Mulberry Source"
-                    onIonChange={(e) => setFarmerOtherData({...farmerOtherData,roofTypeId:e.detail.value!})}
-                  >
-                    <IonSelectOption value="">None</IonSelectOption> {/* Option to deselect */}
-                    {roofTypeData.map((roof) => (
-                      <IonSelectOption key={roof.roofTypeId} value={roof.roofTypeId}>
-                        {roof.roofTypeName}
-                      </IonSelectOption>
-                    ))}
-                  </IonSelect>
-                )}
-              </div>
-            </IonCol>
-
-                  <div className="details-row">
-                    <IonLabel>Rearing House(In Sqft):</IonLabel>
+                  <div className="info-row">
+                    <label className="info-label">Rearing House (in sqft)</label>
                     <IonInput
                       value={farmerOtherData?.rearingHouseDetails}
                       readonly={!isEditable}
-                      onIonChange={(e) =>
-                        handleChange(e, "rearingHouseDetails")
-                      }
+                      onIonChange={(e) => handleChange(e, "rearingHouseDetails")}
                     />
                   </div>
 
-                  <div className="details-row">
-                    <IonLabel>Rearing Capacity:</IonLabel>
+                  <div className="info-row">
+                    <label className="info-label">Rearing Capacity</label>
                     <IonInput
                       value={farmerOtherData?.rearingCapacityDlf}
                       readonly={!isEditable}
-                      onIonChange={(e) =>
-                        handleChange(e, "rearingCapacityDlf")
-                      }
+                      onIonChange={(e) => handleChange(e, "rearingCapacityDlf")}
                     />
                   </div>
-
                 </>
               )}
-              <IonButton style={{ '--background': '#ffffff', '--color': '#000000', color: '#000000', backgroundColor: '#ffffff' } as any} onClick={handleEdit}>
-                {isEditable ? "Save" : "Save"}
+            </div>
+
+            <div className="result-actions">
+              <IonButton
+                className="btn-result-primary is-active"
+                expand="block"
+                onClick={toggleViewAll}
+              >
+                {viewAll ? "Hide Details" : "View All Details"}
               </IonButton>
-              {/* <IonButton color="danger" onClick={handleClear}>
-                Clear
-              </IonButton> */}
-            </IonCardContent>
-          </IonCard>
+              <IonButton
+                className="btn-result-secondary"
+                expand="block"
+                onClick={handleEdit}
+              >
+                Save
+              </IonButton>
+            </div>
+          </div>
         )}
 
 <IonAlert

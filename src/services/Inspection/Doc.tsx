@@ -31,7 +31,7 @@ import { useParams, useHistory } from "react-router-dom";
 import "./Doc.css";
 
 import { API_URL_DBT } from '../auth.service';
-import { arrowBack, camera, trashSharp, eyeSharp, fileTrayStackedOutline } from "ionicons/icons";
+import { arrowBack, camera, trashSharp, eyeSharp, fileTrayStackedOutline, locationOutline, documentTextOutline, imagesOutline, cloudUploadOutline, checkmarkCircle } from "ionicons/icons";
 import { Plugins } from '@capacitor/core';
 import { CameraResultType, CameraSource } from '@capacitor/camera';
 import { Geolocation } from '@capacitor/geolocation';
@@ -342,89 +342,147 @@ const Doc: React.FC = () => {
   return (
     <IonPage>
       <IonHeader>
-        <IonToolbar>
+        <IonToolbar className="page-toolbar">
           <IonButtons slot="start">
-            <IonBackButton text="Back" defaultHref="/list" style={{ color: '#000' }} />
+            <IonBackButton text="Back" defaultHref="/list" />
           </IonButtons>
-          <IonTitle style={{ color: '#000000' }}>
-            <b>Inspection</b>
-          </IonTitle>
-          <IonButtons slot="end">
-            <IonMenuButton />
-          </IonButtons>
+          <IonTitle>Reeler Inspection</IonTitle>
         </IonToolbar>
       </IonHeader>
 
-      <IonContent>
-        <IonGrid>
-          <IonRow>
-            <IonCol size="12">
-              <IonLabel className="capture-coordinates-label">
-                <b>CAPTURE GPS CO-ORDINATES OF THE REELING UNIT</b>
-              </IonLabel>
-            </IonCol>
-            <IonCol size="12" className="location-container">
-              <IonLabel className="location-label">Current Location:</IonLabel>
+      <IonContent className="page-content">
+        <div className="page-hero-extension" aria-hidden="true"></div>
+
+        <div className="result-card">
+          <div className="result-head">
+            <div className="result-avatar is-accent-cyan">
+              <IonIcon icon={locationOutline} />
+            </div>
+            <div className="result-head-text">
+              <span className="result-eyebrow">Reeling Unit</span>
+              <h3 className="result-title">GPS Co-ordinates</h3>
+            </div>
+          </div>
+
+          <div className="result-body">
+            <div className="info-row">
+              <label className="info-label">Latitude</label>
               <IonInput
                 value={currentLocation.latitude}
                 placeholder="Latitude"
                 disabled
               />
+            </div>
+            <div className="info-row">
+              <label className="info-label">Longitude</label>
               <IonInput
                 value={currentLocation.longitude}
                 placeholder="Longitude"
                 disabled
               />
-            </IonCol>
-            <IonCol size="12" className="location-container">
-              <IonLabel className="location-label">Inspection Date:</IonLabel>
+            </div>
+            <div className="info-row">
+              <label className="info-label">Inspection Date</label>
               <IonInput
                 value={new Date(inspectionFields.date).toLocaleDateString()}
                 readonly={true}
                 disabled={true}
               />
-            </IonCol>
-            <IonCol size="12" className="location-container">
-              <IonLabel className="location-label">Capture Image:</IonLabel>
-              <label htmlFor="fileInput" className="capture-label">(Max: 5MB)</label>
-              <input type="file" multiple onChange={handleFileChange} ref={fileInputRef} />
-              <IonButton style={{ '--background': '#ffffff', '--color': '#000000', color: '#000000', backgroundColor: '#ffffff' } as any} onClick={async () => {
-                const list = await getSavedImages();
-                setSavedList(list);
-                const map: Record<string, string> = {};
-                await Promise.all(list.map(async (m) => {
-                  const d = await readImageDataUrl(m.fileName);
-                  if (d) map[m.fileName] = d;
-                }));
-                setSavedDataUrls(map);
-                setIsSavedModalOpen(true);
-              }}>Use Saved Image</IonButton>
-              <IonButton style={{ '--background': '#ffffff', '--color': '#000000', color: '#000000', backgroundColor: '#ffffff' } as any} onClick={handleCameraCapture} className='cld'>
-                <IonIcon icon={camera} slot="icon-only" />
-              </IonButton>
+            </div>
+
+            <div className="info-row">
+              <label className="info-label">
+                Inspection Photo <span className="info-hint">(max 5 MB)</span>
+              </label>
+              <input
+                type="file"
+                multiple
+                onChange={handleFileChange}
+                ref={fileInputRef}
+                id="docFileInput"
+                style={{ display: 'none' }}
+              />
+              <div className="file-action-row">
+                <IonButton
+                  className="btn-result-primary is-active"
+                  expand="block"
+                  onClick={() => document.getElementById('docFileInput')?.click()}
+                  style={{ flex: 1 }}
+                >
+                  <IonIcon icon={documentTextOutline} slot="start" /> Choose File
+                </IonButton>
+                <IonButton
+                  className="icon-only-btn"
+                  onClick={handleCameraCapture}
+                  aria-label="Capture image"
+                >
+                  <IonIcon icon={camera} />
+                </IonButton>
+                <IonButton
+                  className="icon-only-btn"
+                  onClick={async () => {
+                    const list = await getSavedImages();
+                    setSavedList(list);
+                    const map: Record<string, string> = {};
+                    await Promise.all(list.map(async (m) => {
+                      const d = await readImageDataUrl(m.fileName);
+                      if (d) map[m.fileName] = d;
+                    }));
+                    setSavedDataUrls(map);
+                    setIsSavedModalOpen(true);
+                  }}
+                  aria-label="Use saved image"
+                >
+                  <IonIcon icon={imagesOutline} />
+                </IonButton>
+              </div>
+
               {selectedFiles.length > 0 && (
-                <>
-                  <IonButton style={{ '--background': '#ffffff', '--color': '#000000', color: '#000000', backgroundColor: '#ffffff' } as any} onClick={handleClear} className='bd'>
-                    <IonIcon icon={trashSharp} slot="icon-only" />
-                  </IonButton>
+                <div className="info-file-preview" style={{ flexWrap: 'wrap', gap: 8 }}>
+                  <span className="info-file-name">
+                    {selectedFiles.length} image{selectedFiles.length > 1 ? 's' : ''} selected
+                  </span>
                   {selectedFiles.map((file, index) => (
-                    <IonButton style={{ '--background': '#ffffff', '--color': '#000000', color: '#000000', backgroundColor: '#ffffff' } as any} key={index} onClick={() => handleViewFile(file)} className='bd'>
-                      <IonIcon icon={eyeSharp} slot="icon-only" />{index + 1}
+                    <IonButton
+                      className="icon-only-btn"
+                      key={index}
+                      onClick={() => handleViewFile(file)}
+                      aria-label={`View image ${index + 1}`}
+                    >
+                      <IonIcon icon={eyeSharp} />
                     </IonButton>
                   ))}
-                  <IonButton style={{ '--background': '#ffffff', '--color': '#000000', color: '#000000', backgroundColor: '#ffffff' } as any} onClick={uploadFile} className='bd'>
-                    Upload Image
+                  <IonButton
+                    className="icon-only-btn danger"
+                    onClick={handleClear}
+                    aria-label="Clear images"
+                  >
+                    <IonIcon icon={trashSharp} />
                   </IonButton>
-                </>
+                  <IonButton
+                    className="btn-result-primary is-active"
+                    expand="block"
+                    onClick={uploadFile}
+                    style={{ flex: '1 0 100%', marginTop: 8 }}
+                  >
+                    <IonIcon icon={cloudUploadOutline} slot="start" /> Upload Image
+                  </IonButton>
+                </div>
               )}
-            </IonCol>
-            <IonCol size="12">
-              <IonButton style={{ '--background': '#ffffff', '--color': '#000000', color: '#000000', backgroundColor: '#ffffff' } as any} expand="block" onClick={handleSubmit} disabled={!isImageUploaded}>
-                Submit
-              </IonButton>
-            </IonCol>
-          </IonRow>
-        </IonGrid>
+            </div>
+          </div>
+
+          <div className="result-actions">
+            <IonButton
+              className={`btn-result-primary ${isImageUploaded ? 'is-active' : 'is-disabled-state'}`}
+              expand="block"
+              onClick={handleSubmit}
+              disabled={!isImageUploaded}
+            >
+              <IonIcon icon={checkmarkCircle} slot="start" /> Submit Inspection
+            </IonButton>
+          </div>
+        </div>
       </IonContent>
 
       <IonToast

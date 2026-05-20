@@ -974,10 +974,11 @@ ion-modal {
   margin: 0;
 }
 
-/* Round icon button (e.g. trash, info) */
+/* Round icon button (e.g. trash, info, copy, chevron) */
 .icon-only-btn {
   --background: var(--app-surface) !important;
-  --background-hover: var(--app-surface) !important;
+  --background-hover: var(--app-surface-2) !important;
+  --color: var(--ion-color-primary) !important;
   --box-shadow: 0 2px 6px rgba(8, 32, 71, 0.06) !important;
   --border-radius: 12px;
   --padding-start: 0;
@@ -987,9 +988,15 @@ ion-modal {
   height: 44px;
   margin: 0;
   border: 1px solid var(--app-border);
+  color: var(--ion-color-primary) !important;
+}
+.icon-only-btn ion-icon {
+  color: var(--ion-color-primary) !important;
+  font-size: 20px;
 }
 .icon-only-btn.danger {
   --color: var(--ion-color-danger) !important;
+  color: var(--ion-color-danger) !important;
   border-color: rgba(239, 68, 68, 0.30);
 }
 .icon-only-btn.danger ion-icon { color: var(--ion-color-danger) !important; }

@@ -3,7 +3,7 @@ import {
   IonContent, IonPage, IonInput, IonButton, IonHeader,
   IonToolbar, IonTitle, IonButtons, IonMenuButton, IonIcon, IonBackButton,
   IonSelect, IonSelectOption, IonDatetime, IonItem,
-  IonAlert, IonModal, IonSearchbar,
+  IonAlert, IonModal,
 } from '@ionic/react';
 import { trash, informationCircle, copy, searchOutline, refreshOutline, leafOutline, clipboardOutline, arrowForwardCircle } from 'ionicons/icons';
 import { IonSpinner } from '@ionic/react';
@@ -171,9 +171,29 @@ const clearField=()=>{
 
   const fetchPendingCropInspections = async (tscIdParam?: string) => {
     setLoading(true);
-    const tscId = tscIdParam || tscMasterId || (await getIdList());
-    if (!tscId) {
-      setMessage("Unable to determine TSC Master ID.");
+    const rawTscId = tscIdParam || tscMasterId || (await getIdList());
+    // Strict numeric validation — backend expects Long, so refuse "undefined"/"null"/non-numeric strings.
+    const numericTscId =
+      rawTscId != null && rawTscId !== "undefined" && rawTscId !== "null"
+        ? Number(rawTscId)
+        : NaN;
+    if (!Number.isFinite(numericTscId) || numericTscId <= 0) {
+      setPendingCount(0);
+      setListData([]);
+      setMessage(
+        "Your user profile does not have a TSC Master ID assigned. Please contact your administrator.",
+      );
+      setIsError(true);
+      setShowAlert(true);
+      setLoading(false);
+      return;
+    }
+
+    const token = localStorage.getItem("jwtToken");
+    if (!token || token === "null" || token === "undefined") {
+      setPendingCount(0);
+      setListData([]);
+      setMessage("Your session has expired. Please sign in again.");
       setIsError(true);
       setShowAlert(true);
       setLoading(false);
@@ -181,14 +201,9 @@ const clearField=()=>{
     }
 
     try {
-      const token = localStorage.getItem("jwtToken");
-      if (!token) {
-        throw new Error("Missing authorization token.");
-      }
-
-      const url = `${API_URL_ChowkiManagment}chowkimanagement/getpendingCropInspectionByTsc/${tscId}`;
+      const url = `${API_URL_ChowkiManagment}chowkimanagement/getpendingCropInspectionByTsc/${numericTscId}`;
       console.info(`Fetching pending crop inspections from: ${url}`);
-      console.info(`TSC ID: ${tscId}`);
+      console.info(`TSC ID: ${numericTscId}`);
 
       const response = await axios.get(url, {
         headers: {
@@ -218,11 +233,21 @@ const clearField=()=>{
       setPendingCount(0);
       setListData([]);
 
-      if (statusCode === 403) {
-        setMessage("No pending crop inspections available.");
+      if (statusCode === 401 || statusCode === 403) {
+        // Real auth failure — JWT is invalid or expired
+        setMessage(
+          "Your session is invalid or has expired. Please sign out and sign in again.",
+        );
+        setIsError(true);
+        setShowAlert(true);
+      } else if (statusCode === 404) {
+        setMessage("No pending crop inspections found for your TSC.");
         setIsError(false);
+        setShowAlert(true);
       } else {
-        setMessage(`Error: ${statusCode || error?.message}`);
+        setMessage(
+          `Unable to load pending crop inspections${statusCode ? ` (status ${statusCode})` : ""}. Please try again.`,
+        );
         setIsError(true);
         setShowAlert(true);
       }
@@ -575,17 +600,28 @@ const toggleViewAll = (i: number) => {
                 </IonButton>
               </IonButtons>
             </IonToolbar>
-            <IonToolbar>
-              <IonSearchbar
-                value={listSearchTerm}
-                onIonInput={(e) => setListSearchTerm(e.detail.value!)}
-                placeholder="Search Fruits ID"
-                className="custom-searchbar"
-                showClearButton="focus"
-              />
-            </IonToolbar>
           </IonHeader>
           <IonContent>
+            <div className={`modal-search ${listSearchTerm ? 'has-value' : ''}`}>
+              <IonIcon icon={searchOutline} />
+              <input
+                type="text"
+                value={listSearchTerm}
+                onChange={(e) => setListSearchTerm(e.target.value)}
+                placeholder="Search Fruits ID"
+                aria-label="Search Fruits ID"
+              />
+              {listSearchTerm && (
+                <button
+                  type="button"
+                  className="clear-btn"
+                  onClick={() => setListSearchTerm('')}
+                  aria-label="Clear"
+                >
+                  ✕
+                </button>
+              )}
+            </div>
             <div className="pending-count-banner">
               <IonIcon icon={clipboardOutline} />
               <span><strong>{pendingCount}</strong> pending inspections</span>
