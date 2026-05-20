@@ -1,144 +1,289 @@
-.card-container {
-    margin: 0;
-    padding: 0;
-  }
-  
-  .card {
-    border-radius: 10px;
-    background-color: #ffffff !important;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1) !important;
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
-    cursor: pointer;
-    color: #000000; /* Black text on white background */
-  }
+/* =========================================================
+   ListPage — modern application list
+   ========================================================= */
 
-  ion-card.card {
-    --background: #ffffff !important;
-    background: #ffffff !important;
-    background-color: #ffffff !important;
-    border-radius: 10px !important;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1) !important;
-  }
-  
-  .card:hover {
-    transform: scale(1.02);
-    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
-  }
-  
-  .card-header {
-    padding: 1rem;
-  }
-  
-  .card-title {
-    font-size: 1.2rem; /* Adjust as needed */
-    font-weight: bold;
-    text-align: center;
-    font-size: 1.2rem; /* Default font size */
-    color: #000000;
-  }
-  
-  .card-content {
-    padding: 1rem;
-    
-    text-align: left;
-    font-size: 1.2rem;
-    color: #000000;
-  }
-
-  /* Ensure all text and icons inside cards are visible (black) */
-  .card ion-label,
-  .card ion-text,
-  .card p,
-  .card span,
-  .card div,
-  .card small,
-  .card b,
-  .card strong {
-    color: #000000 !important;
-  }
-
-  .card ion-icon {
-    color: #000000 !important;
-    opacity: 0.95 !important;
-  }
-
-  /* Buttons inside cards: white background with black text */
-  .gradient-button {
-    background: #ffffff !important;
-    color: #000000 !important;
-    border-radius: 8px !important;
-    --background: #ffffff !important;
-    --color: #000000 !important;
-    border: 1px solid rgba(0,0,0,0.05) !important;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15) !important;
-    font-weight: bold !important;
-  }
-
-  /* Make sure gradient-button text stays black even with strong .card color rules */
-  .card .gradient-button,
-  .card .gradient-button * {
-    color: #000000 !important;
-    font-weight: bold !important;
-  }
-  
-  .ion-radio-group {
-    margin: 1rem 0;
-  }
-
-  /* Ensure pages with bottom Menu have enough padding so controls aren't hidden */
-  .with-bottom-menu {
-    padding-bottom: calc(160px + env(safe-area-inset-bottom));
-  }
-
-  .submit-button {
-    margin-bottom: 8px;
-  }
-  
-  .ion-radio-group ion-item {
-    display: flex;
-    align-items: center;
-  }
-  
-  .description-input {
-    margin-top: 1rem;
-  }
-  .font{
-    font-size: medium;
-  }
-
-  /* Responsive font sizes */
-  @media (max-width: 600px) {
-    .card-title {
-        font-size: 1rem; /* Smaller font size for small screens */
-    }
-    .card-content {
-        font-size: 1rem; /* Smaller font size for small screens */
-    }
+/* Page background */
+.listpage-content {
+  --background: linear-gradient(180deg, #eef2ff 0%, #f6f8ff 35%, #ffffff 100%);
 }
 
-@media (min-width: 601px) and (max-width: 1024px) {
-    .card-title {
-        font-size: 1.1rem; /* Medium font size for medium screens */
-    }
-    .card-content {
-        font-size: 1.1rem; /* Medium font size for medium screens */
-    }
+/* Toolbar */
+.listpage-toolbar {
+  --background: linear-gradient(135deg, #4f46e5 0%, #6366f1 50%, #8b5cf6 100%) !important;
+  --color: #ffffff !important;
+  --border-width: 0 !important;
+  --min-height: 64px;
 }
 
-@media (min-width: 1025px) {
-    .card-title {
-        font-size: 1.2rem; /* Default font size for large screens */
-    }
-    .card-content {
-        font-size: 1.2rem; /* Default font size for large screens */
-    }
+.listpage-toolbar ion-title {
+  color: #ffffff !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.3px;
+  font-size: 1.15rem !important;
 }
 
-/* Toggleable search bar */
-.searchbar {
-  display: none;
+.listpage-toolbar ion-back-button,
+.listpage-toolbar ion-button {
+  --color: #ffffff !important;
+  color: #ffffff !important;
 }
 
-.searchbar.show {
-  display: block;
+.listpage-action-btn {
+  --background: rgba(255, 255, 255, 0.18) !important;
+  --background-hover: rgba(255, 255, 255, 0.28) !important;
+  --color: #ffffff !important;
+  --border-radius: 10px !important;
+  --padding-start: 10px !important;
+  --padding-end: 10px !important;
+  height: 38px;
+  margin-right: 4px;
+}
+
+/* Hero gradient strip behind first card */
+.listpage-hero {
+  height: 70px;
+  background: linear-gradient(180deg, rgba(99, 102, 241, 0.18) 0%, rgba(99, 102, 241, 0) 100%);
+  margin: 0 0 -50px;
+  pointer-events: none;
+}
+
+/* List container */
+.listpage-list {
+  padding: 16px 14px 90px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  position: relative;
+  z-index: 2;
+}
+
+/* Modern card */
+.listpage-card {
+  position: relative;
+  background: #ffffff;
+  border-radius: 20px;
+  padding: 18px 18px 16px;
+  border: 1px solid rgba(99, 102, 241, 0.08);
+  box-shadow:
+    0 8px 24px rgba(15, 23, 42, 0.07),
+    0 1px 3px rgba(15, 23, 42, 0.04);
+  overflow: hidden;
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+
+.listpage-card::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, #6366f1, #8b5cf6, #ec4899);
+}
+
+.listpage-card:hover {
+  transform: translateY(-2px);
+  box-shadow:
+    0 14px 30px rgba(15, 23, 42, 0.1),
+    0 2px 6px rgba(15, 23, 42, 0.05);
+}
+
+/* Card head: avatar + name + expand */
+.listpage-card-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding-bottom: 14px;
+  margin-bottom: 14px;
+  border-bottom: 1px dashed #e2e8f0;
+}
+
+.listpage-avatar {
+  width: 44px;
+  height: 44px;
+  border-radius: 14px;
+  background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  font-size: 1rem;
+  letter-spacing: 0.02em;
+  flex-shrink: 0;
+  box-shadow: 0 6px 14px rgba(99, 102, 241, 0.28);
+}
+
+.listpage-name-block {
+  flex: 1;
+  min-width: 0;
+}
+
+.listpage-tag {
+  display: inline-block;
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #6366f1;
+  background: rgba(99, 102, 241, 0.1);
+  padding: 2px 8px;
+  border-radius: 999px;
+  margin-bottom: 4px;
+}
+
+.listpage-name {
+  font-size: 1rem;
+  font-weight: 800;
+  color: #0f172a;
+  letter-spacing: -0.015em;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  margin: 0;
+}
+
+.listpage-expand-btn {
+  --background: #eef2ff !important;
+  --background-hover: #e0e7ff !important;
+  --color: #4f46e5 !important;
+  --border-radius: 12px !important;
+  --padding-start: 10px !important;
+  --padding-end: 10px !important;
+  width: 38px;
+  height: 38px;
+  margin: 0;
+  flex-shrink: 0;
+}
+
+.listpage-expand-btn ion-icon {
+  font-size: 18px;
+}
+
+/* Info grid */
+.listpage-info-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px 14px;
+}
+
+.listpage-row {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+
+.listpage-row--full {
+  grid-column: 1 / -1;
+}
+
+.listpage-row-label {
+  font-size: 0.62rem;
+  font-weight: 700;
+  color: #94a3b8;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.listpage-row-value {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #1e293b;
+  letter-spacing: -0.005em;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  word-break: break-word;
+}
+
+.listpage-row-value.is-amount {
+  color: #059669;
+  font-weight: 800;
+  font-size: 0.95rem;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Highlighted Fruits ID chip */
+.listpage-row--fid .listpage-row-value {
+  display: inline-block;
+  background: linear-gradient(135deg, #eef2ff 0%, #ede9fe 100%);
+  color: #4338ca;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 8px;
+  border: 1px solid rgba(99, 102, 241, 0.12);
+  font-size: 0.8rem;
+  width: fit-content;
+}
+
+/* Proceed button */
+.listpage-proceed {
+  --background: linear-gradient(135deg, #4f46e5 0%, #6366f1 50%, #8b5cf6 100%) !important;
+  --background-hover: linear-gradient(135deg, #4338ca 0%, #5b58e8 50%, #7c3aed 100%) !important;
+  --color: #ffffff !important;
+  --box-shadow: 0 8px 18px rgba(99, 102, 241, 0.32);
+  --border-radius: 14px !important;
+  color: #ffffff !important;
+  font-weight: 700 !important;
+  text-transform: none !important;
+  letter-spacing: 0.2px;
+  height: 48px;
+  margin: 16px 0 0;
+  font-size: 0.95rem !important;
+}
+
+.listpage-proceed ion-icon {
+  margin-right: 6px;
+}
+
+/* Searchbar */
+.listpage-searchbar {
+  --background: #ffffff !important;
+  --color: #0f172a !important;
+  --placeholder-color: #94a3b8 !important;
+  --icon-color: #6366f1 !important;
+  --border-radius: 14px !important;
+  --box-shadow: 0 4px 12px rgba(99, 102, 241, 0.15) !important;
+  padding: 10px 14px 12px !important;
+  background: linear-gradient(135deg, #4f46e5 0%, #6366f1 50%, #8b5cf6 100%);
+}
+
+/* Empty / loading state */
+.listpage-empty {
+  margin: 40px 20px;
+  padding: 40px 20px;
+  background: #ffffff;
+  border-radius: 20px;
+  text-align: center;
+  border: 1px dashed #cbd5e1;
+}
+
+.listpage-empty-icon {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #eef2ff, #ede9fe);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 16px;
+  color: #6366f1;
+  font-size: 28px;
+}
+
+.listpage-empty h3 {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #1e293b;
+  margin: 0 0 4px;
+}
+
+.listpage-empty p {
+  font-size: 0.85rem;
+  color: #94a3b8;
+  margin: 0;
+}
+
+.with-bottom-menu {
+  padding-bottom: calc(160px + env(safe-area-inset-bottom));
 }

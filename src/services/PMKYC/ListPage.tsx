@@ -8,11 +8,19 @@ import axios from 'axios';
 import { useParams, useHistory } from 'react-router-dom';
 import { API_URL_DBT_ } from '../auth.service';
 import {
-  arrowBack, search, arrowForward, refreshOutline,
+  close, search, arrowForward, refreshOutline,
   download, chevronDownOutline, chevronUpOutline,
+  peopleOutline,
 } from 'ionicons/icons';
 import '../Inspection/ProfileInfoPage.css';
+import './ListPage.css';
 import Menu from '../Inspection/Menu';
+
+const getInitials = (name: string) => {
+  if (!name) return '?';
+  const parts = name.trim().split(/\s+/);
+  return ((parts[0]?.[0] || '') + (parts[1]?.[0] || '')).toUpperCase() || '?';
+};
 
 const ListPage: React.FC = () => {
   const history = useHistory();
@@ -95,140 +103,148 @@ const ListPage: React.FC = () => {
   return (
     <IonPage>
       <IonHeader>
-        <IonToolbar className="page-toolbar">
+        <IonToolbar className="listpage-toolbar">
           <IonButtons slot="start">
-            <IonBackButton text="Back" defaultHref="/dash" />
+            <IonBackButton text="" defaultHref="/dash" />
           </IonButtons>
           <IonTitle>Application List</IonTitle>
           <IonButtons slot="end">
             <IonButton
-              fill="clear"
+              className="listpage-action-btn"
               onClick={fetchData}
               aria-label="Refresh"
               disabled={loading}
             >
-              <IonIcon icon={refreshOutline} />
+              <IonIcon slot="icon-only" icon={refreshOutline} />
             </IonButton>
             <IonButton
-              fill="clear"
+              className="listpage-action-btn"
               onClick={() => setShowSearchbar(!showSearchbar)}
               aria-label="Search"
             >
-              <IonIcon icon={showSearchbar ? arrowBack : search} />
+              <IonIcon slot="icon-only" icon={showSearchbar ? close : search} />
             </IonButton>
           </IonButtons>
         </IonToolbar>
         {showSearchbar && (
-          <IonToolbar>
-            <IonSearchbar
-              value={searchText}
-              onIonInput={(e) => setSearchText(e.detail.value!)}
-              placeholder="Search by Farmer Name"
-              className="custom-searchbar"
-            />
-          </IonToolbar>
+          <IonSearchbar
+            value={searchText}
+            onIonInput={(e) => setSearchText(e.detail.value!)}
+            placeholder="Search by farmer name"
+            className="listpage-searchbar"
+            animated
+          />
         )}
       </IonHeader>
 
-      <IonContent className="page-content">
-        <div className="page-hero-extension" aria-hidden="true"></div>
+      <IonContent className="listpage-content">
+        <div className="listpage-hero" aria-hidden="true"></div>
 
-        <div className="modal-list" style={{ marginTop: -40, position: 'relative', zIndex: 2 }}>
+        <div className="listpage-list">
           {filteredLists.length === 0 ? (
-            <div className="no-data-hint">
-              {loading ? 'Loading applications…' : 'No applications in progress.'}
+            <div className="listpage-empty">
+              <div className="listpage-empty-icon">
+                <IonIcon icon={loading ? refreshOutline : peopleOutline} />
+              </div>
+              <h3>{loading ? 'Loading applications…' : 'No applications'}</h3>
+              <p>
+                {loading
+                  ? 'Please wait while we fetch the latest data.'
+                  : 'There are no applications in progress right now.'}
+              </p>
             </div>
           ) : (
             filteredLists.map((item, index) => {
               const expanded = viewIndex === index;
+              const fullName = item.farmerFirstName || '—';
               return (
-                <div key={index} className="modal-list-card">
-                  <div className="modal-list-head">
-                    <div className="modal-list-fid">
-                      <span className="info-label">Farmer</span>
-                      <span className="modal-list-fid-value">{item.farmerFirstName || '—'}</span>
+                <div key={index} className="listpage-card">
+                  <div className="listpage-card-head">
+                    <div className="listpage-avatar">{getInitials(fullName)}</div>
+                    <div className="listpage-name-block">
+                      <span className="listpage-tag">Farmer</span>
+                      <h3 className="listpage-name">{fullName}</h3>
                     </div>
                     <IonButton
-                      className="icon-only-btn"
+                      className="listpage-expand-btn"
                       onClick={() => handleViewDetails(index)}
                       aria-label={expanded ? 'Hide details' : 'View details'}
                     >
-                      <IonIcon icon={expanded ? chevronUpOutline : chevronDownOutline} />
+                      <IonIcon slot="icon-only" icon={expanded ? chevronUpOutline : chevronDownOutline} />
                     </IonButton>
                   </div>
 
-                  <div className="modal-list-grid">
-                    <div className="modal-list-row modal-list-row--full">
-                      <span className="info-label">Fruits ID</span>
-                      <span>{item.fruitsId || '—'}</span>
+                  <div className="listpage-info-grid">
+                    <div className="listpage-row listpage-row--full listpage-row--fid">
+                      <span className="listpage-row-label">Fruits ID</span>
+                      <span className="listpage-row-value">{item.fruitsId || '—'}</span>
                     </div>
 
                     {expanded && (
                       <>
-                        <div className="modal-list-row">
-                          <span className="info-label">Mobile</span>
-                          <span>{item.mobileNumber || '—'}</span>
+                        <div className="listpage-row">
+                          <span className="listpage-row-label">Mobile</span>
+                          <span className="listpage-row-value">{item.mobileNumber || '—'}</span>
                         </div>
-                        <div className="modal-list-row">
-                          <span className="info-label">Category</span>
-                          <span>{item.categoryName || '—'}</span>
+                        <div className="listpage-row">
+                          <span className="listpage-row-label">Category</span>
+                          <span className="listpage-row-value">{item.categoryName || '—'}</span>
                         </div>
-                        <div className="modal-list-row modal-list-row--full">
-                          <span className="info-label">Head Account</span>
-                          <span>{item.headAccountName || '—'}</span>
+                        <div className="listpage-row listpage-row--full">
+                          <span className="listpage-row-label">Head Account</span>
+                          <span className="listpage-row-value">{item.headAccountName || '—'}</span>
                         </div>
-                        <div className="modal-list-row modal-list-row--full">
-                          <span className="info-label">Scheme</span>
-                          <span>{item.schemeName || '—'}</span>
+                        <div className="listpage-row listpage-row--full">
+                          <span className="listpage-row-label">Scheme</span>
+                          <span className="listpage-row-value">{item.schemeName || '—'}</span>
                         </div>
-                        <div className="modal-list-row modal-list-row--full">
-                          <span className="info-label">Sub Scheme</span>
-                          <span>{item.subSchemeName || '—'}</span>
+                        <div className="listpage-row listpage-row--full">
+                          <span className="listpage-row-label">Sub Scheme</span>
+                          <span className="listpage-row-value">{item.subSchemeName || '—'}</span>
                         </div>
-                        <div className="modal-list-row">
-                          <span className="info-label">Subsidy Amount</span>
-                          <span>{item.schemeAmount || '—'}</span>
+                        <div className="listpage-row">
+                          <span className="listpage-row-label">Subsidy Amount</span>
+                          <span className="listpage-row-value is-amount">
+                            {item.schemeAmount ? `₹${item.schemeAmount}` : '—'}
+                          </span>
                         </div>
-                        <div className="modal-list-row">
-                          <span className="info-label">District</span>
-                          <span>{item.districtName || '—'}</span>
+                        <div className="listpage-row">
+                          <span className="listpage-row-label">District</span>
+                          <span className="listpage-row-value">{item.districtName || '—'}</span>
                         </div>
-                        <div className="modal-list-row">
-                          <span className="info-label">Taluk</span>
-                          <span>{item.talukName || '—'}</span>
+                        <div className="listpage-row">
+                          <span className="listpage-row-label">Taluk</span>
+                          <span className="listpage-row-value">{item.talukName || '—'}</span>
                         </div>
-                        <div className="modal-list-row">
-                          <span className="info-label">TSC</span>
-                          <span>{item.tscName || '—'}</span>
+                        <div className="listpage-row">
+                          <span className="listpage-row-label">TSC</span>
+                          <span className="listpage-row-value">{item.tscName || '—'}</span>
                         </div>
                       </>
                     )}
                   </div>
 
                   {expanded && (
-                    <div className="result-actions" style={{ padding: '8px 0 0' }}>
-                      <IonButton
-                        className="btn-result-primary is-active"
-                        expand="block"
-                        onClick={() =>
-                          handleUploadDocumentsClick(
-                            item.applicationDocumentId,
-                            item.approvalStageId,
-                            item.subSchemeId,
-                            item.financialDelegation,
-                            item.schemeAmount,
-                            item.designationId,
-                            item.eligibleAmount,
-                            item.designationStep,
-                          )
-                        }
-                      >
-                        <IonIcon icon={arrowForward} slot="start" /> Proceed
-                      </IonButton>
-                    </div>
+                    <IonButton
+                      className="listpage-proceed"
+                      expand="block"
+                      onClick={() =>
+                        handleUploadDocumentsClick(
+                          item.applicationDocumentId,
+                          item.approvalStageId,
+                          item.subSchemeId,
+                          item.financialDelegation,
+                          item.schemeAmount,
+                          item.designationId,
+                          item.eligibleAmount,
+                          item.designationStep,
+                        )
+                      }
+                    >
+                      <IonIcon icon={arrowForward} slot="start" /> Proceed
+                    </IonButton>
                   )}
 
-                  {/* Image Preview Modal */}
                   {item.fileName && viewIndex === index + 10000 && (
                     <IonModal isOpen={true} onDidDismiss={() => setViewIndex(index)}>
                       <IonHeader>
@@ -252,7 +268,7 @@ const ListPage: React.FC = () => {
                           <IonButton
                             href={`https://e-reshme.karnataka.gov.in/dbt/v1/service/downLoadFile?fileName=${item.fileName}`}
                             target="_blank"
-                            className="btn-result-primary is-active"
+                            className="listpage-proceed"
                             style={{ marginTop: 12 }}
                           >
                             <IonIcon icon={download} slot="start" /> Download Image

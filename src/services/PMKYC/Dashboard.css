@@ -1,55 +1,200 @@
+/* ====== Page Background ====== */
+.dashboard-content {
+  --background: linear-gradient(180deg, #eef2ff 0%, #f8fafc 40%, #ffffff 100%);
+}
+
+/* ====== Header ====== */
+.dashboard-toolbar {
+  --background: linear-gradient(135deg, #4f46e5 0%, #6366f1 50%, #8b5cf6 100%);
+  --color: #ffffff;
+  --border-width: 0 !important;
+  --min-height: 64px;
+}
+
+.dashboard-toolbar ion-back-button,
+.dashboard-toolbar ion-menu-button,
+.dashboard-toolbar ion-button {
+  --color: #ffffff !important;
+  color: #ffffff !important;
+}
+
+.dashboard-title {
+  color: #ffffff !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.3px;
+  font-size: 1.15rem !important;
+}
+
+.search-toggle-btn {
+  --background: rgba(255, 255, 255, 0.18);
+  --background-hover: rgba(255, 255, 255, 0.28);
+  --border-radius: 12px;
+  --padding-start: 10px;
+  --padding-end: 10px;
+  height: 38px;
+  margin-right: 6px;
+}
+
+.dashboard-searchbar {
+  --background: #ffffff;
+  --color: #1f2937;
+  --placeholder-color: #9ca3af;
+  --icon-color: #6366f1;
+  --border-radius: 14px;
+  --box-shadow: 0 4px 14px rgba(99, 102, 241, 0.15);
+  padding: 10px 14px 14px !important;
+  background: linear-gradient(135deg, #4f46e5 0%, #6366f1 50%, #8b5cf6 100%);
+}
+
+/* ====== Grid Spacing ====== */
+.dashboard-grid {
+  padding: 18px 12px 80px;
+}
+
+.card-container {
+  row-gap: 4px;
+}
+
+/* ====== Cards ====== */
+.modern-card {
+  margin: 8px;
+  border-radius: 20px !important;
+  background: #ffffff !important;
+  --background: #ffffff !important;
+  box-shadow: 0 6px 18px rgba(15, 23, 42, 0.08), 0 1px 3px rgba(15, 23, 42, 0.04) !important;
+  border: 1px solid rgba(99, 102, 241, 0.08) !important;
+  overflow: hidden;
+  position: relative;
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+  cursor: pointer;
+  min-height: 150px;
+  display: flex;
+  flex-direction: column;
+}
+
+.modern-card::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: var(--accent-gradient, linear-gradient(90deg, #6366f1, #8b5cf6));
+}
+
+.modern-card:active {
+  transform: scale(0.97);
+  box-shadow: 0 4px 10px rgba(15, 23, 42, 0.1) !important;
+}
+
+.modern-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 12px 24px rgba(15, 23, 42, 0.12), 0 2px 4px rgba(15, 23, 42, 0.05) !important;
+}
+
+/* Icon badge */
+.card-icon-badge {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--accent-soft, rgba(99, 102, 241, 0.12));
+  color: var(--accent-color, #6366f1);
+  margin: 14px 14px 0;
+  font-size: 18px;
+}
+
+.card-icon-badge ion-icon {
+  font-size: 20px;
+}
+
+/* Step name */
 .card-header {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    text-align: center;
-    height: 75px; /* Adjust height as needed */
-    font-size: min(4vw, 1.1rem); /* Adjust font size based on card width */
-  }
-  
-.card {
-    background-color: #ffffff !important;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.1) !important;
-    border: none !important;
-  }
+  padding: 10px 14px 6px !important;
+  background: transparent !important;
+}
 
-  ion-card.card {
-    --background: #ffffff !important;
-    background: #ffffff !important;
-    background-color: #ffffff !important;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.1) !important;
-    border: none !important;
-  }
+.step-name {
+  font-size: 0.82rem !important;
+  font-weight: 700 !important;
+  color: #1f2937 !important;
+  text-align: left;
+  line-height: 1.25;
+  letter-spacing: 0.2px;
+  text-transform: uppercase;
+  min-height: 38px;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
 
-  .card-content {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    text-align: center;
-    flex-direction: column;
-    height: 40px; /* Adjust height as needed */
-    font-size: min(4vw, 1.1rem); /* Adjust font size based on card width */
-  }
-  
+/* Count area */
+.card-content {
+  padding: 4px 14px 14px !important;
+  background: transparent !important;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  margin-top: auto;
+}
+
+.count {
+  font-size: 1.85rem !important;
+  font-weight: 800 !important;
+  color: var(--accent-color, #4f46e5) !important;
+  margin: 0 !important;
+  line-height: 1;
+  letter-spacing: -0.5px;
+}
+
+.count-label {
+  font-size: 0.65rem;
+  font-weight: 600;
+  color: #9ca3af;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 4px;
+}
+
+/* ====== Empty state ====== */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 20px;
+  text-align: center;
+  color: #6b7280;
+}
+
+.empty-state ion-icon {
+  font-size: 64px;
+  color: #c7d2fe;
+  margin-bottom: 16px;
+}
+
+.empty-state h2 {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #374151;
+  margin: 0 0 6px;
+}
+
+.empty-state p {
+  font-size: 0.9rem;
+  color: #9ca3af;
+  margin: 0;
+}
+
+/* ====== Responsive tweaks ====== */
+@media (min-width: 480px) {
   .step-name {
-    font-size: min(4vw, 1.1rem) !important; /* Adjust font size based on card width */
-    color: #000000 !important; /* Black text for white background */
-    text-align: center;
-    font-weight: bold !important;
+    font-size: 0.9rem !important;
   }
-
   .count {
-    font-size: min(5vw, 1.5rem) !important; /* Adjust font size based on card width */
-    font-weight: bold !important;
-    color: #000000 !important; /* Black text for white background */
-    margin: 7px;
-    text-align: center;
+    font-size: 2.1rem !important;
   }
-
-  .searchbar {
-    display: none;
-  }
-  
-  .searchbar.show {
-    display: block;
-  }
+}

@@ -1,10 +1,22 @@
 import React, { useState, useEffect } from 'react';
 import { IonContent, IonPage, IonGrid, IonRow, IonCol, IonCard, IonCardHeader, IonCardTitle, IonCardContent, IonButtons, IonHeader, IonMenuButton, IonTitle, IonToolbar, IonButton, IonIcon, IonSearchbar, IonBackButton } from '@ionic/react';
-import { arrowBack, search } from 'ionicons/icons';
+import { search, close, fileTrayStackedOutline, documentTextOutline, checkmarkDoneOutline, clipboardOutline, ribbonOutline, leafOutline, walletOutline, shieldCheckmarkOutline, hourglassOutline, briefcaseOutline } from 'ionicons/icons';
 import axios from 'axios';
 import { useHistory } from 'react-router-dom';
 import './Dashboard.css';
 import { API_URL_DBT_ } from '../auth.service';
+
+const CARD_THEMES = [
+  { color: '#6366f1', soft: 'rgba(99, 102, 241, 0.12)',  gradient: 'linear-gradient(90deg, #6366f1, #8b5cf6)', icon: clipboardOutline },
+  { color: '#ec4899', soft: 'rgba(236, 72, 153, 0.12)',  gradient: 'linear-gradient(90deg, #ec4899, #f43f5e)', icon: ribbonOutline },
+  { color: '#0ea5e9', soft: 'rgba(14, 165, 233, 0.12)',  gradient: 'linear-gradient(90deg, #0ea5e9, #06b6d4)', icon: documentTextOutline },
+  { color: '#10b981', soft: 'rgba(16, 185, 129, 0.12)',  gradient: 'linear-gradient(90deg, #10b981, #22c55e)', icon: checkmarkDoneOutline },
+  { color: '#f59e0b', soft: 'rgba(245, 158, 11, 0.12)',  gradient: 'linear-gradient(90deg, #f59e0b, #f97316)', icon: hourglassOutline },
+  { color: '#ef4444', soft: 'rgba(239, 68, 68, 0.12)',   gradient: 'linear-gradient(90deg, #ef4444, #f87171)', icon: shieldCheckmarkOutline },
+  { color: '#8b5cf6', soft: 'rgba(139, 92, 246, 0.12)',  gradient: 'linear-gradient(90deg, #8b5cf6, #a855f7)', icon: briefcaseOutline },
+  { color: '#14b8a6', soft: 'rgba(20, 184, 166, 0.12)',  gradient: 'linear-gradient(90deg, #14b8a6, #2dd4bf)', icon: leafOutline },
+  { color: '#3b82f6', soft: 'rgba(59, 130, 246, 0.12)',  gradient: 'linear-gradient(90deg, #3b82f6, #6366f1)', icon: walletOutline },
+];
 
 const HomePage: React.FC = () => {
   const [data, setData] = useState<any[]>([]);
@@ -34,12 +46,10 @@ const HomePage: React.FC = () => {
       },
     })
       .then(res => {
-        console.log("API Response:", res.data);
-        
         if (res.data.errorCode === 0) {
           const content = res.data.content;
           if (content.length > 0) {
-            setData(content); // Set the API data directly
+            setData(content);
           }
         } else {
           console.error("API Error:", res.data.errorMessages);
@@ -54,74 +64,76 @@ const HomePage: React.FC = () => {
     history.push(`/list/${id}`);
   };
 
-  const handleGoBack = () => {
-    history.goBack();
-  };
-
   const filteredData = data.filter(item =>
     item.stepName.toLowerCase().includes(searchText.toLowerCase())
   );
 
-  const boxColors = [
-    '#ffffff', // White background
-  ];
-
   return (
     <IonPage>
       <IonHeader>
-        <IonToolbar>
+        <IonToolbar className="dashboard-toolbar">
           <IonButtons slot="start">
-            <IonBackButton text="Back" slot="start" defaultHref="/homepage" style={{ color: '#000' }} />
+            <IonBackButton text="" defaultHref="/homepage" />
             <IonMenuButton />
           </IonButtons>
-          <IonTitle><b>User Dashboard</b></IonTitle>
+          <IonTitle className="dashboard-title">User Dashboard</IonTitle>
           <IonButtons slot="end">
-            <IonButton onClick={() => setShowSearchbar(!showSearchbar)}>
-              <IonIcon icon={showSearchbar ? arrowBack : search} />
+            <IonButton className="search-toggle-btn" onClick={() => setShowSearchbar(!showSearchbar)}>
+              <IonIcon slot="icon-only" icon={showSearchbar ? close : search} />
             </IonButton>
-            {/* removed redundant Go Back button — use left Back button instead */}
           </IonButtons>
         </IonToolbar>
         {showSearchbar && (
           <IonSearchbar
+            className="dashboard-searchbar"
             value={searchText}
             onIonChange={e => setSearchText(e.detail.value!)}
-            placeholder="Search by Step Name"
+            placeholder="Search by step name"
+            animated
           />
         )}
       </IonHeader>
 
-      <IonContent>
-        <IonGrid>
+      <IonContent className="dashboard-content">
+        <IonGrid className="dashboard-grid">
           <IonRow className="card-container">
             {filteredData.length > 0 ? (
-              filteredData.map((item, index) => (
-                <IonCol size="6" key={index}>
-                <IonCard 
-                          onClick={() => handleBoxClick(item.approvalStageId)} 
-                          className="card" 
-                          style={{ 
-                            background: '#ffffff',
-                            boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
-                            border: 'none'
-                          }}
-                        >
-                          <IonCardHeader className="card-header" style={{ background: '#ffffff', color: '#000' }}>
-                            <IonCardTitle className="step-name" style={{ color: '#000', fontWeight: '800' }}>{item.stepName}</IonCardTitle>
-                          </IonCardHeader>
-                          <IonCardContent className="card-content" style={{ background: '#ffffff', color: '#000' }}>
-                            <h2 className="count" style={{ color: '#000', fontWeight: '800' }}>
-                              {item.count}
-                            </h2>
-                          </IonCardContent>
-                        </IonCard>
-
-
-                </IonCol>
-              ))
+              filteredData.map((item, index) => {
+                const theme = CARD_THEMES[index % CARD_THEMES.length];
+                const cardStyle: React.CSSProperties = {
+                  // @ts-ignore — custom CSS vars
+                  '--accent-color': theme.color,
+                  '--accent-soft': theme.soft,
+                  '--accent-gradient': theme.gradient,
+                };
+                return (
+                  <IonCol size="6" key={index}>
+                    <IonCard
+                      onClick={() => handleBoxClick(item.approvalStageId)}
+                      className="modern-card"
+                      style={cardStyle}
+                    >
+                      <div className="card-icon-badge">
+                        <IonIcon icon={theme.icon} />
+                      </div>
+                      <IonCardHeader className="card-header">
+                        <IonCardTitle className="step-name">{item.stepName}</IonCardTitle>
+                      </IonCardHeader>
+                      <IonCardContent className="card-content">
+                        <span className="count-label">Pending</span>
+                        <h2 className="count">{item.count}</h2>
+                      </IonCardContent>
+                    </IonCard>
+                  </IonCol>
+                );
+              })
             ) : (
               <IonCol size="12">
-                <center><h2><b>No data available</b></h2></center>
+                <div className="empty-state">
+                  <IonIcon icon={fileTrayStackedOutline} />
+                  <h2>No data available</h2>
+                  <p>There are no items to display right now.</p>
+                </div>
               </IonCol>
             )}
           </IonRow>

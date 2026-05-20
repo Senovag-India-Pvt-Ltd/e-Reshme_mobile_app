@@ -2,7 +2,6 @@ import React, { useState, useEffect } from "react";
 import {
   IonContent,
   IonPage,
-  IonGrid,
   IonRow,
   IonCol,
   IonCard,
@@ -17,7 +16,6 @@ import {
   IonToast,
   IonIcon,
   IonInput,
-  IonLabel,
   IonSelect,
   IonSelectOption,
   IonSearchbar,
@@ -33,7 +31,18 @@ import {
   API_URL_Inspection,
   API_URL_Master,
 } from '../auth.service';
-import { arrowBack } from "ionicons/icons";
+import {
+  arrowBack,
+  documentTextOutline,
+  chatbubbleEllipsesOutline,
+  layersOutline,
+  personOutline,
+  locationOutline,
+  closeCircleOutline,
+  warningOutline,
+  checkmarkCircleOutline,
+  cloudUploadOutline,
+} from "ionicons/icons";
 
 const DocPage: React.FC = () => {
   const { applicationDocumentId, approvalStageId, subSchemeId } = useParams<{
@@ -643,15 +652,13 @@ const DocPage: React.FC = () => {
   return (
     <IonPage>
       <IonHeader>
-        <IonToolbar>
+        <IonToolbar className="docpage-toolbar">
           <IonButtons slot="start">
             {/* Removed IonMenuButton since we're using bottom tab menu */}
           </IonButtons>
-          <IonTitle>
-            <b>Documents</b>
-          </IonTitle>
+          <IonTitle>Documents</IonTitle>
           <IonButtons slot="end">
-            <IonButton style={{ '--background': '#ffffff', '--color': '#000000', color: '#000000', backgroundColor: '#ffffff' } as any} onClick={() => history.goBack()}>
+            <IonButton className="docpage-back-btn" onClick={() => history.goBack()}>
               <IonIcon icon={arrowBack} />
               Go Back
             </IonButton>
@@ -659,28 +666,43 @@ const DocPage: React.FC = () => {
         </IonToolbar>
       </IonHeader>
 
-      <IonContent className="with-bottom-menu" style={{ ['--padding-bottom' as any]: '180px' } as React.CSSProperties}>
-        <IonGrid>
-          <IonRow>
-            {/* Document Selection Dropdown */}
-            <IonCol size="12">
-              <IonLabel>
-                <b>Select Document:</b>
-              </IonLabel>
+      <IonContent
+        className="with-bottom-menu docpage-content"
+        style={{ ['--padding-bottom' as any]: '180px' } as React.CSSProperties}
+      >
+        <div className="docpage-hero" />
+        <div className="docpage-wrap">
+
+          {/* Document Selection Card */}
+          <section className="docpage-card">
+            <h3 className="docpage-card-title">
+              <span className="docpage-card-title-icon">
+                <IonIcon icon={documentTextOutline} />
+              </span>
+              Select Document
+            </h3>
+
+            <div className="docpage-field">
+              <span className="docpage-field-label">Search</span>
               <IonSearchbar
                 value={documentSearchTerm}
                 onIonInput={(e) => setDocumentSearchTerm(e.detail.value!)}
                 placeholder="Search documents..."
-                className="custom-searchbar"
+                className="docpage-searchbar"
                 showClearButton="focus"
               />
+            </div>
+
+            <div className="docpage-field">
+              <span className="docpage-field-label">Document</span>
               <IonSelect
+                className="docpage-select"
                 value={selectedDocument?.documentMasterId || ""}
                 placeholder="Select a document"
+                interface="action-sheet"
                 onIonChange={(e) => handleDocumentSelect(e.detail.value!)}
               >
-                <IonSelectOption value="">None</IonSelectOption>{" "}
-                {/* Option to deselect */}
+                <IonSelectOption value="">None</IonSelectOption>
                 {filteredDocuments.map((doc) => (
                   <IonSelectOption
                     key={doc.documentMasterId}
@@ -690,84 +712,66 @@ const DocPage: React.FC = () => {
                   </IonSelectOption>
                 ))}
               </IonSelect>
-            </IonCol>
+            </div>
 
-            {/* Show Card for Selected Document */}
             {selectedDocument && (
-              <IonCol size="8">
-                <IonCard className="notification-bar" style={{ '--background': '#ffffff', '--color': '#000000', background: '#ffffff', color: '#000000' } as any}>
-                  <IonCardHeader style={{ color: '#000000', fontWeight: 800 }}>
+              <>
+                <div className="docpage-doc-chip">
+                  <span className="docpage-doc-chip-icon">
+                    <IonIcon icon={documentTextOutline} />
+                  </span>
+                  <span>{selectedDocument.documentMasterName}</span>
+                </div>
+                <IonCard className="docpage-upload-card">
+                  <IonCardHeader>
                     <IonCardTitle>
-                      Documents: {selectedDocument.documentMasterName}
+                      <IonIcon
+                        icon={cloudUploadOutline}
+                        style={{ marginRight: 6, verticalAlign: 'middle' }}
+                      />
+                      Upload Document
                     </IonCardTitle>
                   </IonCardHeader>
-                  <IonCardContent style={{ color: '#000000' }}>
+                  <IonCardContent>
                     <DocumentUpload
                       onUpload={(file) => console.log(file)}
                       docId={selectedDocument.documentMasterId}
                     />
                   </IonCardContent>
                 </IonCard>
-              </IonCol>
+              </>
             )}
-          </IonRow>
-        </IonGrid>
+          </section>
 
-        {/* Comment and Location */}
-        <IonGrid>
-          <IonRow>
-            <IonCol size="12">
-              <IonLabel>
-                <b>Comment:</b>
-              </IonLabel>
+          {/* Review Details Card */}
+          <section className="docpage-card">
+            <h3 className="docpage-card-title">
+              <span className="docpage-card-title-icon">
+                <IonIcon icon={chatbubbleEllipsesOutline} />
+              </span>
+              Review Details
+            </h3>
+
+            <div className="docpage-field">
+              <span className="docpage-field-label">Comment</span>
               <IonInput
+                className="docpage-input docpage-textarea"
                 value={comment}
                 placeholder="Enter comment here"
                 onIonChange={(e) => setComment(e.detail.value!)}
               />
-            </IonCol>
+            </div>
 
-            {/* Eligible Subsidy Input */}
-            {/* <IonCol size="12">
-              <IonLabel>
-                <b>Eligible Subsidy:</b>
-              </IonLabel>
-              <IonInput
-                value={eligibleAmount}
-                placeholder="Enter Eligible Subsidy Amount"
-                onIonChange={(e) => setEligibleSubsidy(e.detail.value!)}
-              />
-            </IonCol> */}
-
-            {/* Username Dropdown */}
-            {/* <IonCol size="12">
-              <IonLabel>
-                <b>Select Username:</b>
-              </IonLabel>
+            <div className="docpage-field">
+              <span className="docpage-field-label">
+                <IonIcon icon={layersOutline} style={{ marginRight: 4, verticalAlign: 'middle' }} />
+                Approval Stage
+              </span>
               <IonSelect
-                value={selectedUsername}
-                placeholder="Select a username"
-                onIonChange={(e) => handleUsernameChange(e.detail.value!)}
-              >
-                <IonSelectOption value="">None</IonSelectOption>
-                {usernames.map((user) => (
-                  <IonSelectOption key={user.userMasterId} value={user.userMasterId}>
-                                       {user.username}
-                  </IonSelectOption>
-                ))}
-              </IonSelect>
-            </IonCol> */}
-
-            
-
-            {/* Approval Stage Dropdown - disabled if Permanent */}
-            <IonCol size="12">
-              <IonLabel>
-                <b>Select Approval Stage:</b>
-              </IonLabel>
-              <IonSelect
+                className="docpage-select"
                 value={selectedNextstep}
                 placeholder="Select a NextStep"
+                interface="action-sheet"
                 onIonChange={(e) => handleNextstepChange(e.detail.value!)}
                 disabled={rejectType === "Permanent"}
               >
@@ -781,28 +785,28 @@ const DocPage: React.FC = () => {
                   </IonSelectOption>
                 ))}
               </IonSelect>
-            </IonCol>
+            </div>
 
-            {/* Username Dropdown - disabled if Permanent */}
-            <IonCol size="12">
-              <IonLabel>
-                <b>Select Username:</b>
-              </IonLabel>
-
-              {/* Searchbar for filtering usernames */}
+            <div className="docpage-field">
+              <span className="docpage-field-label">
+                <IonIcon icon={personOutline} style={{ marginRight: 4, verticalAlign: 'middle' }} />
+                Username
+              </span>
               <IonSearchbar
                 value={searchTerm}
                 onIonInput={(e) => setSearchTerm(e.detail.value!)}
                 placeholder="Search for a username"
-                className="custom-searchbar"
+                className="docpage-searchbar"
                 disabled={rejectType === "Permanent"}
               />
-
               <IonSelect
+                className="docpage-select"
                 value={selectedUsername}
                 placeholder="Select a username"
+                interface="action-sheet"
                 onIonChange={(e) => handleUsernameChange(e.detail.value!)}
                 disabled={rejectType === "Permanent"}
+                style={{ marginTop: 8 }}
               >
                 <IonSelectOption value="">None</IonSelectOption>
                 {filteredUsernames.map((user) => (
@@ -811,106 +815,126 @@ const DocPage: React.FC = () => {
                   </IonSelectOption>
                 ))}
               </IonSelect>
-            </IonCol>
+            </div>
+          </section>
 
-            <IonCol size="12">
-              <IonButton
-                style={{ '--background': '#ffffff', '--color': '#000000', color: '#000000', backgroundColor: '#ffffff' } as any}
-                expand="block"
-                onClick={() => {
-                  setShowRejectPanel((prev) => {
-                    const next = !prev;
-                    if (!next) {
-                      setRejectType("");
-                      setRejectionReason("");
-                    }
-                    return next;
-                  });
-                }}
-              >
-                {showRejectPanel ? 'Hide Reject' : 'Reject'}
-              </IonButton>
-            </IonCol>
+          {/* Reject section */}
+          <IonButton
+            expand="block"
+            className={`docpage-reject-toggle${showRejectPanel ? ' is-open' : ''}`}
+            onClick={() => {
+              setShowRejectPanel((prev) => {
+                const next = !prev;
+                if (!next) {
+                  setRejectType("");
+                  setRejectionReason("");
+                }
+                return next;
+              });
+            }}
+          >
+            <IonIcon icon={closeCircleOutline} />
+            {showRejectPanel ? 'Hide Reject Options' : 'Reject Application'}
+          </IonButton>
 
-            {showRejectPanel && (
-              <>
-                <IonCol size="12">
-                  <IonLabel>
-                    <b>Reject Type:</b>
-                  </IonLabel>
+          {showRejectPanel && (
+            <section className="docpage-reject-panel">
+              <div className="docpage-reject-banner">
+                <span className="docpage-reject-banner-icon">
+                  <IonIcon icon={warningOutline} />
+                </span>
+                <span className="docpage-reject-banner-text">Rejection Details</span>
+              </div>
+
+              <div className="docpage-field">
+                <span className="docpage-field-label">Reject Type</span>
+                <IonSelect
+                  className="docpage-select"
+                  value={rejectType}
+                  placeholder="Select Reject Type"
+                  interface="action-sheet"
+                  onIonChange={(e) => setRejectType(e.detail.value!)}
+                >
+                  <IonSelectOption value="">None</IonSelectOption>
+                  <IonSelectOption value="Permanent">Permanent</IonSelectOption>
+                  <IonSelectOption value="Objection">Objection</IonSelectOption>
+                </IonSelect>
+              </div>
+
+              <div className="docpage-field" style={{ marginBottom: 0 }}>
+                <span className="docpage-field-label">Rejection Reason</span>
+                {fetchError ? (
+                  <p className="docpage-error-note">
+                    Failed to fetch rejection reasons. Please try again later.
+                  </p>
+                ) : (
                   <IonSelect
-                    value={rejectType}
-                    placeholder="Select Reject Type"
-                    onIonChange={(e) => setRejectType(e.detail.value!)}
+                    className="docpage-select"
+                    value={rejectionReason}
+                    placeholder="Select reason for rejection"
+                    interface="action-sheet"
+                    onIonChange={(e) => handleRejectionChange(e.detail.value!)}
                   >
                     <IonSelectOption value="">None</IonSelectOption>
-                    <IonSelectOption value="Permanent">Permanent</IonSelectOption>
-                    <IonSelectOption value="Objection">Objection</IonSelectOption>
+                    {rejectionOptions.map((option) => (
+                      <IonSelectOption
+                        key={option.rejectReasonWorkFlowMasterId}
+                        value={option.rejectReasonWorkFlowMasterId}
+                      >
+                        {option.reason}
+                      </IonSelectOption>
+                    ))}
                   </IonSelect>
-                </IonCol>
-
-                <IonCol size="12">
-                  <IonLabel>
-                    <b>Select Rejection Reason:</b>
-                  </IonLabel>
-                  {fetchError ? (
-                    <p style={{ color: 'red' }}>
-                      Failed to fetch rejection reasons. Please try again later.
-                    </p>
-                  ) : (
-                    <IonSelect
-                      value={rejectionReason}
-                      placeholder="Select reason for rejection"
-                      onIonChange={(e) => handleRejectionChange(e.detail.value!)}
-                    >
-                      <IonSelectOption value="">None</IonSelectOption>
-                      {rejectionOptions.map((option) => (
-                        <IonSelectOption
-                          key={option.rejectReasonWorkFlowMasterId}
-                          value={option.rejectReasonWorkFlowMasterId}
-                        >
-                          {option.reason}
-                        </IonSelectOption>
-                      ))}
-                    </IonSelect>
-                  )}
-                </IonCol>
-              </>
-            )}
-
-            {/* Styled Location Section */}
-            <IonCol size="12" className="location-container">
-              <div className="location-box">
-                <IonLabel className="location-label">
-                  <b>Current Location</b>
-                </IonLabel>
-                <IonRow>
-                  <IonCol size="6">
-                    <IonInput
-                      value={currentLocation.latitude}
-                      placeholder="Latitude"
-                      disabled
-                    />
-                  </IonCol>
-                  <IonCol size="6">
-                    <IonInput
-                      value={currentLocation.longitude}
-                      placeholder="Longitude"
-                      disabled
-                    />
-                  </IonCol>
-                </IonRow>
+                )}
               </div>
-            </IonCol>
+            </section>
+          )}
 
-            {/* Submit Button */}
-            <IonCol size="12">
-              <IonButton style={{ '--background': '#ffffff', '--color': '#000000', color: '#000000', backgroundColor: '#ffffff' } as any} expand="block" className="submit-button" onClick={handleSubmit} disabled={isSubmitDisabled}>
-                Submit
-              </IonButton>
-            </IonCol>
-          </IonRow>
-        </IonGrid>
+          {/* Location card */}
+          <section className="docpage-location">
+            <div className="docpage-location-header">
+              <span className="docpage-location-icon">
+                <IonIcon icon={locationOutline} />
+              </span>
+              <div>
+                <div className="docpage-location-title">Current Location</div>
+                <div className="docpage-location-sub">Auto-detected from device</div>
+              </div>
+            </div>
+            <IonRow>
+              <IonCol size="6">
+                <div className="docpage-coord">
+                  <span className="docpage-coord-label">Latitude</span>
+                  <span className="docpage-coord-value">
+                    {currentLocation.latitude || '—'}
+                  </span>
+                </div>
+              </IonCol>
+              <IonCol size="6">
+                <div className="docpage-coord">
+                  <span className="docpage-coord-label">Longitude</span>
+                  <span className="docpage-coord-value">
+                    {currentLocation.longitude || '—'}
+                  </span>
+                </div>
+              </IonCol>
+            </IonRow>
+          </section>
+
+          {/* Submit Button */}
+          <div className="docpage-actions">
+            <IonButton
+              expand="block"
+              className="docpage-submit"
+              onClick={handleSubmit}
+              disabled={isSubmitDisabled}
+            >
+              <IonIcon icon={checkmarkCircleOutline} />
+              Submit
+            </IonButton>
+          </div>
+
+        </div>
       </IonContent>
 
       {/* Toasts */}

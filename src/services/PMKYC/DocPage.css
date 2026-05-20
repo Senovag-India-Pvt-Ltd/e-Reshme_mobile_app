@@ -1,97 +1,488 @@
-.notification-bar {
-    background-color: #1a1a1a;/* Black background color */
-      color: #ffffff; /* White text color */
-      padding: 10px; /* Adjust padding as needed */
-      border-radius: 8px; /* Rounded corners */
-      width: 100%; /* Full width */
-      box-sizing: border-box; /* Include padding in width */
-      margin-bottom: 20px; /* Margin for spacing */
-      font-size: 16px; /* Font size */
-      font-weight: bold; /* Font weight */
-    }
-  
-  
-    .location-container {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      margin-top: 20px; /* Add margin-top as needed */
-    }
-    
-    .location-container label {
-      margin-right: 10px;
-    }
-    
-    .location-container input[type="text"] {
-      width: 100px; /* Adjust width as needed */
-      font-size: 14px; /* Adjust font size as needed */
-      padding: 5px;
-      border-radius: 12px;
-      border: 3px solid #c1ce0c;
-      color: #090a0a; /* Change text color */
-    }
-    
-    /* Center the Current Location label */
-    .location-label {
-      display: block;
-      text-align: center;
-      font-size: 18px;
-      margin-bottom: 10px;
-      color: #111212;
-    }
-    
-    /* Add margin-right to the latitude input */
-    .location-container input#latitude {
-      margin-right: 10px; /* Adjust margin-right as needed */
-    }
-    
-    /* Media query for smaller screens */
-    @media only screen and (max-width: 600px) {
-      .location-container input[type="text"] {
-        width: 100px; /* Adjust width for smaller screens */
-        color: #0d0d0d; /* Ensure the color applies on smaller screens */
-      }
-    
-      /* Adjust margin-right for latitude input on smaller screens */
-      .location-container input#latitude {
-        margin-right: 5px; /* Adjust margin-right for smaller screens */
-      }
-    }
-    
-    .cld {
-      color: #F5CE00;
-    }
-    
-    .bd {
-      color: #FFFAFA;
-    }
-    
-    /* styles.css or your relevant CSS file */
-    .menucolor{
-      color: #ffffff;
-      background: #1a1a1a;
-    }
+/* =========================================================
+   DocPage — modern document review form
+   ========================================================= */
 
-    /* Ensure pages with bottom menu have extra bottom padding so buttons aren't hidden */
-    .with-bottom-menu {
-      /* fallback for non-Ionic browsers */
-      padding-bottom: calc(160px + env(safe-area-inset-bottom));
-      /* Ionic-specific padding via CSS variable will be set on IonContent inline style */
-    }
+/* Page background with subtle gradient */
+.docpage-content {
+  --background: linear-gradient(180deg, #eef2ff 0%, #f6f8ff 35%, #ffffff 100%);
+}
 
-    /* Make submit button more visible above the tab bar */
-    .submit-button {
-      margin-bottom: 8px;
-    }
-  .custom-searchbar {
-    height: 40px !important; /* Set smaller height */
-    font-size: 10px !important; /* Adjust font size */
-    padding: 5px !important; /* Reduce padding */
-    border-radius: 30px; /* Slightly round corners */
-    border: 5px solid #1ea0a4; /* Add subtle border */
-    margin-bottom: 5px; /* Space below the search bar */
-    background-color: #fff; /* White background */
-    color: #333; /* Text color */
-    --box-shadow: none; /* Remove default shadow */
+/* Toolbar */
+.docpage-toolbar {
+  --background: linear-gradient(135deg, #4f46e5 0%, #6366f1 50%, #8b5cf6 100%) !important;
+  --color: #ffffff !important;
+  --border-width: 0 !important;
+  --min-height: 64px;
+}
+
+.docpage-toolbar ion-title {
+  color: #ffffff !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.3px;
+  font-size: 1.15rem !important;
+}
+
+.docpage-back-btn {
+  --background: rgba(255, 255, 255, 0.18) !important;
+  --background-hover: rgba(255, 255, 255, 0.28) !important;
+  --color: #ffffff !important;
+  --border-radius: 10px !important;
+  --padding-start: 12px !important;
+  --padding-end: 12px !important;
+  color: #ffffff !important;
+  height: 38px;
+  margin-right: 6px;
+  font-weight: 600 !important;
+  text-transform: none !important;
+  font-size: 0.85rem !important;
+}
+
+.docpage-back-btn ion-icon {
+  margin-right: 4px;
+  font-size: 16px;
+}
+
+/* Hero strip behind the form */
+.docpage-hero {
+  height: 70px;
+  background: linear-gradient(180deg, rgba(99, 102, 241, 0.18) 0%, rgba(99, 102, 241, 0) 100%);
+  margin: 0 0 -50px;
+  pointer-events: none;
+}
+
+/* Container */
+.docpage-wrap {
+  padding: 16px 14px 90px;
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* Card */
+.docpage-card {
+  position: relative;
+  background: #ffffff;
+  border-radius: 20px;
+  padding: 20px 18px 18px;
+  border: 1px solid rgba(99, 102, 241, 0.08);
+  box-shadow:
+    0 8px 24px rgba(15, 23, 42, 0.07),
+    0 1px 3px rgba(15, 23, 42, 0.04);
+  overflow: hidden;
+}
+
+.docpage-card::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, #6366f1, #8b5cf6, #ec4899);
+}
+
+.docpage-card-title {
+  font-size: 0.95rem;
+  font-weight: 800;
+  color: #0f172a;
+  letter-spacing: -0.01em;
+  margin: 0 0 14px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.docpage-card-title-icon {
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  background: linear-gradient(135deg, #eef2ff, #ede9fe);
+  color: #4f46e5;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+}
+
+/* Field group */
+.docpage-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 14px;
+}
+
+.docpage-field:last-child {
+  margin-bottom: 0;
+}
+
+.docpage-field-label {
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: #6366f1;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+/* Inputs */
+.docpage-input,
+.docpage-select {
+  --background: #f8fafc !important;
+  --color: #0f172a !important;
+  --placeholder-color: #94a3b8 !important;
+  --padding-start: 14px !important;
+  --padding-end: 14px !important;
+  --padding-top: 12px !important;
+  --padding-bottom: 12px !important;
+  background: #f8fafc !important;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 12px;
+  font-size: 0.9rem !important;
+  font-weight: 500;
+  color: #0f172a !important;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+  min-height: 46px;
+}
+
+.docpage-input:focus-within,
+.docpage-select.ion-focused,
+.docpage-select.has-focus {
+  border-color: #6366f1;
+  background: #ffffff !important;
+  --background: #ffffff !important;
+  box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.12);
+}
+
+.docpage-select {
+  --placeholder-color: #94a3b8 !important;
+  padding: 0 !important;
+}
+
+.docpage-select::part(text) {
+  color: #0f172a;
+  font-weight: 500;
+}
+
+.docpage-select::part(icon) {
+  color: #6366f1;
+  opacity: 1;
+}
+
+/* Searchbar overrides */
+.docpage-searchbar {
+  --background: #f8fafc !important;
+  --color: #0f172a !important;
+  --placeholder-color: #94a3b8 !important;
+  --icon-color: #6366f1 !important;
+  --border-radius: 12px !important;
+  --box-shadow: none !important;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 0 !important;
+  min-height: 46px;
+  overflow: hidden;
+}
+
+.docpage-searchbar.searchbar-has-focus {
+  border-color: #6366f1;
+  box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.12);
+}
+
+.docpage-searchbar .searchbar-input {
+  font-size: 0.9rem !important;
+  font-weight: 500;
+  padding-inline-start: 44px !important;
+}
+
+/* Comment textarea-style */
+.docpage-textarea {
+  --background: #f8fafc !important;
+  background: #f8fafc !important;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 12px;
+  min-height: 80px;
+  --padding-start: 14px !important;
+  --padding-end: 14px !important;
+  --padding-top: 12px !important;
+  --padding-bottom: 12px !important;
+}
+
+/* Document preview chip */
+.docpage-doc-chip {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: linear-gradient(135deg, #eef2ff 0%, #ede9fe 100%);
+  border: 1px solid rgba(99, 102, 241, 0.18);
+  border-radius: 12px;
+  padding: 10px 12px;
+  margin-top: 10px;
+  font-size: 0.85rem;
+  color: #4338ca;
+  font-weight: 700;
+}
+
+.docpage-doc-chip-icon {
+  width: 32px;
+  height: 32px;
+  background: #ffffff;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #6366f1;
+  flex-shrink: 0;
+  font-size: 16px;
+  box-shadow: 0 2px 6px rgba(99, 102, 241, 0.15);
+}
+
+/* Upload card body styling */
+.docpage-upload-card {
+  background: #ffffff !important;
+  --background: #ffffff !important;
+  border-radius: 16px !important;
+  border: 1px dashed #c7d2fe;
+  box-shadow: none !important;
+  margin: 12px 0 0;
+}
+
+.docpage-upload-card ion-card-header {
+  padding: 14px 16px 6px;
+}
+
+.docpage-upload-card ion-card-title {
+  font-size: 0.9rem !important;
+  font-weight: 700 !important;
+  color: #4338ca !important;
+}
+
+.docpage-upload-card ion-card-content {
+  padding: 8px 16px 16px;
+  color: #0f172a !important;
+}
+
+/* Location box */
+.docpage-location {
+  background: linear-gradient(135deg, #ecfeff 0%, #eef2ff 100%);
+  border: 1px solid rgba(14, 165, 233, 0.15);
+  border-radius: 16px;
+  padding: 16px;
+}
+
+.docpage-location-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.docpage-location-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #06b6d4 0%, #6366f1 100%);
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  box-shadow: 0 4px 10px rgba(99, 102, 241, 0.25);
+}
+
+.docpage-location-title {
+  font-size: 0.95rem;
+  font-weight: 800;
+  color: #0f172a;
+  letter-spacing: -0.01em;
+}
+
+.docpage-location-sub {
+  font-size: 0.7rem;
+  color: #64748b;
+  font-weight: 500;
+}
+
+.docpage-coord {
+  background: #ffffff;
+  border: 1px solid #e0e7ff;
+  border-radius: 10px;
+  padding: 8px 12px;
+}
+
+.docpage-coord-label {
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #94a3b8;
+  display: block;
+  margin-bottom: 2px;
+}
+
+.docpage-coord-value {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #0f172a;
+  font-variant-numeric: tabular-nums;
+  word-break: break-all;
+}
+
+/* Buttons */
+.docpage-submit {
+  --background: linear-gradient(135deg, #4f46e5 0%, #6366f1 50%, #8b5cf6 100%) !important;
+  --background-hover: linear-gradient(135deg, #4338ca 0%, #5b58e8 50%, #7c3aed 100%) !important;
+  --background-activated: linear-gradient(135deg, #3730a3 0%, #4f46e5 50%, #6d28d9 100%) !important;
+  --color: #ffffff !important;
+  --box-shadow: 0 8px 18px rgba(99, 102, 241, 0.32);
+  --border-radius: 14px !important;
+  color: #ffffff !important;
+  font-weight: 700 !important;
+  text-transform: none !important;
+  letter-spacing: 0.2px;
+  height: 50px;
+  margin: 0;
+  font-size: 0.95rem !important;
+}
+
+.docpage-submit ion-icon {
+  margin-right: 6px;
+  font-size: 18px;
+}
+
+.docpage-submit[disabled] {
+  --background: #cbd5e1 !important;
+  --box-shadow: none;
+  opacity: 0.7;
+}
+
+.docpage-reject-toggle {
+  --background: #ffffff !important;
+  --background-hover: #fef2f2 !important;
+  --color: #dc2626 !important;
+  --border-radius: 14px !important;
+  --box-shadow: 0 4px 12px rgba(220, 38, 38, 0.12);
+  color: #dc2626 !important;
+  font-weight: 700 !important;
+  text-transform: none !important;
+  letter-spacing: 0.2px;
+  height: 48px;
+  margin: 0;
+  font-size: 0.9rem !important;
+  border: 1.5px solid #fecaca;
+  border-radius: 14px;
+}
+
+.docpage-reject-toggle.is-open {
+  --background: #fef2f2 !important;
+  border-color: #fca5a5;
+}
+
+.docpage-reject-toggle ion-icon {
+  margin-right: 6px;
+  font-size: 16px;
+}
+
+/* Reject panel */
+.docpage-reject-panel {
+  background: linear-gradient(135deg, #fff7ed 0%, #fef2f2 100%);
+  border: 1px solid #fecaca;
+  border-radius: 16px;
+  padding: 16px;
+  animation: docpage-slide-down 0.25s ease;
+}
+
+.docpage-reject-panel .docpage-field-label {
+  color: #dc2626;
+}
+
+.docpage-reject-panel .docpage-input,
+.docpage-reject-panel .docpage-select,
+.docpage-reject-panel .docpage-searchbar {
+  background: #ffffff !important;
+  --background: #ffffff !important;
+}
+
+.docpage-reject-banner {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.docpage-reject-banner-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 10px;
+  background: #dc2626;
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  box-shadow: 0 4px 10px rgba(220, 38, 38, 0.3);
+}
+
+.docpage-reject-banner-text {
+  font-size: 0.9rem;
+  font-weight: 800;
+  color: #991b1b;
+}
+
+@keyframes docpage-slide-down {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
   }
-  
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Error / fetch failure note */
+.docpage-error-note {
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  color: #b91c1c;
+  border-radius: 10px;
+  padding: 10px 12px;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+/* Action row */
+.docpage-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding-top: 4px;
+}
+
+/* Bottom spacing for tab bar */
+.with-bottom-menu {
+  padding-bottom: calc(160px + env(safe-area-inset-bottom));
+}
+
+/* Keep older legacy class names from breaking */
+.notification-bar {
+  background: #ffffff;
+  color: #0f172a;
+  padding: 10px;
+  border-radius: 12px;
+  width: 100%;
+  box-sizing: border-box;
+  margin-bottom: 12px;
+}
+
+.custom-searchbar {
+  --background: #f8fafc !important;
+  --color: #0f172a !important;
+  --placeholder-color: #94a3b8 !important;
+  --icon-color: #6366f1 !important;
+  --border-radius: 12px !important;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 12px;
+  margin-bottom: 6px;
+}
