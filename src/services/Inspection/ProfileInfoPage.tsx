@@ -2,9 +2,9 @@ import React, { useState, useEffect, useRef } from 'react';
 import {
   IonContent, IonCol, IonPage, IonCard, IonCardContent, IonCardHeader,
   IonCardTitle, IonInput, IonLabel, IonButton, IonHeader,
-  IonToolbar, IonTitle, IonButtons, IonMenuButton, IonIcon, IonSelect, IonSelectOption, IonBackButton, IonAlert, IonSpinner
+  IonToolbar, IonTitle, IonButtons, IonMenuButton, IonIcon, IonSelect, IonSelectOption, IonBackButton, IonAlert, IonSpinner, IonToast
 } from '@ionic/react';
-import { trash, searchOutline, checkmarkCircle, refreshOutline, cameraOutline, imageOutline } from 'ionicons/icons';
+import { trash, searchOutline, checkmarkCircle, refreshOutline, cameraOutline, imageOutline, alertCircleOutline, cloudOfflineOutline, timeOutline, closeCircle, eyeOutline, createOutline } from 'ionicons/icons';
 import './ProfileInfoPage.css';
 import axios from 'axios';
 import { API_URL_DBT } from '../auth.service';
@@ -29,22 +29,77 @@ const ProfileInfoPage: React.FC = () => {
   const [submitting, setSubmitting] = useState<boolean>(false);
   const [loadingDetails, setLoadingDetails] = useState<boolean>(false);
 
+  // New UX state
+  const [recentSearches, setRecentSearches] = useState<string[]>(() => {
+    try {
+      const raw = localStorage.getItem('recentFruitsIds_profile');
+      return raw ? JSON.parse(raw) : [];
+    } catch { return []; }
+  });
+  const [searchAttempted, setSearchAttempted] = useState<boolean>(false);
+  const [searchError, setSearchError] = useState<'notFound' | 'network' | null>(null);
+  const [showClearConfirm, setShowClearConfirm] = useState<boolean>(false);
+  const [showSuccessToast, setShowSuccessToast] = useState<boolean>(false);
+
   const inputRef = useRef<HTMLIonInputElement>(null); // Add useRef for input field
 
+  const FRUITS_ID_LENGTH = 16;
+
   const handleInputChange = (e: CustomEvent) => {
-    const value = (e.target as HTMLIonInputElement).value ?? '';
+    const raw = (e.target as HTMLIonInputElement).value;
+    const value = (typeof raw === 'string' ? raw : raw == null ? '' : String(raw)).toUpperCase();
     setSearchText(value);
+    // Clear stale error feedback as soon as user edits the input
+    if (searchError) setSearchError(null);
+    if (searchAttempted) setSearchAttempted(false);
   };
 
-  const fetchFarmerDetails = () => {
+  const handleInputKeyDown = (e: React.KeyboardEvent<HTMLIonInputElement>) => {
+    if (e.key === 'Enter' && searchText.trim() && !searching) {
+      inputRef.current?.blur();
+      fetchFarmerDetails();
+    }
+  };
+
+  const saveRecent = (id: string) => {
+    const trimmed = id.trim().toUpperCase();
+    if (!trimmed) return;
+    setRecentSearches(prev => {
+      const next = [trimmed, ...prev.filter(x => x !== trimmed)].slice(0, 5);
+      try { localStorage.setItem('recentFruitsIds_profile', JSON.stringify(next)); } catch {}
+      return next;
+    });
+  };
+
+  const removeRecent = (id: string) => {
+    setRecentSearches(prev => {
+      const next = prev.filter(x => x !== id);
+      try { localStorage.setItem('recentFruitsIds_profile', JSON.stringify(next)); } catch {}
+      return next;
+    });
+  };
+
+  const handleRecentClick = (id: string) => {
+    setSearchText(id);
+    setSearchError(null);
+    setSearchAttempted(false);
+    setTimeout(() => fetchFarmerDetails(id), 0);
+  };
+
+  const fetchFarmerDetails = (overrideId?: string) => {
     if (searching) return;
+    const idToSearch = (overrideId ?? searchText).trim().toUpperCase();
+    if (!idToSearch) return;
     clearField();  // Clear previous data
+    setData(null);
+    setSearchAttempted(true);
+    setSearchError(null);
     setSearching(true);
     const api = axios.create({
       baseURL: API_URL_DBT
     });
 
-    api.post("farmer-details/getInspectionFarmerDetailsByFruitsId", { fruitsId: searchText.trim() }, {
+    api.post("farmer-details/getInspectionFarmerDetailsByFruitsId", { fruitsId: idToSearch }, {
       headers: {
         "Content-Type": "application/json",
         accept: "*/*",
@@ -53,12 +108,19 @@ const ProfileInfoPage: React.FC = () => {
     })
     .then(res => {
       const farmerResponse = res.data?.content?.[0]?.farmerResponses?.[0];
-      setData(farmerResponse);
-      setFarmerId(farmerResponse?.farmerId);
+      if (farmerResponse) {
+        setData(farmerResponse);
+        setFarmerId(farmerResponse?.farmerId);
+        saveRecent(idToSearch);
+      } else {
+        setSearchError('notFound');
+      }
       setSearching(false);
     })
     .catch(error => {
       console.error("Error fetching farmer details:", error);
+      const isNetwork = !error?.response;
+      setSearchError(isNetwork ? 'network' : 'notFound');
       setSearching(false);
     });
   };
@@ -94,6 +156,11 @@ const ProfileInfoPage: React.FC = () => {
 
   useEffect(() => {
     fetchTscList();
+    // Auto-focus the Fruits ID input so the keyboard opens on page entry
+    const t = setTimeout(() => {
+      inputRef.current?.setFocus().catch(() => { /* ignore */ });
+    }, 250);
+    return () => clearTimeout(t);
   }, []);
 
   // const handleEdit = () => {
@@ -225,7 +292,7 @@ const ProfileInfoPage: React.FC = () => {
         }
 
         setIsError(false);
-        setShowAlert(true);
+        setShowSuccessToast(true);
         clearFields();
         setIsEditable(false);
       } catch (error) {
@@ -295,6 +362,17 @@ const ProfileInfoPage: React.FC = () => {
     setData(null);
     setIsEditable(false);
     setViewAll(false);
+    setSearchAttempted(false);
+    setSearchError(null);
+  };
+
+  const requestClear = () => {
+    // Only ask for confirmation if there's actually data to lose
+    if (searchText.trim() || data) {
+      setShowClearConfirm(true);
+    } else {
+      clearSearch();
+    }
   };
   const clearField=()=>{
     setViewAll(false);
@@ -415,9 +493,18 @@ const ProfileInfoPage: React.FC = () => {
             <IonInput
               ref={inputRef}
               value={searchText}
-              placeholder="Enter Fruits ID"
+              placeholder="e.g. FID2802000042820"
+              autocapitalize="characters"
+              maxlength={FRUITS_ID_LENGTH}
               onIonInput={handleInputChange}
+              onKeyDown={handleInputKeyDown}
             />
+            {searchText.length > 0 && searchText.length < FRUITS_ID_LENGTH && (
+              <span className="input-warning">
+                <IonIcon icon={alertCircleOutline} />
+                Fruits ID must be {FRUITS_ID_LENGTH} characters ({FRUITS_ID_LENGTH - searchText.length} more)
+              </span>
+            )}
           </div>
           <div className="search-action-row">
             <IonButton
@@ -438,14 +525,67 @@ const ProfileInfoPage: React.FC = () => {
             </IonButton>
             <IonButton
               className="icon-only-btn danger"
-              onClick={clearSearch}
+              onClick={requestClear}
               aria-label="Clear"
               disabled={searching || submitting || loadingDetails}
             >
               <IonIcon icon={trash} />
             </IonButton>
           </div>
+
+          {recentSearches.length > 0 && !data && !searching && (
+            <div className="recent-searches">
+              <div className="recent-searches-label">
+                <IonIcon icon={timeOutline} />
+                <span>Recent</span>
+              </div>
+              <div className="recent-chips">
+                {recentSearches.map((id) => (
+                  <div key={id} className="recent-chip">
+                    <button
+                      type="button"
+                      className="recent-chip-text"
+                      onClick={() => handleRecentClick(id)}
+                    >
+                      {id}
+                    </button>
+                    <button
+                      type="button"
+                      className="recent-chip-remove"
+                      aria-label={`Remove ${id} from recents`}
+                      onClick={() => removeRecent(id)}
+                    >
+                      <IonIcon icon={closeCircle} />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
+
+        {!searching && !data && searchAttempted && searchError && (
+          <div className={`empty-state-card ${searchError === 'network' ? 'is-network' : 'is-not-found'}`}>
+            <div className="empty-state-icon">
+              <IonIcon icon={searchError === 'network' ? cloudOfflineOutline : alertCircleOutline} />
+            </div>
+            <h4 className="empty-state-title">
+              {searchError === 'network' ? 'Network error' : 'No farmer found'}
+            </h4>
+            <p className="empty-state-text">
+              {searchError === 'network'
+                ? 'Could not reach the server. Check your internet connection and try again.'
+                : `No farmer found for "${searchText.trim().toUpperCase()}". Please check the Fruits ID and try again.`}
+            </p>
+            <IonButton
+              className="btn-primary is-active"
+              onClick={() => fetchFarmerDetails()}
+              disabled={!searchText.trim() || searching}
+            >
+              <IonIcon icon={refreshOutline} slot="start" /> Retry
+            </IonButton>
+          </div>
+        )}
 
         {data && (
           <div className="result-card">
@@ -568,45 +708,53 @@ const ProfileInfoPage: React.FC = () => {
             </div>
 
             <div className="result-actions">
-              <IonButton
-                expand="block"
-                className={`btn-result-primary ${loadingDetails ? "is-loading" : (loadingDetails || submitting ? "is-disabled-state" : "is-active")}`}
-                disabled={loadingDetails || submitting}
-                onClick={() => farmerId !== null && toggleViewAll(farmerId)}
-              >
-                {loadingDetails ? (
-                  <>
-                    <IonSpinner name="crescent" className="btn-spinner" />
-                    <span style={{ marginLeft: 8 }}>Loading...</span>
-                  </>
-                ) : (
-                  viewAll ? 'Hide Details' : 'View All Details'
-                )}
-              </IonButton>
-              <IonButton
-                expand="block"
-                className={`btn-result-secondary ${isEditable ? "is-save-active" : ""} ${submitting && isEditable ? "is-loading" : ""}`}
-                disabled={submitting}
-                onClick={handleEdit}
-              >
-                {submitting && isEditable ? (
-                  <>
-                    <IonSpinner name="crescent" className="btn-spinner" style={{ '--color': 'var(--ion-color-primary)' } as any} />
-                    <span style={{ marginLeft: 8 }}>Saving...</span>
-                  </>
-                ) : isEditable ? (
-                  <>
-                    <IonIcon icon={checkmarkCircle} slot="start" /> Save Changes
-                  </>
-                ) : (
-                  'Edit Details'
-                )}
-              </IonButton>
+              {!viewAll ? (
+                <IonButton
+                  className={`btn-result-primary ${loadingDetails ? "is-loading" : "is-active"}`}
+                  expand="block"
+                  disabled={loadingDetails || submitting}
+                  onClick={() => farmerId !== null && toggleViewAll(farmerId)}
+                >
+                  {loadingDetails ? (
+                    <>
+                      <IonSpinner name="crescent" className="btn-spinner" />
+                      <span style={{ marginLeft: 6 }}>Loading</span>
+                    </>
+                  ) : (
+                    <>
+                      <IonIcon icon={eyeOutline} slot="start" />
+                      View All Details
+                    </>
+                  )}
+                </IonButton>
+              ) : (
+                <IonButton
+                  className={`btn-result-primary ${isEditable ? "is-save-active" : "is-active"} ${submitting && isEditable ? "is-loading" : ""}`}
+                  expand="block"
+                  disabled={submitting}
+                  onClick={handleEdit}
+                >
+                  {submitting && isEditable ? (
+                    <>
+                      <IonSpinner name="crescent" className="btn-spinner" />
+                      <span style={{ marginLeft: 6 }}>Saving</span>
+                    </>
+                  ) : isEditable ? (
+                    <>
+                      <IonIcon icon={checkmarkCircle} slot="start" /> Save Changes
+                    </>
+                  ) : (
+                    <>
+                      <IonIcon icon={createOutline} slot="start" /> Edit Details
+                    </>
+                  )}
+                </IonButton>
+              )}
             </div>
           </div>
         )}
 
-        {/* Alert for success/error message */}
+        {/* Alert for ERROR messages only — success now uses a non-blocking toast */}
         <IonAlert
           isOpen={showAlert}
           onDidDismiss={() => setShowAlert(false)}
@@ -614,6 +762,32 @@ const ProfileInfoPage: React.FC = () => {
           message={message}
           buttons={['OK']}
           cssClass={`app-alert ${isError ? 'app-alert--error' : 'app-alert--success'}`}
+        />
+
+        {/* Success toast — non-blocking, auto-dismiss. Top-positioned so it never
+            sits behind the floating bottom home button. */}
+        <IonToast
+          isOpen={showSuccessToast}
+          onDidDismiss={() => setShowSuccessToast(false)}
+          message={message || 'Saved successfully'}
+          duration={2800}
+          position="top"
+          icon={checkmarkCircle}
+          color="success"
+          cssClass="app-toast app-toast--success"
+        />
+
+        {/* Confirm before clearing the form to avoid accidental data loss */}
+        <IonAlert
+          isOpen={showClearConfirm}
+          onDidDismiss={() => setShowClearConfirm(false)}
+          header="Clear data?"
+          message="This will clear the Fruits ID and any unsaved details. Continue?"
+          buttons={[
+            { text: 'Cancel', role: 'cancel' },
+            { text: 'Clear', role: 'destructive', handler: () => clearSearch() },
+          ]}
+          cssClass="app-alert app-alert--warning"
         />
       </IonContent>
     </IonPage>

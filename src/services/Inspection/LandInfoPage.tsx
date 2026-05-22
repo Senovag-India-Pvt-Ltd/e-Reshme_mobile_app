@@ -20,8 +20,9 @@ import {
   IonSelectOption,
   IonCol,
   IonAlert,
+  IonToast,
 } from "@ionic/react";
-import { trash, searchOutline, refreshOutline } from "ionicons/icons";
+import { trash, searchOutline, refreshOutline, alertCircleOutline, cloudOfflineOutline, timeOutline, closeCircle, eyeOutline, createOutline, checkmarkCircle } from "ionicons/icons";
 import { IonSpinner } from "@ionic/react";
 import "./ProfileInfoPage.css";
 import axios from "axios";
@@ -53,16 +54,72 @@ const LandInfoPage: React.FC = () => {
   const [showAlert, setShowAlert] = useState<boolean>(false); // For alert
   const [showLandDetails, setShowLandDetails] = useState<boolean>(false);
   const [searching, setSearching] = useState<boolean>(false);
-  
+  const [submitting, setSubmitting] = useState<boolean>(false);
+
+  // New UX state
+  const [recentSearches, setRecentSearches] = useState<string[]>(() => {
+    try {
+      const raw = localStorage.getItem('recentFruitsIds_land');
+      return raw ? JSON.parse(raw) : [];
+    } catch { return []; }
+  });
+  const [searchAttempted, setSearchAttempted] = useState<boolean>(false);
+  const [searchError, setSearchError] = useState<'notFound' | 'network' | null>(null);
+  const [showClearConfirm, setShowClearConfirm] = useState<boolean>(false);
+  const [showSuccessToast, setShowSuccessToast] = useState<boolean>(false);
+
+  const FRUITS_ID_LENGTH = 16;
+
   const inputRef = useRef<HTMLIonInputElement>(null); // Add useRef for input field
 
   const handleSearchInputChange = (e: CustomEvent) => {
-    const value = (e.target as HTMLIonInputElement).value ?? '';
+    const raw = (e.target as HTMLIonInputElement).value;
+    const value = (typeof raw === 'string' ? raw : raw == null ? '' : String(raw)).toUpperCase();
     setSearchText(value);
+    if (searchError) setSearchError(null);
+    if (searchAttempted) setSearchAttempted(false);
   };
 
-  const fetchDetails = () => {
+  const handleInputKeyDown = (e: React.KeyboardEvent<HTMLIonInputElement>) => {
+    if (e.key === 'Enter' && searchText.trim() && !searching) {
+      inputRef.current?.blur();
+      fetchDetails();
+    }
+  };
+
+  const saveRecent = (id: string) => {
+    const trimmed = id.trim().toUpperCase();
+    if (!trimmed) return;
+    setRecentSearches(prev => {
+      const next = [trimmed, ...prev.filter(x => x !== trimmed)].slice(0, 5);
+      try { localStorage.setItem('recentFruitsIds_land', JSON.stringify(next)); } catch {}
+      return next;
+    });
+  };
+
+  const removeRecent = (id: string) => {
+    setRecentSearches(prev => {
+      const next = prev.filter(x => x !== id);
+      try { localStorage.setItem('recentFruitsIds_land', JSON.stringify(next)); } catch {}
+      return next;
+    });
+  };
+
+  const handleRecentClick = (id: string) => {
+    setSearchText(id);
+    setSearchError(null);
+    setSearchAttempted(false);
+    setTimeout(() => fetchDetails(id), 0);
+  };
+
+  const fetchDetails = (overrideId?: string) => {
     if (searching) return;
+    const idToSearch = (overrideId ?? searchText).trim().toUpperCase();
+    if (!idToSearch) return;
+    setShowLandDetails(false);
+    setData([]);
+    setSearchAttempted(true);
+    setSearchError(null);
     setSearching(true);
 
     const api = axios.create({
@@ -72,7 +129,7 @@ const LandInfoPage: React.FC = () => {
     api
       .post(
         "farmer-details/getInspectionFarmerLandDetailsByFruitsId",
-        { fruitsId: searchText.trim() },
+        { fruitsId: idToSearch },
         {
           headers: {
             "Content-Type": "application/json",
@@ -83,19 +140,22 @@ const LandInfoPage: React.FC = () => {
       )
       .then((res) => {
         const farmerLandDetailsResponse =
-          res.data.content[0].farmerLandDetailsResponses[0];
-        console.log(farmerLandDetailsResponse);
-
-        setData(farmerLandDetailsResponse);
-        setFarmerId(farmerLandDetailsResponse.farmerId);
-        setFarmerLandDetailsId(farmerLandDetailsResponse.farmerLandDetailsId);
-        setViewAll(false);
-        setShowLandDetails(true);
+          res.data?.content?.[0]?.farmerLandDetailsResponses?.[0];
+        if (farmerLandDetailsResponse) {
+          setData(farmerLandDetailsResponse);
+          setFarmerId(farmerLandDetailsResponse.farmerId);
+          setFarmerLandDetailsId(farmerLandDetailsResponse.farmerLandDetailsId);
+          setViewAll(false);
+          setShowLandDetails(true);
+          saveRecent(idToSearch);
+        } else {
+          setSearchError('notFound');
+        }
         setSearching(false);
       })
       .catch((error) => {
-        setMessage("Farmer number does not exist");
-        setIserror(false);
+        const isNetwork = !error?.response;
+        setSearchError(isNetwork ? 'network' : 'notFound');
         setShowLandDetails(false);
         setSearching(false);
       });
@@ -115,7 +175,25 @@ const LandInfoPage: React.FC = () => {
     setFarmerId(null);
     setViewAll(false);
     setShowLandDetails(false);
+    setSearchAttempted(false);
+    setSearchError(null);
   };
+
+  const requestClear = () => {
+    if (searchText.trim() || showLandDetails) {
+      setShowClearConfirm(true);
+    } else {
+      handleClear();
+    }
+  };
+
+  // Auto-focus the Fruits ID input on mount so the keyboard opens immediately
+  useEffect(() => {
+    const t = setTimeout(() => {
+      inputRef.current?.setFocus().catch(() => { /* ignore */ });
+    }, 250);
+    return () => clearTimeout(t);
+  }, []);
   
 
   const clearSearch = () => {
@@ -135,7 +213,10 @@ const LandInfoPage: React.FC = () => {
 
   const handleEdit = () => {
     if (isEditable) {
-      // TODO: Whichever is ID in below need to get that from dropdown which get from master data
+      // Guard against double-clicks — once a save is in flight, ignore further taps
+      // until success or failure resolves it. Prevents duplicate records.
+      if (submitting) return;
+      setSubmitting(true);
       const api = axios.create({
         baseURL: API_URL_DBT
       });
@@ -160,16 +241,24 @@ const LandInfoPage: React.FC = () => {
           console.log("Farmer Land details updated successfully", res.data);
           setMessage("Farmer Land details updated successfully");
           setIserror(false);
-          setShowAlert(true);
+          setShowSuccessToast(true);
+          // Auto-collapse back to the simple view after a successful save
+          setIsEditable(false);
+          setViewAll(false);
         })
         .catch(error => {
           console.error("Error updating farmer details", error);
           setMessage("Error updating farmer details");
           setIserror(true);
           setShowAlert(true);
+          // Keep edit mode open so the user can retry without losing their input
+        })
+        .finally(() => {
+          setSubmitting(false);
         });
+    } else {
+      setIsEditable(true);
     }
-    setIsEditable(!isEditable);
   };
   
 
@@ -394,15 +483,24 @@ const toggleViewAll = () => {
 
       <IonContent className="page-content">
         <div className="page-hero-extension" aria-hidden="true"></div>
-        <div className="search-section">
+        <div className="search-section is-sticky">
           <div className="search-input-wrap">
             <span className="search-label">Fruits ID</span>
             <IonInput
               ref={inputRef}
               value={searchText}
-              placeholder="Enter Fruits ID"
+              placeholder="e.g. FID2802000042820"
+              autocapitalize="characters"
+              maxlength={FRUITS_ID_LENGTH}
               onIonInput={handleSearchInputChange}
+              onKeyDown={handleInputKeyDown}
             />
+            {searchText.length > 0 && searchText.length < FRUITS_ID_LENGTH && (
+              <span className="input-warning">
+                <IonIcon icon={alertCircleOutline} />
+                Fruits ID must be {FRUITS_ID_LENGTH} characters ({FRUITS_ID_LENGTH - searchText.length} more)
+              </span>
+            )}
           </div>
           <div className="search-action-row">
             <IonButton
@@ -423,14 +521,67 @@ const toggleViewAll = () => {
             </IonButton>
             <IonButton
               className="icon-only-btn danger"
-              onClick={handleClear}
+              onClick={requestClear}
               aria-label="Clear"
               disabled={searching}
             >
               <IonIcon icon={trash} />
             </IonButton>
           </div>
+
+          {recentSearches.length > 0 && !showLandDetails && !searching && (
+            <div className="recent-searches">
+              <div className="recent-searches-label">
+                <IonIcon icon={timeOutline} />
+                <span>Recent</span>
+              </div>
+              <div className="recent-chips">
+                {recentSearches.map((id) => (
+                  <div key={id} className="recent-chip">
+                    <button
+                      type="button"
+                      className="recent-chip-text"
+                      onClick={() => handleRecentClick(id)}
+                    >
+                      {id}
+                    </button>
+                    <button
+                      type="button"
+                      className="recent-chip-remove"
+                      aria-label={`Remove ${id} from recents`}
+                      onClick={() => removeRecent(id)}
+                    >
+                      <IonIcon icon={closeCircle} />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
+
+        {!searching && !showLandDetails && searchAttempted && searchError && (
+          <div className={`empty-state-card ${searchError === 'network' ? 'is-network' : 'is-not-found'}`}>
+            <div className="empty-state-icon">
+              <IonIcon icon={searchError === 'network' ? cloudOfflineOutline : alertCircleOutline} />
+            </div>
+            <h4 className="empty-state-title">
+              {searchError === 'network' ? 'Network error' : 'No land details found'}
+            </h4>
+            <p className="empty-state-text">
+              {searchError === 'network'
+                ? 'Could not reach the server. Check your internet connection and try again.'
+                : `No land details found for "${searchText.trim().toUpperCase()}". Please check the Fruits ID and try again.`}
+            </p>
+            <IonButton
+              className="btn-primary is-active"
+              onClick={() => fetchDetails()}
+              disabled={!searchText.trim() || searching}
+            >
+              <IonIcon icon={refreshOutline} slot="start" /> Retry
+            </IonButton>
+          </div>
+        )}
       
 
         {showLandDetails && data && (
@@ -573,20 +724,36 @@ const toggleViewAll = () => {
             </div>
 
             <div className="result-actions">
-              <IonButton
-                className="btn-result-primary is-active"
-                expand="block"
-                onClick={toggleViewAll}
-              >
-                {viewAll ? "Hide Details" : "View All Details"}
-              </IonButton>
-              <IonButton
-                className={`btn-result-secondary ${isEditable ? "is-save-active" : ""}`}
-                expand="block"
-                onClick={handleEdit}
-              >
-                {isEditable ? "Save Changes" : "Edit Details"}
-              </IonButton>
+              {!viewAll ? (
+                <IonButton
+                  className="btn-result-primary is-active"
+                  expand="block"
+                  disabled={submitting}
+                  onClick={toggleViewAll}
+                >
+                  <IonIcon icon={eyeOutline} slot="start" />
+                  View All Details
+                </IonButton>
+              ) : (
+                <IonButton
+                  className={`btn-result-primary ${isEditable ? "is-save-active" : "is-active"} ${submitting && isEditable ? "is-loading" : ""}`}
+                  expand="block"
+                  disabled={submitting}
+                  onClick={handleEdit}
+                >
+                  {submitting && isEditable ? (
+                    <>
+                      <IonSpinner name="crescent" className="btn-spinner" />
+                      <span style={{ marginLeft: 6 }}>Saving...</span>
+                    </>
+                  ) : (
+                    <>
+                      <IonIcon icon={isEditable ? checkmarkCircle : createOutline} slot="start" />
+                      {isEditable ? "Save Changes" : "Edit Details"}
+                    </>
+                  )}
+                </IonButton>
+              )}
             </div>
           </div>
         )}
@@ -597,6 +764,31 @@ const toggleViewAll = () => {
           header={isError ? "Error" : "Success"}
           message={message}
           buttons={['OK']}
+        />
+
+        {/* Success toast — non-blocking. Top-positioned so it never sits
+            behind the floating bottom home button. */}
+        <IonToast
+          isOpen={showSuccessToast}
+          onDidDismiss={() => setShowSuccessToast(false)}
+          message={message || 'Saved successfully'}
+          duration={2800}
+          position="top"
+          color="success"
+          cssClass="app-toast app-toast--success"
+        />
+
+        {/* Confirm before clearing the form */}
+        <IonAlert
+          isOpen={showClearConfirm}
+          onDidDismiss={() => setShowClearConfirm(false)}
+          header="Clear data?"
+          message="This will clear the Fruits ID and any unsaved details. Continue?"
+          buttons={[
+            { text: 'Cancel', role: 'cancel' },
+            { text: 'Clear', role: 'destructive', handler: () => handleClear() },
+          ]}
+          cssClass="app-alert app-alert--warning"
         />
       </IonContent>
     </IonPage>
