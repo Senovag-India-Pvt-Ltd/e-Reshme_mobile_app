@@ -902,7 +902,27 @@ ion-button.btn-primary ion-icon {
   opacity: 1 !important;
 }
 
-/* SEARCH disabled (empty input) — clearly greyed out so user knows to type first */
+/* SEARCH active state (text entered) — React-controlled class, always vibrant blue */
+ion-button.btn-primary.is-active {
+  --background: var(--grad-primary) !important;
+  --background-hover: var(--grad-primary) !important;
+  --background-activated: var(--ion-color-primary-shade) !important;
+  --color: #ffffff !important;
+  --box-shadow: 0 10px 22px rgba(37, 99, 235, 0.32) !important;
+  background: var(--grad-primary) !important;
+  color: #ffffff !important;
+  opacity: 1 !important;
+  cursor: pointer;
+}
+ion-button.btn-primary.is-active ion-icon {
+  color: #ffffff !important;
+  opacity: 1 !important;
+}
+
+/* SEARCH disabled (empty input) — clearly greyed out so user knows to type first.
+   Uses both the React-controlled .is-disabled-state class AND Ionic's internal
+   [disabled] / .button-disabled hooks, so it works in all hot-reload edge cases. */
+ion-button.btn-primary.is-disabled-state,
 ion-button.btn-primary[disabled],
 ion-button.btn-primary.button-disabled {
   --background: #e2e8f0 !important;
@@ -914,9 +934,21 @@ ion-button.btn-primary.button-disabled {
   opacity: 1 !important;
   cursor: not-allowed;
 }
+ion-button.btn-primary.is-disabled-state ion-icon,
 ion-button.btn-primary[disabled] ion-icon,
 ion-button.btn-primary.button-disabled ion-icon {
   color: #94a3b8 !important;
+  opacity: 1 !important;
+}
+
+/* When React explicitly marks the button as active, override Ionic's residual
+   button-disabled class so the color always reflects the real state. */
+ion-button.btn-primary.is-active.button-disabled,
+ion-button.btn-primary.is-active[disabled] {
+  --background: var(--grad-primary) !important;
+  --color: #ffffff !important;
+  background: var(--grad-primary) !important;
+  color: #ffffff !important;
   opacity: 1 !important;
 }
 

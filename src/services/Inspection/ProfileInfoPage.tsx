@@ -32,12 +32,8 @@ const ProfileInfoPage: React.FC = () => {
   const inputRef = useRef<HTMLIonInputElement>(null); // Add useRef for input field
 
   const handleInputChange = (e: CustomEvent) => {
-    const value = (e.target as HTMLIonInputElement).value!;
+    const value = (e.target as HTMLIonInputElement).value ?? '';
     setSearchText(value);
-    if (value.length === 16) {
-      inputRef.current?.blur(); // Remove focus from input field
-      fetchFarmerDetails();
-    }
   };
 
   const fetchFarmerDetails = () => {
@@ -48,7 +44,7 @@ const ProfileInfoPage: React.FC = () => {
       baseURL: API_URL_DBT
     });
 
-    api.post("farmer-details/getInspectionFarmerDetailsByFruitsId", { fruitsId: searchText }, {
+    api.post("farmer-details/getInspectionFarmerDetailsByFruitsId", { fruitsId: searchText.trim() }, {
       headers: {
         "Content-Type": "application/json",
         accept: "*/*",
@@ -425,7 +421,7 @@ const ProfileInfoPage: React.FC = () => {
           </div>
           <div className="search-action-row">
             <IonButton
-              className={`btn-primary ${searching ? "is-loading" : ""}`}
+              className={`btn-primary ${searching ? "is-loading" : (searchText.trim() ? "is-active" : "is-disabled-state")}`}
               disabled={searching || !searchText.trim()}
               onClick={() => { if (searchText.trim()) fetchFarmerDetails(); }}
             >

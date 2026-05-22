@@ -57,12 +57,8 @@ const LandInfoPage: React.FC = () => {
   const inputRef = useRef<HTMLIonInputElement>(null); // Add useRef for input field
 
   const handleSearchInputChange = (e: CustomEvent) => {
-    const value = (e.target as HTMLIonInputElement).value!;
+    const value = (e.target as HTMLIonInputElement).value ?? '';
     setSearchText(value);
-    if (value.length === 16) {
-      inputRef.current?.blur(); // Remove focus from input field
-      fetchDetails();
-    }
   };
 
   const fetchDetails = () => {
@@ -76,7 +72,7 @@ const LandInfoPage: React.FC = () => {
     api
       .post(
         "farmer-details/getInspectionFarmerLandDetailsByFruitsId",
-        { fruitsId: searchText },
+        { fruitsId: searchText.trim() },
         {
           headers: {
             "Content-Type": "application/json",
@@ -410,7 +406,7 @@ const toggleViewAll = () => {
           </div>
           <div className="search-action-row">
             <IonButton
-              className={`btn-primary ${searching ? "is-loading" : ""}`}
+              className={`btn-primary ${searching ? "is-loading" : (searchText.trim() ? "is-active" : "is-disabled-state")}`}
               disabled={searching || !searchText.trim()}
               onClick={() => { if (searchText.trim()) fetchDetails(); }}
             >
