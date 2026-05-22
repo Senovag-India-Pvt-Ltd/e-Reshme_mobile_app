@@ -411,8 +411,8 @@ const toggleViewAll = () => {
           <div className="search-action-row">
             <IonButton
               className={`btn-primary ${searching ? "is-loading" : ""}`}
-              disabled={searching}
-              onClick={() => { fetchDetails(); }}
+              disabled={searching || !searchText.trim()}
+              onClick={() => { if (searchText.trim()) fetchDetails(); }}
             >
               {searching ? (
                 <>
@@ -585,11 +585,11 @@ const toggleViewAll = () => {
                 {viewAll ? "Hide Details" : "View All Details"}
               </IonButton>
               <IonButton
-                className="btn-result-secondary"
+                className={`btn-result-secondary ${isEditable ? "is-save-active" : ""}`}
                 expand="block"
                 onClick={handleEdit}
               >
-                Save
+                {isEditable ? "Save Changes" : "Edit Details"}
               </IonButton>
             </div>
           </div>

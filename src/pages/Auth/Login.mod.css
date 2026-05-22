@@ -14,7 +14,9 @@
   background: var(--ion-background-color);
   overflow-x: hidden;
   overflow-y: visible;
-  padding-bottom: 36px;
+  padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 16px);
+  display: flex;
+  flex-direction: column;
 }
 
 /* Hero — extended gradient sweep with dramatic curve */
@@ -89,7 +91,7 @@
   position: relative;
   z-index: 2;
   text-align: center;
-  padding: 70px 24px 92px;
+  padding: calc(env(safe-area-inset-top, 0px) + 48px) 24px 72px;
   color: #ffffff;
   animation: fade-up var(--duration-slow) var(--ease-out-soft) both;
 }
@@ -156,7 +158,81 @@
   color: rgba(255, 255, 255, 0.85);
   margin-top: 6px;
   letter-spacing: 0.04em;
-  text-transform: uppercase;
+  text-transform: none;
+}
+
+/* ---------- Exit button on Login (top-right) ---------- */
+.login-exit-btn {
+  position: absolute;
+  top: calc(env(safe-area-inset-top, 0px) + 14px);
+  right: 16px;
+  z-index: 10;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  background: rgba(255, 255, 255, 0.18);
+  color: #ffffff;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  border-radius: 999px;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  cursor: pointer;
+  transition: background 0.2s ease, transform 0.15s ease;
+}
+
+.login-exit-btn ion-icon {
+  font-size: 16px;
+}
+
+.login-exit-btn:hover {
+  background: rgba(255, 255, 255, 0.28);
+}
+
+.login-exit-btn:active {
+  transform: scale(0.96);
+}
+
+/* ---------- Back button on OTP card (top-left) ---------- */
+.otp-back-btn {
+  position: absolute;
+  top: 14px;
+  left: 14px;
+  z-index: 2;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 12px 6px 8px;
+  border: 1px solid rgba(99, 102, 241, 0.25);
+  background: #eef2ff;
+  color: #4338ca;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: background 0.2s ease, transform 0.15s ease;
+}
+
+.otp-back-btn ion-icon {
+  font-size: 16px;
+}
+
+.otp-back-btn:hover {
+  background: #e0e7ff;
+}
+
+.otp-back-btn:active {
+  transform: scale(0.96);
+}
+
+/* Make sure the verification card has room for the back button */
+.verification-card {
+  position: relative;
+  padding-top: 56px;
 }
 
 /* ---------- Auth card — lifted to overlap the hero ---------- */
@@ -346,7 +422,8 @@
   z-index: 2;
   display: flex;
   gap: 12px;
-  padding: 24px 22px 28px;
+  padding: 20px 22px 8px;
+  margin-top: auto;
   animation: fade-up var(--duration-slow) var(--ease-out-soft) both;
   animation-delay: 200ms;
 }

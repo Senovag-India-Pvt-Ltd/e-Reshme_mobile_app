@@ -885,10 +885,8 @@ ion-searchbar.custom-searchbar .searchbar-input {
     transform var(--duration-fast) var(--ease-out-soft);
 }
 
-/* SEARCH (.btn-primary) — always vibrant blue, regardless of state */
-ion-button.btn-primary,
-ion-button.btn-primary[disabled],
-ion-button.btn-primary.button-disabled {
+/* SEARCH (.btn-primary) — vibrant blue when usable */
+ion-button.btn-primary {
   --background: var(--grad-primary) !important;
   --background-hover: var(--grad-primary) !important;
   --background-activated: var(--ion-color-primary-shade) !important;
@@ -899,11 +897,41 @@ ion-button.btn-primary.button-disabled {
   opacity: 1 !important;
   cursor: pointer;
 }
-ion-button.btn-primary ion-icon,
-ion-button.btn-primary[disabled] ion-icon,
-ion-button.btn-primary.button-disabled ion-icon {
+ion-button.btn-primary ion-icon {
   color: #ffffff !important;
   opacity: 1 !important;
+}
+
+/* SEARCH disabled (empty input) — clearly greyed out so user knows to type first */
+ion-button.btn-primary[disabled],
+ion-button.btn-primary.button-disabled {
+  --background: #e2e8f0 !important;
+  --background-hover: #e2e8f0 !important;
+  --color: #94a3b8 !important;
+  --box-shadow: none !important;
+  background: #e2e8f0 !important;
+  color: #94a3b8 !important;
+  opacity: 1 !important;
+  cursor: not-allowed;
+}
+ion-button.btn-primary[disabled] ion-icon,
+ion-button.btn-primary.button-disabled ion-icon {
+  color: #94a3b8 !important;
+  opacity: 1 !important;
+}
+
+/* But keep the gradient look while actively loading (spinner state) */
+ion-button.btn-primary.is-loading,
+ion-button.btn-primary.is-loading[disabled] {
+  --background: var(--grad-primary) !important;
+  --color: #ffffff !important;
+  background: var(--grad-primary) !important;
+  color: #ffffff !important;
+  opacity: 0.94 !important;
+  cursor: progress;
+}
+ion-button.btn-primary.is-loading ion-icon {
+  color: #ffffff !important;
 }
 
 /* SEARCH loading state — keep gradient, show spinner */
@@ -986,6 +1014,91 @@ ion-button.btn-result-primary.is-loading {
   --border-color: var(--app-border) !important;
   opacity: 1;
   cursor: not-allowed;
+}
+
+/* ─── Photo picker: Camera + Choose File ─── */
+.photo-picker-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-top: 6px;
+}
+
+.photo-picker-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  font-size: 0.9rem;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.2s ease, background 0.2s ease;
+  font-family: var(--app-font-sans, inherit);
+  border: 1.5px solid transparent;
+}
+
+.photo-picker-btn ion-icon {
+  font-size: 18px;
+}
+
+.photo-picker-btn--camera {
+  background: linear-gradient(135deg, #4f46e5 0%, #6366f1 50%, #8b5cf6 100%);
+  color: #ffffff;
+  box-shadow: 0 6px 14px rgba(99, 102, 241, 0.28);
+}
+
+.photo-picker-btn--camera:hover {
+  box-shadow: 0 10px 22px rgba(99, 102, 241, 0.36);
+}
+
+.photo-picker-btn--file {
+  background: #ffffff;
+  color: #4338ca;
+  border-color: #c7d2fe;
+  box-shadow: 0 2px 6px rgba(15, 23, 42, 0.05);
+}
+
+.photo-picker-btn--file:hover {
+  background: #eef2ff;
+  border-color: #818cf8;
+}
+
+.photo-picker-btn:active {
+  transform: scale(0.97);
+}
+
+/* Save Changes highlighted state — applied when user is in edit mode */
+.btn-result-secondary.is-save-active {
+  --background: var(--grad-primary, linear-gradient(135deg, #4f46e5 0%, #6366f1 50%, #8b5cf6 100%)) !important;
+  --background-hover: var(--grad-primary, linear-gradient(135deg, #4338ca 0%, #5b58e8 50%, #7c3aed 100%)) !important;
+  --background-activated: var(--ion-color-primary-shade, #4338ca) !important;
+  --color: #ffffff !important;
+  --border-color: transparent !important;
+  --border-width: 0 !important;
+  --box-shadow: 0 10px 22px rgba(99, 102, 241, 0.32) !important;
+  color: #ffffff !important;
+  font-weight: 700 !important;
+  animation: save-active-pulse 1.6s ease-in-out infinite;
+}
+
+.btn-result-secondary.is-save-active ion-icon {
+  color: #ffffff !important;
+}
+
+.btn-result-secondary.is-save-active[disabled],
+.btn-result-secondary.is-save-active.button-disabled {
+  --background: var(--grad-primary, linear-gradient(135deg, #4f46e5 0%, #6366f1 50%, #8b5cf6 100%)) !important;
+  --color: #ffffff !important;
+  --border-color: transparent !important;
+  opacity: 0.85;
+}
+
+@keyframes save-active-pulse {
+  0%, 100% { box-shadow: 0 10px 22px rgba(99, 102, 241, 0.32); }
+  50%      { box-shadow: 0 14px 30px rgba(99, 102, 241, 0.5); }
 }
 
 /* Responsive */

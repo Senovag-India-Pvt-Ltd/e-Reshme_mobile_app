@@ -74,8 +74,8 @@ const Home: React.FC = () => {
             <div className="brand-mark">
               <img src="/assets/images/kg_logo.png" alt="Sericulture" />
               <div className="brand-mark-text">
-                <span className="brand-mark-title">Sericulture</span>
-                <span className="brand-mark-sub">GoK</span>
+                <span className="brand-mark-title">DOS</span>
+                <span className="brand-mark-sub">GOK</span>
               </div>
             </div>
 

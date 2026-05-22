@@ -2,7 +2,7 @@ import { BackButtonEvent, IonCard, IonCardContent, IonCardHeader, IonContent, Io
 import React, { useContext, useEffect, useRef, useState } from 'react';
 import axios from "axios";
 import { IonGrid, IonRow, IonCol } from '@ionic/react';
-import { eye, eyeSharp, lockClosed, personCircle, phonePortrait, phonePortraitOutline, cloudDownloadOutline, images, trashSharp, shieldCheckmarkOutline, callOutline, timeOutline } from "ionicons/icons";
+import { eye, eyeSharp, lockClosed, personCircle, phonePortrait, phonePortraitOutline, cloudDownloadOutline, images, trashSharp, shieldCheckmarkOutline, callOutline, timeOutline, arrowBack, exitOutline } from "ionicons/icons";
 import { useHistory, useLocation } from "react-router-dom";
 import { IonItem, IonLabel, IonInput, IonButton, IonIcon, IonAlert } from '@ionic/react';
 import './Login.mod.css';
@@ -73,6 +73,30 @@ const Login: React.FC = () => {
   const [viewModalOpen, setViewModalOpen] = useState<boolean>(false);
   const [gpsAlertOpen, setGpsAlertOpen] = useState<boolean>(false);
   const [gpsAlertMsg, setGpsAlertMsg] = useState<string>('');
+  const [exitAlertOpen, setExitAlertOpen] = useState<boolean>(false);
+
+  const handleBackToLogin = () => {
+    setShowVerificationSection(false);
+    setShowLoginSection(true);
+    setOtpNumber1("");
+    setOtpNumber2("");
+    setOtpNumber3("");
+    setOtpNumber4("");
+    setOtpNumber5("");
+    setOtpNumber6("");
+    setOtp("");
+    setIsActive(false);
+    setMinutes(initialMinutes);
+    setSeconds(initialSeconds);
+  };
+
+  const handleExitApp = () => {
+    if (Capacitor.isNative) {
+      App.exitApp();
+    } else {
+      window.close();
+    }
+  };
 
   const usernameInputRef = useRef<HTMLIonInputElement>(null);
   const passwordInputRef = useRef<HTMLIonInputElement>(null);
@@ -387,6 +411,38 @@ const Login: React.FC = () => {
             ]}
           />
 
+          <IonAlert
+            isOpen={exitAlertOpen}
+            onDidDismiss={() => setExitAlertOpen(false)}
+            header="Exit App"
+            message="Are you sure you want to exit the application?"
+            buttons={[
+              {
+                text: 'Cancel',
+                role: 'cancel',
+                handler: () => setExitAlertOpen(false),
+              },
+              {
+                text: 'Exit',
+                role: 'destructive',
+                handler: () => {
+                  setExitAlertOpen(false);
+                  handleExitApp();
+                },
+              },
+            ]}
+          />
+
+          <button
+            type="button"
+            className="login-exit-btn"
+            onClick={() => setExitAlertOpen(true)}
+            aria-label="Exit application"
+          >
+            <IonIcon icon={exitOutline} />
+            <span>Exit</span>
+          </button>
+
           <div className="brand-block">
             <div className="brand-logo-wrap">
               <IonImg
@@ -483,6 +539,16 @@ const Login: React.FC = () => {
 
           {showVerificationSection && (
             <div className="auth-card verification-card">
+              <button
+                type="button"
+                className="otp-back-btn"
+                onClick={handleBackToLogin}
+                aria-label="Back to login"
+              >
+                <IonIcon icon={arrowBack} />
+                <span>Back to Login</span>
+              </button>
+
               <div className="otp-shield">
                 <IonIcon icon={shieldCheckmarkOutline} />
               </div>

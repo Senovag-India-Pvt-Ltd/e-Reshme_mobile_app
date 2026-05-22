@@ -4,7 +4,7 @@ import {
   IonCardTitle, IonInput, IonLabel, IonButton, IonHeader,
   IonToolbar, IonTitle, IonButtons, IonMenuButton, IonIcon, IonSelect, IonSelectOption, IonBackButton, IonAlert, IonSpinner
 } from '@ionic/react';
-import { trash, searchOutline, checkmarkCircle, refreshOutline } from 'ionicons/icons';
+import { trash, searchOutline, checkmarkCircle, refreshOutline, cameraOutline, imageOutline } from 'ionicons/icons';
 import './ProfileInfoPage.css';
 import axios from 'axios';
 import { API_URL_DBT } from '../auth.service';
@@ -426,8 +426,8 @@ const ProfileInfoPage: React.FC = () => {
           <div className="search-action-row">
             <IonButton
               className={`btn-primary ${searching ? "is-loading" : ""}`}
-              disabled={searching}
-              onClick={() => { fetchFarmerDetails(); }}
+              disabled={searching || !searchText.trim()}
+              onClick={() => { if (searchText.trim()) fetchFarmerDetails(); }}
             >
               {searching ? (
                 <>
@@ -522,7 +522,42 @@ const ProfileInfoPage: React.FC = () => {
                     <label className="info-label">
                       Farmer Photo <span className="info-hint">(max 5 MB)</span>
                     </label>
-                    <input type="file" onChange={handleFileChange} accept="image/*" />
+
+                    <input
+                      id="farmer-photo-camera"
+                      type="file"
+                      accept="image/*"
+                      capture="environment"
+                      onChange={handleFileChange}
+                      style={{ display: 'none' }}
+                    />
+                    <input
+                      id="farmer-photo-gallery"
+                      type="file"
+                      accept="image/*"
+                      onChange={handleFileChange}
+                      style={{ display: 'none' }}
+                    />
+
+                    <div className="photo-picker-row">
+                      <button
+                        type="button"
+                        className="photo-picker-btn photo-picker-btn--camera"
+                        onClick={() => document.getElementById('farmer-photo-camera')?.click()}
+                      >
+                        <IonIcon icon={cameraOutline} />
+                        <span>Camera</span>
+                      </button>
+                      <button
+                        type="button"
+                        className="photo-picker-btn photo-picker-btn--file"
+                        onClick={() => document.getElementById('farmer-photo-gallery')?.click()}
+                      >
+                        <IonIcon icon={imageOutline} />
+                        <span>Choose File</span>
+                      </button>
+                    </div>
+
                     {selectedFile && (
                       <div className="info-file-preview">
                         <span className="info-file-name">{selectedFile.name}</span>
@@ -554,7 +589,7 @@ const ProfileInfoPage: React.FC = () => {
               </IonButton>
               <IonButton
                 expand="block"
-                className={`btn-result-secondary ${submitting && isEditable ? "is-loading" : ""}`}
+                className={`btn-result-secondary ${isEditable ? "is-save-active" : ""} ${submitting && isEditable ? "is-loading" : ""}`}
                 disabled={submitting}
                 onClick={handleEdit}
               >

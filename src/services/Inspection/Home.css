@@ -12,7 +12,14 @@
   min-height: 100vh;
   background: var(--ion-background-color);
   overflow-x: hidden;
-  padding-bottom: 40px;
+  padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 16px);
+  display: flex;
+  flex-direction: column;
+}
+
+/* Push the action grid to fill remaining vertical space */
+.home-bg .action-grid {
+  margin-bottom: auto;
 }
 
 /* Gradient sweep behind the topbar + hero */
@@ -166,6 +173,54 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+/* Right-side cluster on the topbar */
+.home-topbar-right {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Logout pill button next to the user chip */
+.home-logout-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 12px;
+  border: 1px solid rgba(255, 255, 255, 0.45);
+  background: rgba(244, 63, 94, 0.92);
+  color: #ffffff;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  border-radius: 999px;
+  box-shadow: 0 6px 16px rgba(244, 63, 94, 0.28);
+  cursor: pointer;
+  transition: background 0.2s ease, transform 0.15s ease, box-shadow 0.2s ease;
+  font-family: var(--app-font-sans);
+}
+
+.home-logout-btn ion-icon {
+  font-size: 15px;
+}
+
+.home-logout-btn:hover {
+  background: rgba(225, 29, 72, 0.95);
+  box-shadow: 0 10px 22px rgba(225, 29, 72, 0.32);
+}
+
+.home-logout-btn:active {
+  transform: scale(0.96);
+}
+
+@media (max-width: 360px) {
+  .home-logout-btn span {
+    display: none;
+  }
+  .home-logout-btn {
+    padding: 8px 10px;
+  }
 }
 
 /* ---------- Hero greeting ---------- */
