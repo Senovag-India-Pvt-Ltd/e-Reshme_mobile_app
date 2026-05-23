@@ -357,6 +357,24 @@
   opacity: 0.7;
 }
 
+/* Keep the gradient look during the loading spin so the button doesn't visually
+   "go grey" the instant the user taps. Disabled cursor still applies via [disabled]. */
+.docpage-submit.is-submitting,
+.docpage-submit.is-submitting[disabled] {
+  --background: linear-gradient(135deg, #4f46e5 0%, #6366f1 50%, #8b5cf6 100%) !important;
+  --color: #ffffff !important;
+  color: #ffffff !important;
+  opacity: 0.92 !important;
+  cursor: progress;
+}
+
+.docpage-submit-spinner {
+  width: 18px;
+  height: 18px;
+  --color: #ffffff;
+  color: #ffffff;
+}
+
 .docpage-reject-toggle {
   --background: #ffffff !important;
   --background-hover: #fef2f2 !important;
@@ -458,6 +476,70 @@
   flex-direction: column;
   gap: 12px;
   padding-top: 4px;
+}
+
+/* Submit + Reject side-by-side. Submit takes the dominant space (primary CTA);
+   Reject is a subtle outline button on the right. */
+.docpage-actions.docpage-actions--row {
+  flex-direction: row;
+  align-items: stretch;
+  gap: 10px;
+}
+.docpage-actions.docpage-actions--row .docpage-submit {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+/* Compact, low-emphasis Reject side button — only a hint of red so it doesn't
+   compete with Submit visually, but stays scannable for users who need it. */
+.docpage-reject-side {
+  --background: #ffffff !important;
+  --background-hover: #fef2f2 !important;
+  --background-activated: #fee2e2 !important;
+  --color: #dc2626 !important;
+  --border-radius: 14px !important;
+  --box-shadow: none !important;
+  --padding-start: 14px;
+  --padding-end: 14px;
+  color: #dc2626 !important;
+  font-weight: 600 !important;
+  text-transform: none !important;
+  letter-spacing: 0.2px;
+  height: 50px;
+  margin: 0 !important;
+  font-size: 0.85rem !important;
+  border: 1.5px solid #fecaca;
+  border-radius: 14px;
+  flex: 0 0 auto;
+  min-width: 96px;
+  transition: border-color 0.15s ease, background-color 0.15s ease;
+}
+.docpage-reject-side ion-icon {
+  margin-right: 6px;
+  font-size: 16px;
+}
+.docpage-reject-side.is-open {
+  --background: #fef2f2 !important;
+  border-color: #fca5a5;
+}
+.docpage-reject-side-label {
+  white-space: nowrap;
+}
+
+@media (max-width: 360px) {
+  /* On very narrow screens, drop the label and keep just the icon so Submit
+     always has room to read clearly. */
+  .docpage-reject-side {
+    min-width: 50px;
+    --padding-start: 12px;
+    --padding-end: 12px;
+  }
+  .docpage-reject-side-label {
+    display: none;
+  }
+  .docpage-reject-side ion-icon {
+    margin-right: 0;
+  }
 }
 
 /* Bottom spacing for tab bar */

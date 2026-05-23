@@ -19,6 +19,7 @@ import {
   IonSelect,
   IonSelectOption,
   IonSearchbar,
+  IonSpinner,
 } from "@ionic/react";
 import axios from "axios";
 import { useParams, useHistory, useLocation } from "react-router-dom";
@@ -67,6 +68,9 @@ const DocPage: React.FC = () => {
 
   const [isApprovalPowerChecked, setIsApprovalPowerChecked] = useState<boolean>(false);
   const [isSubmitDisabled, setIsSubmitDisabled] = useState<boolean>(false);
+  // Locks the Submit button while any of the three submit API calls is in flight.
+  // Prevents double-taps from creating duplicate records (same pattern as Profile/Land Info).
+  const [submitting, setSubmitting] = useState<boolean>(false);
   const [showApprovalPowerPopup, setShowApprovalPowerPopup] = useState<boolean>(false);
 
   useEffect(() => {
@@ -494,6 +498,9 @@ const DocPage: React.FC = () => {
         console.error("Error updating inspection task status:", error);
         setSubmitError(true);
         setTimeout(() => setSubmitError(false), 3000);
+      })
+      .finally(() => {
+        setSubmitting(false);
       });
   };
 
@@ -523,6 +530,8 @@ const DocPage: React.FC = () => {
     } catch (error) {
       setSubmitError(true);
       setTimeout(() => setSubmitError(false), 3000);
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -530,7 +539,7 @@ const DocPage: React.FC = () => {
     try {
       // Use actual Objection API endpoint
       await axios.post(
-        `https://e-reshme.karnataka.gov.in/dbt/v1/service/getRejectedBeforeStepDetailsAfterSubmitBySubSchemeIdAndApprovalStageId?subSchemeId=${subSchemeId}&approvalStageId=${approvalStageId}`,
+        `${API_URL_DBT_}dbt/v1/service/getRejectedBeforeStepDetailsAfterSubmitBySubSchemeIdAndApprovalStageId?subSchemeId=${subSchemeId}&approvalStageId=${approvalStageId}`,
         {},
         {
           headers: {
@@ -547,6 +556,8 @@ const DocPage: React.FC = () => {
     } catch (error) {
       setSubmitError(true);
       setTimeout(() => setSubmitError(false), 3000);
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -580,6 +591,10 @@ const DocPage: React.FC = () => {
 
 
   const handleSubmit = () => {
+    // Double-click guard — once a submit is in flight, ignore further taps until
+    // the API resolves. Prevents duplicate records (same as Profile/Land Info).
+    if (submitting) return;
+
     // Reset the previous validation message
     setValidationErrorMessage("");
 
@@ -590,6 +605,7 @@ const DocPage: React.FC = () => {
         setValidationError(true);
         return;
       }
+      setSubmitting(true);
       callPermanentRejectAPI();
       return;
     }
@@ -610,6 +626,7 @@ const DocPage: React.FC = () => {
         setValidationError(true);
         return;
       }
+      setSubmitting(true);
       callObjectionRejectAPI();
       return;
     }
@@ -626,9 +643,10 @@ const DocPage: React.FC = () => {
       return;
     }
 
+    setSubmitting(true);
+    // Note: do NOT set submitSuccess here — it will be set inside the API's .then()
+    // once the call actually resolves. Previously this was firing optimistically.
     updateInspectionTaskStatus();
-    setSubmitSuccess(true);
-    setTimeout(() => setSubmitSuccess(false), 3000);
   };
 
 
@@ -818,25 +836,38 @@ const DocPage: React.FC = () => {
             </div>
           </section>
 
-          {/* Reject section */}
-          <IonButton
-            expand="block"
-            className={`docpage-reject-toggle${showRejectPanel ? ' is-open' : ''}`}
-            onClick={() => {
-              setShowRejectPanel((prev) => {
-                const next = !prev;
-                if (!next) {
-                  setRejectType("");
-                  setRejectionReason("");
-                }
-                return next;
-              });
-            }}
-          >
-            <IonIcon icon={closeCircleOutline} />
-            {showRejectPanel ? 'Hide Reject Options' : 'Reject Application'}
-          </IonButton>
+          {/* Location card */}
+          <section className="docpage-location">
+            <div className="docpage-location-header">
+              <span className="docpage-location-icon">
+                <IonIcon icon={locationOutline} />
+              </span>
+              <div>
+                <div className="docpage-location-title">Current Location</div>
+                <div className="docpage-location-sub">Auto-detected from device</div>
+              </div>
+            </div>
+            <IonRow>
+              <IonCol size="6">
+                <div className="docpage-coord">
+                  <span className="docpage-coord-label">Latitude</span>
+                  <span className="docpage-coord-value">
+                    {currentLocation.latitude || '—'}
+                  </span>
+                </div>
+              </IonCol>
+              <IonCol size="6">
+                <div className="docpage-coord">
+                  <span className="docpage-coord-label">Longitude</span>
+                  <span className="docpage-coord-value">
+                    {currentLocation.longitude || '—'}
+                  </span>
+                </div>
+              </IonCol>
+            </IonRow>
+          </section>
 
+          {/* Reject panel (only shown when the user has tapped the side button) */}
           {showRejectPanel && (
             <section className="docpage-reject-panel">
               <div className="docpage-reject-banner">
@@ -890,47 +921,45 @@ const DocPage: React.FC = () => {
             </section>
           )}
 
-          {/* Location card */}
-          <section className="docpage-location">
-            <div className="docpage-location-header">
-              <span className="docpage-location-icon">
-                <IonIcon icon={locationOutline} />
-              </span>
-              <div>
-                <div className="docpage-location-title">Current Location</div>
-                <div className="docpage-location-sub">Auto-detected from device</div>
-              </div>
-            </div>
-            <IonRow>
-              <IonCol size="6">
-                <div className="docpage-coord">
-                  <span className="docpage-coord-label">Latitude</span>
-                  <span className="docpage-coord-value">
-                    {currentLocation.latitude || '—'}
-                  </span>
-                </div>
-              </IonCol>
-              <IonCol size="6">
-                <div className="docpage-coord">
-                  <span className="docpage-coord-label">Longitude</span>
-                  <span className="docpage-coord-value">
-                    {currentLocation.longitude || '—'}
-                  </span>
-                </div>
-              </IonCol>
-            </IonRow>
-          </section>
-
-          {/* Submit Button */}
-          <div className="docpage-actions">
+          {/* Action row — Submit is the primary CTA, Reject is a subtle side button */}
+          <div className="docpage-actions docpage-actions--row">
             <IonButton
               expand="block"
-              className="docpage-submit"
+              className={`docpage-submit${submitting ? ' is-submitting' : ''}`}
               onClick={handleSubmit}
-              disabled={isSubmitDisabled}
+              disabled={isSubmitDisabled || submitting}
             >
-              <IonIcon icon={checkmarkCircleOutline} />
-              Submit
+              {submitting ? (
+                <>
+                  <IonSpinner name="crescent" className="docpage-submit-spinner" />
+                  <span style={{ marginLeft: 6 }}>Submitting...</span>
+                </>
+              ) : (
+                <>
+                  <IonIcon icon={checkmarkCircleOutline} />
+                  Submit
+                </>
+              )}
+            </IonButton>
+            <IonButton
+              className={`docpage-reject-side${showRejectPanel ? ' is-open' : ''}`}
+              aria-label={showRejectPanel ? 'Hide reject options' : 'Reject application'}
+              disabled={submitting}
+              onClick={() => {
+                setShowRejectPanel((prev) => {
+                  const next = !prev;
+                  if (!next) {
+                    setRejectType("");
+                    setRejectionReason("");
+                  }
+                  return next;
+                });
+              }}
+            >
+              <IonIcon icon={closeCircleOutline} />
+              <span className="docpage-reject-side-label">
+                {showRejectPanel ? 'Cancel' : 'Reject'}
+              </span>
             </IonButton>
           </div>
 

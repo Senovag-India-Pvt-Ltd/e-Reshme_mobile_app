@@ -260,13 +260,13 @@ const ListPage: React.FC = () => {
                       <IonContent>
                         <div style={{ textAlign: 'center', padding: '20px' }}>
                           <img
-                            src={`https://e-reshme.karnataka.gov.in/dbt/v1/service/downLoadFile?fileName=${item.fileName}`}
+                            src={`${API_URL_DBT_}dbt/v1/service/downLoadFile?fileName=${item.fileName}`}
                             alt="Preview"
                             style={{ maxWidth: '100%', maxHeight: '70vh' }}
                           />
                           <br />
                           <IonButton
-                            href={`https://e-reshme.karnataka.gov.in/dbt/v1/service/downLoadFile?fileName=${item.fileName}`}
+                            href={`${API_URL_DBT_}dbt/v1/service/downLoadFile?fileName=${item.fileName}`}
                             target="_blank"
                             className="listpage-proceed"
                             style={{ marginTop: 12 }}
