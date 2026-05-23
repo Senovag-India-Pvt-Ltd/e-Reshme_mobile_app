@@ -270,6 +270,31 @@
   border: 1px solid rgba(255, 255, 255, 0.35);
 }
 
+/* Icon variant — when the avatar holds an IonIcon instead of a letter */
+.result-avatar ion-icon {
+  font-size: 26px;
+  color: #ffffff !important;
+}
+
+/* Accent variants for different page contexts. Each just swaps the gradient
+   and the matching shadow tint. */
+.result-avatar.is-accent-green {
+  background: linear-gradient(135deg, #059669 0%, #10b981 100%);
+  box-shadow: 0 8px 18px rgba(16, 185, 129, 0.32);
+}
+.result-avatar.is-accent-amber {
+  background: linear-gradient(135deg, #d97706 0%, #f59e0b 100%);
+  box-shadow: 0 8px 18px rgba(245, 158, 11, 0.34);
+}
+.result-avatar.is-accent-violet {
+  background: linear-gradient(135deg, #7c3aed 0%, #a855f7 100%);
+  box-shadow: 0 8px 18px rgba(139, 92, 246, 0.32);
+}
+.result-avatar.is-accent-rose {
+  background: linear-gradient(135deg, #be123c 0%, #ef4444 100%);
+  box-shadow: 0 8px 18px rgba(239, 68, 68, 0.32);
+}
+
 .result-head-text {
   display: flex;
   flex-direction: column;
@@ -1409,4 +1434,324 @@ ion-toast.app-toast.app-toast--success::part(icon) {
 /* Warning alert (confirm-clear) styling — subtle accent */
 .app-alert.app-alert--warning .alert-head {
   background: rgba(245, 158, 11, 0.08);
+}
+
+/* =========================================================================
+   Mulberry Activity form — white inputs, modern divider, slim collapse link
+   Scoped to .mulberry-form so it doesn't affect any other page that
+   imports ProfileInfoPage.css
+   ========================================================================= */
+.mulberry-form {
+  padding-top: 4px;
+  animation: fade-up 320ms var(--ease-out-soft) both;
+}
+
+/* Section divider between basic info and the editable activity form */
+.mulberry-form-divider {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 6px 0 14px;
+  padding: 10px 12px;
+  background: rgba(37, 99, 235, 0.06);
+  border-radius: 12px;
+  border: 1px solid rgba(37, 99, 235, 0.15);
+}
+.mulberry-form-divider > span {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ion-color-primary);
+}
+.mulberry-collapse-link {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  color: var(--ion-color-primary);
+  font-size: 14px;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 8px;
+  line-height: 1;
+  transition: background var(--duration-fast) var(--ease-out-soft);
+}
+.mulberry-collapse-link:hover {
+  background: rgba(37, 99, 235, 0.08);
+}
+
+/* Convert the legacy `.details-row` look to a clean white-input look inside
+   the Mulberry form so fields don't look greyed-out / disabled. */
+.mulberry-form .details-row {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 14px;
+  padding: 0;
+}
+.mulberry-form .details-row ion-label {
+  font-size: 11px !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.08em !important;
+  text-transform: uppercase;
+  color: var(--app-text-muted) !important;
+  margin: 0 !important;
+  flex: none;
+}
+.mulberry-form .details-row ion-input,
+.mulberry-form .details-row ion-textarea,
+.mulberry-form .details-row ion-select {
+  --background: #ffffff !important;
+  --color: var(--app-text) !important;
+  --placeholder-color: var(--app-text-subtle) !important;
+  --padding-start: 14px !important;
+  --padding-end: 14px !important;
+  --padding-top: 12px !important;
+  --padding-bottom: 12px !important;
+  background: #ffffff !important;
+  border: 1.5px solid var(--app-border) !important;
+  border-radius: 12px !important;
+  min-height: 46px !important;
+  font-size: 14px !important;
+  font-weight: 500 !important;
+  width: 100%;
+  box-sizing: border-box;
+  transition: border-color var(--duration-base) var(--ease-out-soft),
+              box-shadow var(--duration-base) var(--ease-out-soft);
+}
+.mulberry-form .details-row ion-input.has-focus,
+.mulberry-form .details-row ion-input:focus-within,
+.mulberry-form .details-row ion-select:focus-within {
+  border-color: var(--ion-color-primary) !important;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.14) !important;
+}
+
+/* Date display pill inside the form — match the input style */
+.mulberry-form .details-row .date-display {
+  background: #ffffff !important;
+  border: 1.5px solid var(--app-border);
+  border-radius: 12px;
+  padding: 12px 14px;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--app-text);
+  min-height: 46px;
+}
+
+/* Top-level (always visible) TSC dropdown — keep the .info-row look but
+   add a small accent hint so users see it's editable. */
+.info-row > ion-select.mulberry-tsc-select {
+  --background: #ffffff;
+  background: #ffffff;
+  border-color: rgba(37, 99, 235, 0.30);
+}
+
+/* Mulberry-form photo picker — uses the same .photo-picker-row pattern
+   from Profile Info so the camera + file buttons feel cohesive. The
+   preview card inside the form gets tighter spacing and a delete chip. */
+.mulberry-form .photo-picker-row {
+  margin-top: 4px;
+}
+.mulberry-form .info-file-preview {
+  margin-top: 10px;
+  padding: 8px 10px;
+  background: #ffffff;
+  border: 1px solid var(--app-border);
+  border-radius: 12px;
+  gap: 10px;
+}
+.mulberry-form .info-file-preview img {
+  width: 48px;
+  height: 48px;
+  object-fit: cover;
+  border-radius: 8px;
+}
+.mulberry-form .info-file-preview .recent-chip-remove {
+  width: 28px;
+  height: 28px;
+  background: rgba(239, 68, 68, 0.08);
+  color: var(--ion-color-danger);
+}
+.mulberry-form .info-file-preview .recent-chip-remove:hover {
+  background: rgba(239, 68, 68, 0.16);
+}
+
+/* Required-asterisk styling inside the mulberry form */
+.mulberry-form .details-row ion-label > span[style*="color: red"],
+.mulberry-form .details-row ion-label > span[style*="color:red"] {
+  color: var(--ion-color-danger) !important;
+  margin-left: 2px;
+}
+
+/* Inline hint text next to a label (e.g., "(max 5 MB)") */
+.mulberry-form .info-hint {
+  font-size: 10px;
+  font-weight: 500;
+  color: var(--app-text-subtle);
+  text-transform: none;
+  letter-spacing: 0.005em;
+  margin-left: 6px;
+}
+
+/* Date display pill with a small leading calendar icon. Used in Add Trac Cocoon
+   and any other form that wants the date input to look more like a button. */
+.date-display.date-display--withIcon {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  background: #ffffff !important;
+  border: 1.5px solid var(--app-border);
+  border-radius: 12px;
+  padding: 12px 14px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--app-text);
+  min-height: 46px;
+  width: 100%;
+  box-sizing: border-box;
+  transition: border-color var(--duration-base) var(--ease-out-soft);
+}
+.date-display.date-display--withIcon ion-icon {
+  font-size: 18px;
+  color: var(--ion-color-primary) !important;
+  flex-shrink: 0;
+}
+.date-display.date-display--withIcon:hover {
+  border-color: var(--ion-color-primary);
+}
+
+/* Inline reeler search — input + tight icon button, used in Add Trac Cocoon */
+.reeler-search-row {
+  display: flex;
+  align-items: stretch;
+  gap: 8px;
+  width: 100%;
+}
+.reeler-search-row > ion-input {
+  flex: 1 1 auto;
+  min-width: 0;
+  --background: #ffffff !important;
+  background: #ffffff !important;
+  border: 1.5px solid var(--app-border) !important;
+  border-radius: 12px !important;
+  --padding-start: 14px !important;
+  --padding-end: 14px !important;
+  --padding-top: 12px !important;
+  --padding-bottom: 12px !important;
+  font-size: 14px !important;
+  font-weight: 500 !important;
+  min-height: 46px !important;
+  transition: border-color var(--duration-base) var(--ease-out-soft),
+              box-shadow var(--duration-base) var(--ease-out-soft);
+}
+.reeler-search-row > ion-input.has-focus,
+.reeler-search-row > ion-input:focus-within {
+  border-color: var(--ion-color-primary) !important;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.14) !important;
+}
+.reeler-search-row > ion-button {
+  flex: 0 0 auto;
+  margin: 0 !important;
+  --padding-start: 12px;
+  --padding-end: 12px;
+  min-width: 50px;
+  min-height: 46px;
+  --border-radius: 12px;
+}
+
+/* =========================================================================
+   Records toolbar — small pill row that sits above a list of result cards.
+   Shows a count on the left and compact action buttons on the right.
+   Used in Track Cocoon Sale to replace the two big stacked buttons.
+   ========================================================================= */
+.records-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 8px 20px 12px;
+  padding: 10px 14px;
+  background: var(--app-surface);
+  border: 1px solid var(--app-border);
+  border-radius: 14px;
+  box-shadow: 0 2px 6px rgba(8, 32, 71, 0.04);
+  font-family: var(--app-font-sans);
+}
+.records-toolbar-info {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 6px;
+  min-width: 0;
+}
+.records-toolbar-count {
+  font-size: 17px;
+  font-weight: 800;
+  color: var(--ion-color-primary);
+  font-variant-numeric: tabular-nums;
+}
+.records-toolbar-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--app-text-muted);
+  letter-spacing: 0.02em;
+}
+.records-toolbar-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+.records-toolbar-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border-radius: 10px;
+  font-family: var(--app-font-sans);
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.005em;
+  cursor: pointer;
+  border: 1.5px solid transparent;
+  transition: transform var(--duration-fast) var(--ease-out-soft),
+              background var(--duration-base) var(--ease-out-soft),
+              border-color var(--duration-base) var(--ease-out-soft);
+}
+.records-toolbar-btn:active { transform: scale(0.97); }
+.records-toolbar-btn:disabled { opacity: 0.55; cursor: not-allowed; }
+.records-toolbar-btn ion-icon { font-size: 16px; }
+
+.records-toolbar-btn--primary {
+  background: var(--grad-primary);
+  color: #ffffff;
+  box-shadow: 0 4px 10px rgba(37, 99, 235, 0.28);
+}
+.records-toolbar-btn--primary ion-icon { color: #ffffff !important; }
+.records-toolbar-btn--primary:hover { box-shadow: 0 6px 14px rgba(37, 99, 235, 0.36); }
+
+.records-toolbar-btn--ghost {
+  background: #ffffff;
+  color: var(--ion-color-primary);
+  border-color: rgba(37, 99, 235, 0.32);
+}
+.records-toolbar-btn--ghost ion-icon { color: var(--ion-color-primary) !important; }
+.records-toolbar-btn--ghost:hover {
+  background: rgba(37, 99, 235, 0.06);
+  border-color: var(--ion-color-primary);
+}
+
+/* Slight tweak for stacked track-cocoon cards — tighter top margin since the
+   toolbar already provides separation. */
+.result-card.track-cocoon-card {
+  margin-top: 10px;
+}
+.result-card.track-cocoon-card + .result-card.track-cocoon-card {
+  margin-top: 14px;
+}
+
+@media (max-width: 380px) {
+  .records-toolbar { margin: 6px 16px 10px; padding: 8px 12px; }
+  .records-toolbar-btn { padding: 7px 10px; font-size: 12.5px; }
+  .records-toolbar-btn span { display: none; }
 }

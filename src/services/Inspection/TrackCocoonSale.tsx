@@ -4,9 +4,9 @@ import {
   IonCardTitle, IonInput, IonLabel, IonButton, IonHeader,
   IonToolbar, IonTitle, IonButtons, IonMenuButton, IonIcon, IonBackButton,
   IonSelect, IonSelectOption, IonDatetime, IonItem, IonCol,
-  IonAlert, IonSpinner,
+  IonAlert, IonSpinner, IonToast,
 } from '@ionic/react';
-import { trash, searchOutline, checkmarkCircleOutline, addOutline, refreshOutline } from 'ionicons/icons';
+import { trash, searchOutline, checkmarkCircleOutline, addOutline, refreshOutline, alertCircleOutline, cloudOfflineOutline, timeOutline, closeCircle } from 'ionicons/icons';
 import './ProfileInfoPage.css';
 import './AddDlfPage.css';
 import axios from "axios";
@@ -43,21 +43,74 @@ const [showDispatchDatePicker, setShowDispatchDatePicker] =
   const [showAlert, setShowAlert] = useState<boolean>(false);
   const [searching, setSearching] = useState<boolean>(false);
 
+  // ────────────────────────────────────────────────────────────
+  // New search UX state — same pattern as Profile/Land/Mulberry
+  // ────────────────────────────────────────────────────────────
+  const FRUITS_ID_LENGTH = 16;
+  const [recentSearches, setRecentSearches] = useState<string[]>(() => {
+    try {
+      const raw = localStorage.getItem('recentFruitsIds_trackcocoon');
+      return raw ? JSON.parse(raw) : [];
+    } catch { return []; }
+  });
+  const [searchAttempted, setSearchAttempted] = useState<boolean>(false);
+  const [searchError, setSearchError] = useState<'notFound' | 'network' | null>(null);
+  const [showClearConfirm, setShowClearConfirm] = useState<boolean>(false);
+  const [showSuccessToast, setShowSuccessToast] = useState<boolean>(false);
+
 
   // State variables for dropdown options
-  const [raceOptions, setRaceOptions] = useState<string[]>(['Race A', 'Race B']); 
-//   const [tscOptions, setTscOptions] = useState<string[]>(['Tsc 1', 'Tsc 2']); 
+  const [raceOptions, setRaceOptions] = useState<string[]>(['Race A', 'Race B']);
+//   const [tscOptions, setTscOptions] = useState<string[]>(['Tsc 1', 'Tsc 2']);
   const history = useHistory();
-  const fetchFarmerDetails = () => {
+
+  const saveRecent = (id: string) => {
+    const trimmed = id.trim().toUpperCase();
+    if (!trimmed) return;
+    setRecentSearches(prev => {
+      const next = [trimmed, ...prev.filter(x => x !== trimmed)].slice(0, 5);
+      try { localStorage.setItem('recentFruitsIds_trackcocoon', JSON.stringify(next)); } catch {}
+      return next;
+    });
+  };
+
+  const removeRecent = (id: string) => {
+    setRecentSearches(prev => {
+      const next = prev.filter(x => x !== id);
+      try { localStorage.setItem('recentFruitsIds_trackcocoon', JSON.stringify(next)); } catch {}
+      return next;
+    });
+  };
+
+  const handleRecentClick = (id: string) => {
+    setSearchText(id);
+    setSearchError(null);
+    setSearchAttempted(false);
+    setTimeout(() => fetchFarmerDetails(id), 0);
+  };
+
+  const handleInputKeyDown = (e: React.KeyboardEvent<HTMLIonInputElement>) => {
+    if (e.key === 'Enter' && searchText.trim() && !searching) {
+      inputRef.current?.blur();
+      fetchFarmerDetails();
+    }
+  };
+
+  const fetchFarmerDetails = (overrideId?: string) => {
     if (searching) return;
+    const idToSearch = (overrideId ?? searchText).trim().toUpperCase();
+    if (!idToSearch) return;
     clearField();
+    setDataList([]);
+    setSearchAttempted(true);
+    setSearchError(null);
     setSearching(true);
     const api = axios.create({
       baseURL: API_URL_ChowkiManagment,
     });
 
     api
-      .get(`chowkimanagement/getInspectioninfoForCocoonSaleTrack/${searchText}`, {
+      .get(`chowkimanagement/getInspectioninfoForCocoonSaleTrack/${idToSearch}`, {
         headers: {
           "Content-Type": "application/json",
           accept: "*/*",
@@ -65,19 +118,30 @@ const [showDispatchDatePicker, setShowDispatchDatePicker] =
         },
       })
       .then((res) => {
-        const farmerData = res.data[0];
-        console.log(farmerData);
-        setSaleAndDisposal(farmerData.saleAndDisposalId);
-        setDataList(res.data);
-        setFarmerId(farmerData.farmerId);
+        const farmerData = res.data?.[0];
+        if (farmerData) {
+          setSaleAndDisposal(farmerData.saleAndDisposalId);
+          setDataList(res.data);
+          setFarmerId(farmerData.farmerId);
+          saveRecent(idToSearch);
+        } else {
+          setSearchError('notFound');
+        }
         setSearching(false);
       })
       .catch((error) => {
-        setMessage("Farmer number does not exist");
-        setIsError(true);
-        setShowAlert(true);
+        const isNetwork = !error?.response;
+        setSearchError(isNetwork ? 'network' : 'notFound');
         setSearching(false);
       });
+  };
+
+  const requestClear = () => {
+    if (searchText.trim() || dataList.length > 0) {
+      setShowClearConfirm(true);
+    } else {
+      clearSearch();
+    }
   };
   
   const handleChange = (e: any, field: string) => {
@@ -289,13 +353,20 @@ const [isReadyToSubmit, setIsReadyToSubmit] = useState(false); // To control whe
   const inputRef = useRef<HTMLIonInputElement>(null); // Add useRef for input field
 
   const handleInputChange = (e: CustomEvent) => {
-    const value = (e.target as HTMLIonInputElement).value!;
+    const raw = (e.target as HTMLIonInputElement).value;
+    const value = (typeof raw === 'string' ? raw : raw == null ? '' : String(raw)).toUpperCase();
     setSearchText(value);
-    if (value.length === 16) {
-      inputRef.current?.blur(); // Remove focus from input field
-      fetchFarmerDetails();
-    }
+    if (searchError) setSearchError(null);
+    if (searchAttempted) setSearchAttempted(false);
   };
+
+  // Auto-focus the Fruits ID input on mount so the keyboard opens immediately
+  useEffect(() => {
+    const t = setTimeout(() => {
+      inputRef.current?.setFocus().catch(() => { /* ignore */ });
+    }, 250);
+    return () => clearTimeout(t);
+  }, []);
 
   return (
     <IonPage>
@@ -321,15 +392,24 @@ const [isReadyToSubmit, setIsReadyToSubmit] = useState(false); // To control whe
             <IonInput
               ref={inputRef}
               value={searchText}
-              placeholder="Enter Fruits ID"
+              placeholder="e.g. FID2802000042820"
+              autocapitalize="characters"
+              maxlength={FRUITS_ID_LENGTH}
               onIonInput={handleInputChange}
+              onKeyDown={handleInputKeyDown}
             />
+            {searchText.length > 0 && searchText.length < FRUITS_ID_LENGTH && (
+              <span className="input-warning">
+                <IonIcon icon={alertCircleOutline} />
+                Fruits ID must be {FRUITS_ID_LENGTH} characters ({FRUITS_ID_LENGTH - searchText.length} more)
+              </span>
+            )}
           </div>
           <div className="search-action-row">
             <IonButton
-              className={`btn-primary ${searching ? "is-loading" : ""}`}
-              disabled={searching}
-              onClick={fetchFarmerDetails}
+              className={`btn-primary ${searching ? "is-loading" : (searchText.trim() ? "is-active" : "is-disabled-state")}`}
+              disabled={searching || !searchText.trim()}
+              onClick={() => { if (searchText.trim()) fetchFarmerDetails(); }}
             >
               {searching ? (
                 <>
@@ -344,7 +424,7 @@ const [isReadyToSubmit, setIsReadyToSubmit] = useState(false); // To control whe
             </IonButton>
             <IonButton
               className="icon-only-btn danger"
-              onClick={clearSearch}
+              onClick={requestClear}
               aria-label="Clear"
               disabled={searching}
             >
@@ -352,79 +432,144 @@ const [isReadyToSubmit, setIsReadyToSubmit] = useState(false); // To control whe
             </IonButton>
           </div>
 
-          <IonButton
-            className="btn-primary"
-            expand="block"
-            onClick={handleVerify}
-            disabled={searching || dataList.length === 0}
-            style={{ maxWidth: 'none', marginTop: 4 }}
-          >
-            <IonIcon icon={checkmarkCircleOutline} slot="start" /> Verify
-          </IonButton>
-          {dataList.some(data => !data.auctionDate) && (
-            <IonButton
-              className="btn-primary"
-              expand="block"
-              onClick={() => add(saleAndDisposal)}
-              disabled={searching}
-              style={{ maxWidth: 'none' }}
-            >
-              <IonIcon icon={addOutline} slot="start" /> Add
-            </IonButton>
+          {recentSearches.length > 0 && dataList.length === 0 && !searching && (
+            <div className="recent-searches">
+              <div className="recent-searches-label">
+                <IonIcon icon={timeOutline} />
+                <span>Recent</span>
+              </div>
+              <div className="recent-chips">
+                {recentSearches.map((id) => (
+                  <div key={id} className="recent-chip">
+                    <button
+                      type="button"
+                      className="recent-chip-text"
+                      onClick={() => handleRecentClick(id)}
+                    >
+                      {id}
+                    </button>
+                    <button
+                      type="button"
+                      className="recent-chip-remove"
+                      aria-label={`Remove ${id} from recents`}
+                      onClick={() => removeRecent(id)}
+                    >
+                      <IonIcon icon={closeCircle} />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
           )}
+
         </div>
 
-        {dataList.map((data,index)=>(
-          <IonCard key={index} className="details-card">
-            <IonCardHeader>
-              <IonCardTitle>Track Cocoon</IonCardTitle>
-            </IonCardHeader>
-            <IonCardContent>
-             
-                  <div className="details-row">
-                    <IonLabel>Lot Number of RSP:</IonLabel>
-                    <IonInput value={data.lotNumberRsp} readonly={true} />
-                  </div>
-                  <div className="details-row">
-                    <IonLabel>Race Name:</IonLabel>
-                    <IonInput value={data.raceName} readonly={true} />
-                  </div>
-                  
-                  <div className="details-row">
-                    <IonLabel>Number Of DFLS:</IonLabel>
-                    <IonInput value={data.numbersOfDfls} readonly={true} />
-                  </div>
+        {!searching && dataList.length === 0 && searchAttempted && searchError && (
+          <div className={`empty-state-card ${searchError === 'network' ? 'is-network' : 'is-not-found'}`}>
+            <div className="empty-state-icon">
+              <IonIcon icon={searchError === 'network' ? cloudOfflineOutline : alertCircleOutline} />
+            </div>
+            <h4 className="empty-state-title">
+              {searchError === 'network' ? 'Network error' : 'No cocoon sale records found'}
+            </h4>
+            <p className="empty-state-text">
+              {searchError === 'network'
+                ? 'Could not reach the server. Check your internet connection and try again.'
+                : `No records found for "${searchText.trim().toUpperCase()}". Please check the Fruits ID and try again.`}
+            </p>
+            <IonButton
+              className="btn-primary is-active"
+              onClick={() => fetchFarmerDetails()}
+              disabled={!searchText.trim() || searching}
+            >
+              <IonIcon icon={refreshOutline} slot="start" /> Retry
+            </IonButton>
+          </div>
+        )}
 
-                  <div className="details-row">
-                    <IonLabel>Market Date:</IonLabel>
-                    <IonInput value={data.auctionDate} readonly={true} />
-                  </div>
-
-                  <div className="details-row">
-                    <IonLabel>Rate Per DFLS:</IonLabel>
-                    <IonInput value={data.ratePerDFls} readonly={true} />
-                  </div>
-
-                  <div className="details-row">
-                    <IonLabel>Cocoons Quantity:</IonLabel>
-                    <IonInput value={data.cocoonsQuantity} readonly={true} />
-                  </div>
-                  <div className="details-row">
-                    <IonLabel>Hatching Date:</IonLabel>
-                    <IonInput value={data.expectedHatchingDate} readonly={true} />
-                  </div>
-
-                  {data.verified && (
-                <div className="details-row verified-tag">
-                  <IonLabel color="success">Verified</IonLabel>
-                </div>
+        {/* Toolbar above records: Verify + Add as compact pills, only when there's data */}
+        {dataList.length > 0 && (
+          <div className="records-toolbar">
+            <div className="records-toolbar-info">
+              <span className="records-toolbar-count">{dataList.length}</span>
+              <span className="records-toolbar-label">
+                {dataList.length === 1 ? 'record' : 'records'} found
+              </span>
+            </div>
+            <div className="records-toolbar-actions">
+              {dataList.some(d => !d.auctionDate) && (
+                <button
+                  type="button"
+                  className="records-toolbar-btn records-toolbar-btn--ghost"
+                  onClick={() => add(saleAndDisposal)}
+                  disabled={searching}
+                >
+                  <IonIcon icon={addOutline} />
+                  <span>Add</span>
+                </button>
               )}
-            
-                  
-            </IonCardContent>
-          </IonCard>
-          
-        ))}  
+              <button
+                type="button"
+                className="records-toolbar-btn records-toolbar-btn--primary"
+                onClick={handleVerify}
+                disabled={searching}
+              >
+                <IonIcon icon={checkmarkCircleOutline} />
+                <span>Verify</span>
+              </button>
+            </div>
+          </div>
+        )}
+
+        {dataList.map((record, index) => (
+          <div key={index} className="result-card track-cocoon-card">
+            <div className="result-head">
+              <div className={`result-avatar ${record.verified ? 'is-accent-green' : 'is-accent-amber'}`}>
+                {record.lotNumberRsp ? String(record.lotNumberRsp).slice(0, 1).toUpperCase() : 'L'}
+              </div>
+              <div className="result-head-text">
+                <span className="result-eyebrow">
+                  {record.verified ? '✓ Verified' : 'Cocoon Sale'}
+                </span>
+                <h3 className="result-title">Lot {record.lotNumberRsp || '—'}</h3>
+              </div>
+            </div>
+            <div className="result-body">
+              <div className="mulberry-form" style={{ paddingTop: 0 }}>
+                <div className="details-row">
+                  <IonLabel>Race Name:</IonLabel>
+                  <IonInput value={record.raceName || '—'} readonly={true} />
+                </div>
+                <div className="details-row">
+                  <IonLabel>Number of DFLs:</IonLabel>
+                  <IonInput value={record.numbersOfDfls ?? '—'} readonly={true} />
+                </div>
+                <div className="details-row">
+                  <IonLabel>Market Date:</IonLabel>
+                  <IonInput
+                    value={record.auctionDate ? new Date(record.auctionDate).toLocaleDateString() : '—'}
+                    readonly={true}
+                  />
+                </div>
+                <div className="details-row">
+                  <IonLabel>Rate per DFL:</IonLabel>
+                  <IonInput value={record.ratePerDFls ?? '—'} readonly={true} />
+                </div>
+                <div className="details-row">
+                  <IonLabel>Cocoons Quantity:</IonLabel>
+                  <IonInput value={record.cocoonsQuantity ?? '—'} readonly={true} />
+                </div>
+                <div className="details-row">
+                  <IonLabel>Hatching Date:</IonLabel>
+                  <IonInput
+                    value={record.expectedHatchingDate ? new Date(record.expectedHatchingDate).toLocaleDateString() : '—'}
+                    readonly={true}
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+        ))}
  
 
               {/* "Verify" button to mark items with a Market Date as verified */}
@@ -446,7 +591,31 @@ const [isReadyToSubmit, setIsReadyToSubmit] = useState(false); // To control whe
         message={message}
         buttons={['OK']}
       />
-      
+
+      {/* Non-blocking success toast */}
+      <IonToast
+        isOpen={showSuccessToast}
+        onDidDismiss={() => setShowSuccessToast(false)}
+        message={message || 'Saved successfully'}
+        duration={2800}
+        position="top"
+        color="success"
+        cssClass="app-toast app-toast--success"
+      />
+
+      {/* Confirm before clearing — prevents accidental data loss */}
+      <IonAlert
+        isOpen={showClearConfirm}
+        onDidDismiss={() => setShowClearConfirm(false)}
+        header="Clear data?"
+        message="This will clear the Fruits ID and any results. Continue?"
+        buttons={[
+          { text: 'Cancel', role: 'cancel' },
+          { text: 'Clear', role: 'destructive', handler: () => clearSearch() },
+        ]}
+        cssClass="app-alert app-alert--warning"
+      />
+
       </IonContent>
     </IonPage>
   );

@@ -2,9 +2,9 @@ import React, { useState, useEffect, useRef } from "react";
 import {
   IonContent,IonPage,IonCard,IonCardContent,IonCardHeader,IonCardTitle,IonInput,IonLabel,IonButton,IonHeader,IonToolbar,IonTitle,IonButtons,
   IonMenuButton,IonIcon,IonBackButton,
-  IonSelect,IonSelectOption,IonDatetime,IonCol,IonAlert,IonItem,IonImg,IonModal,
+  IonSelect,IonSelectOption,IonDatetime,IonCol,IonAlert,IonItem,IonImg,IonModal,IonToast,
 } from "@ionic/react";
-import { camera, eyeSharp, trash, trashSharp, searchOutline, refreshOutline, leafOutline } from "ionicons/icons";
+import { camera, eyeSharp, trash, trashSharp, searchOutline, refreshOutline, leafOutline, alertCircleOutline, cloudOfflineOutline, timeOutline, closeCircle, checkmarkCircleOutline } from "ionicons/icons";
 import { IonSpinner } from "@ionic/react";
 import "./ProfileInfoPage.css";
 import axios from "axios";
@@ -40,6 +40,9 @@ const MulberryPage: React.FC = () => {
     null
   );
   const [showAlert, setShowAlert] = useState<boolean>(false);
+  // Locks the Save button while the save API is in flight to prevent
+  // duplicate records from double-clicks (same as Profile/Land Info).
+  const [submitting, setSubmitting] = useState<boolean>(false);
   const [farmerOtherData, setFarmerOtherData] = useState<any>({
     mulberryVarietyId: "",
     mulberryArea: "",
@@ -56,9 +59,61 @@ const MulberryPage: React.FC = () => {
   const [nurseryDate, setNurseryDate] = useState<string>(""); // New state for nursery date
   const [showNurseryDatePicker, setShowNurseryDatePicker] = useState<boolean>(false); // Picker visibility
 
-  const fetchDetails = () => {
+  // ────────────────────────────────────────────────────────────
+  // New search UX state — same pattern as Profile/Land Info
+  // ────────────────────────────────────────────────────────────
+  const FRUITS_ID_LENGTH = 16;
+  const [recentSearches, setRecentSearches] = useState<string[]>(() => {
+    try {
+      const raw = localStorage.getItem('recentFruitsIds_mulberry');
+      return raw ? JSON.parse(raw) : [];
+    } catch { return []; }
+  });
+  const [searchAttempted, setSearchAttempted] = useState<boolean>(false);
+  const [searchError, setSearchError] = useState<'notFound' | 'network' | null>(null);
+  const [showClearConfirm, setShowClearConfirm] = useState<boolean>(false);
+  const [showSuccessToast, setShowSuccessToast] = useState<boolean>(false);
+
+  const saveRecent = (id: string) => {
+    const trimmed = id.trim().toUpperCase();
+    if (!trimmed) return;
+    setRecentSearches(prev => {
+      const next = [trimmed, ...prev.filter(x => x !== trimmed)].slice(0, 5);
+      try { localStorage.setItem('recentFruitsIds_mulberry', JSON.stringify(next)); } catch {}
+      return next;
+    });
+  };
+
+  const removeRecent = (id: string) => {
+    setRecentSearches(prev => {
+      const next = prev.filter(x => x !== id);
+      try { localStorage.setItem('recentFruitsIds_mulberry', JSON.stringify(next)); } catch {}
+      return next;
+    });
+  };
+
+  const handleRecentClick = (id: string) => {
+    setSearchText(id);
+    setSearchError(null);
+    setSearchAttempted(false);
+    setTimeout(() => fetchDetails(id), 0);
+  };
+
+  const handleInputKeyDown = (e: React.KeyboardEvent<HTMLIonInputElement>) => {
+    if (e.key === 'Enter' && searchText.trim() && !searching) {
+      inputRef.current?.blur();
+      fetchDetails();
+    }
+  };
+
+  const fetchDetails = (overrideId?: string) => {
     if (searching) return;
+    const idToSearch = (overrideId ?? searchText).trim().toUpperCase();
+    if (!idToSearch) return;
     clearField();
+    setData(null);
+    setSearchAttempted(true);
+    setSearchError(null);
     setSearching(true);
     const api = axios.create({
       baseURL: API_URL_DBT,
@@ -67,7 +122,7 @@ const MulberryPage: React.FC = () => {
     api
       .post(
         "farmer-details/getInspectionFarmerLandDetailsByFruitsId",
-        { fruitsId: searchText },
+        { fruitsId: idToSearch },
         {
           headers: {
             "Content-Type": "application/json",
@@ -78,19 +133,30 @@ const MulberryPage: React.FC = () => {
       )
       .then((res) => {
         const farmerLandDetailsResponse =
-          res.data.content[0].farmerLandDetailsResponses[0];
-        console.log(farmerLandDetailsResponse);
-
-        setData(farmerLandDetailsResponse);
-        setFarmerId(farmerLandDetailsResponse.farmerId);
-        setFarmerLandDetailsId(farmerLandDetailsResponse.farmerLandDetailsId);
+          res.data?.content?.[0]?.farmerLandDetailsResponses?.[0];
+        if (farmerLandDetailsResponse) {
+          setData(farmerLandDetailsResponse);
+          setFarmerId(farmerLandDetailsResponse.farmerId);
+          setFarmerLandDetailsId(farmerLandDetailsResponse.farmerLandDetailsId);
+          saveRecent(idToSearch);
+        } else {
+          setSearchError('notFound');
+        }
         setSearching(false);
       })
       .catch((error) => {
-        setMessage("Farmer number does not exist");
-        setIserror(true);
+        const isNetwork = !error?.response;
+        setSearchError(isNetwork ? 'network' : 'notFound');
         setSearching(false);
       });
+  };
+
+  const requestClear = () => {
+    if (searchText.trim() || data) {
+      setShowClearConfirm(true);
+    } else {
+      clearSearch();
+    }
   };
 
   const handleClear = () => {
@@ -346,6 +412,9 @@ const MulberryPage: React.FC = () => {
 //old working Code
 
   const handleEdit = async () => {
+    // Double-click guard — once a save is in flight, ignore further taps
+    // until success or failure. Prevents duplicate records.
+    if (submitting) return;
     try {
       if (isEditable) {
         // Validate mandatory date fields
@@ -366,6 +435,7 @@ const MulberryPage: React.FC = () => {
           setShowAlert(true);
           return; // Exit if no file is selected
         }
+        setSubmitting(true);
         const api = axios.create({
           baseURL: API_URL_ChowkiManagment,
         });
@@ -445,8 +515,12 @@ const MulberryPage: React.FC = () => {
       setIserror(true);
       setShowAlert(true);
     } finally {
-      setIsEditable(!isEditable);
+      // Always release the submit lock on success AND failure, so a failed
+      // save doesn't leave the button permanently disabled.
+      setSubmitting(false);
     }
+    // Note: do NOT flip isEditable here. The form stays editable so the user
+    // can save additional changes without having to click twice.
   };
   
 
@@ -705,6 +779,45 @@ useEffect(() => {
   fetchTscList();
 }, []);
 
+// ────────────────────────────────────────────────────────────
+// Real TSC dropdown options (the legacy `tscListData` above is misleadingly
+// populated with mulberry-variety data — leaving it untouched to avoid breaking
+// anything else, and using a fresh state for the actual TSC list)
+// ────────────────────────────────────────────────────────────
+const [tscOptions, setTscOptions] = useState<any[]>([]);
+const [tscFetchError, setTscFetchError] = useState<boolean>(false);
+
+const fetchTscOptions = async () => {
+  try {
+    const response = await axios.get(`${API_URL_Master_Data}tscMaster/get-all`, {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem('jwtToken')}`,
+      },
+    });
+    if (response.data && response.data.content) {
+      setTscOptions(response.data.content.tscMaster || []);
+    } else {
+      setTscFetchError(true);
+    }
+  } catch (e) {
+    console.error('Error fetching TSC list:', e);
+    setTscFetchError(true);
+  }
+};
+
+useEffect(() => {
+  fetchTscOptions();
+}, []);
+
+// When farmer data loads, seed the editable form's TSC value with what the
+// backend already has so the dropdown shows the current selection.
+useEffect(() => {
+  if (data?.tsc !== undefined && data?.tsc !== null) {
+    setFarmerOtherData((prev: any) => ({ ...(prev || {}), tsc: data.tsc }));
+  }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+}, [data]);
+
 const clearField=()=>{
   setViewAll(false);
 };
@@ -778,13 +891,20 @@ const resetFormFields = () => {
 };
 
 const handleSearchInputChange = (e: CustomEvent) => {
-  const value = (e.target as HTMLIonInputElement).value!;
+  const raw = (e.target as HTMLIonInputElement).value;
+  const value = (typeof raw === 'string' ? raw : raw == null ? '' : String(raw)).toUpperCase();
   setSearchText(value);
-  if (value.length === 16) {
-    inputRef.current?.blur(); // Remove focus from input field
-    fetchDetails();
-  }
+  if (searchError) setSearchError(null);
+  if (searchAttempted) setSearchAttempted(false);
 };
+
+// Auto-focus the Fruits ID input on mount so the keyboard opens immediately
+useEffect(() => {
+  const t = setTimeout(() => {
+    inputRef.current?.setFocus().catch(() => { /* ignore */ });
+  }, 250);
+  return () => clearTimeout(t);
+}, []);
 
   return (
     <IonPage>
@@ -810,15 +930,24 @@ const handleSearchInputChange = (e: CustomEvent) => {
             <IonInput
               ref={inputRef}
               value={searchText}
-              placeholder="Enter Fruits ID"
+              placeholder="e.g. FID2802000042820"
+              autocapitalize="characters"
+              maxlength={FRUITS_ID_LENGTH}
               onIonInput={handleSearchInputChange}
+              onKeyDown={handleInputKeyDown}
             />
+            {searchText.length > 0 && searchText.length < FRUITS_ID_LENGTH && (
+              <span className="input-warning">
+                <IonIcon icon={alertCircleOutline} />
+                Fruits ID must be {FRUITS_ID_LENGTH} characters ({FRUITS_ID_LENGTH - searchText.length} more)
+              </span>
+            )}
           </div>
           <div className="search-action-row">
             <IonButton
-              className={`btn-primary ${searching ? "is-loading" : ""}`}
-              disabled={searching}
-              onClick={fetchDetails}
+              className={`btn-primary ${searching ? "is-loading" : (searchText.trim() ? "is-active" : "is-disabled-state")}`}
+              disabled={searching || !searchText.trim()}
+              onClick={() => { if (searchText.trim()) fetchDetails(); }}
             >
               {searching ? (
                 <>
@@ -833,14 +962,67 @@ const handleSearchInputChange = (e: CustomEvent) => {
             </IonButton>
             <IonButton
               className="icon-only-btn danger"
-              onClick={clearSearch}
+              onClick={requestClear}
               aria-label="Clear"
               disabled={searching}
             >
               <IonIcon icon={trash} />
             </IonButton>
           </div>
+
+          {recentSearches.length > 0 && !data && !searching && (
+            <div className="recent-searches">
+              <div className="recent-searches-label">
+                <IonIcon icon={timeOutline} />
+                <span>Recent</span>
+              </div>
+              <div className="recent-chips">
+                {recentSearches.map((id) => (
+                  <div key={id} className="recent-chip">
+                    <button
+                      type="button"
+                      className="recent-chip-text"
+                      onClick={() => handleRecentClick(id)}
+                    >
+                      {id}
+                    </button>
+                    <button
+                      type="button"
+                      className="recent-chip-remove"
+                      aria-label={`Remove ${id} from recents`}
+                      onClick={() => removeRecent(id)}
+                    >
+                      <IonIcon icon={closeCircle} />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
+
+        {!searching && !data && searchAttempted && searchError && (
+          <div className={`empty-state-card ${searchError === 'network' ? 'is-network' : 'is-not-found'}`}>
+            <div className="empty-state-icon">
+              <IonIcon icon={searchError === 'network' ? cloudOfflineOutline : alertCircleOutline} />
+            </div>
+            <h4 className="empty-state-title">
+              {searchError === 'network' ? 'Network error' : 'No land details found'}
+            </h4>
+            <p className="empty-state-text">
+              {searchError === 'network'
+                ? 'Could not reach the server. Check your internet connection and try again.'
+                : `No land details found for "${searchText.trim().toUpperCase()}". Please check the Fruits ID and try again.`}
+            </p>
+            <IonButton
+              className="btn-primary is-active"
+              onClick={() => fetchDetails()}
+              disabled={!searchText.trim() || searching}
+            >
+              <IonIcon icon={refreshOutline} slot="start" /> Retry
+            </IonButton>
+          </div>
+        )}
        
         {data && (
           <div className="result-card">
@@ -863,11 +1045,6 @@ const handleSearchInputChange = (e: CustomEvent) => {
                 <label className="info-label">Village Name</label>
                 <IonInput value={data.villageName} readonly={true} />
               </div>
-              <div className="info-row">
-                <label className="info-label">TSC</label>
-                <IonInput value={data.tsc} readonly={true} />
-              </div>
-
               {!viewAll ? (
                 <div className="result-actions" style={{ padding: '12px 0 0' }}>
                   <IonButton
@@ -879,15 +1056,39 @@ const handleSearchInputChange = (e: CustomEvent) => {
                   </IonButton>
                 </div>
               ) : (
-                <>
-                  <div className="result-actions" style={{ padding: '12px 0 14px' }}>
-                    <IonButton
-                      className="btn-result-secondary"
-                      expand="block"
+                <div className="mulberry-form">
+                  <div className="mulberry-form-divider">
+                    <span>Activity Details</span>
+                    <button
+                      type="button"
+                      className="mulberry-collapse-link"
                       onClick={toggleViewAll}
+                      aria-label="Collapse details"
                     >
-                      Hide
-                    </IonButton>
+                      ▲
+                    </button>
+                  </div>
+
+                  {/* TSC dropdown — placed at the top of the editable section */}
+                  <div className="details-row">
+                    <IonLabel>TSC:</IonLabel>
+                    {tscFetchError ? (
+                      <IonInput value={data.tsc} readonly={true} />
+                    ) : (
+                      <IonSelect
+                        value={farmerOtherData?.tsc ?? data.tsc ?? ''}
+                        placeholder="Select TSC"
+                        interface="action-sheet"
+                        onIonChange={(e) => handleChange(e, 'tsc')}
+                      >
+                        <IonSelectOption value="">None</IonSelectOption>
+                        {tscOptions.map((tsc: any) => (
+                          <IonSelectOption key={tsc.tscMasterId} value={tsc.name}>
+                            {tsc.name}
+                          </IonSelectOption>
+                        ))}
+                      </IonSelect>
+                    )}
                   </div>
 
     {/* {farmerOtherData && (
@@ -1048,43 +1249,78 @@ const handleSearchInputChange = (e: CustomEvent) => {
                     </IonCol> */}
                                     
                 <div className="details-row">
-                      <IonLabel>Choose File:</IonLabel>
-                      <input type="file" onChange={handleFileChange} ref={fileInputRef} /></div>
-                      <div>
+                  <IonLabel>Farmer Photo: <span className="info-hint">(max 5 MB)</span></IonLabel>
 
-                      <IonButton style={{ '--background': '#ffffff', '--color': '#000000', color: '#000000', backgroundColor: '#ffffff' } as any} onClick={handleCaptureImage}>
-                      <IonIcon icon={camera} slot="icon-only" />
-                      </IonButton>
+                  <input
+                    id="mulberry-photo-gallery"
+                    type="file"
+                    accept="image/*"
+                    onChange={handleFileChange}
+                    ref={fileInputRef}
+                    style={{ display: 'none' }}
+                  />
 
+                  <div className="photo-picker-row">
+                    <button
+                      type="button"
+                      className="photo-picker-btn photo-picker-btn--camera"
+                      onClick={handleCaptureImage}
+                    >
+                      <IonIcon icon={camera} />
+                      <span>Camera</span>
+                    </button>
+                    <button
+                      type="button"
+                      className="photo-picker-btn photo-picker-btn--file"
+                      onClick={() => document.getElementById('mulberry-photo-gallery')?.click()}
+                    >
+                      <IonIcon icon={eyeSharp} />
+                      <span>Choose File</span>
+                    </button>
+                  </div>
+
+                  {(selectedFile || previewImage) && (
+                    <div className="info-file-preview">
                       {previewImage && (
-                        <>
-                          <IonButton style={{ '--background': '#ffffff', '--color': '#000000', color: '#000000', backgroundColor: '#ffffff' } as any} onClick={() => setIsModalOpen(true)}>
-                          <IonIcon icon={eyeSharp} slot="icon-only" />
-                          </IonButton>
-                          <IonModal isOpen={isModalOpen} onDidDismiss={() => setIsModalOpen(false)}>
-                            <IonHeader>
-                              <IonToolbar>
-                                <IonTitle>View File</IonTitle>
-                                <IonButton style={{ '--background': '#ffffff', '--color': '#000000', color: '#000000', backgroundColor: '#ffffff' } as any} onClick={() => setIsModalOpen(false)} slot="end" fill="clear">
-                                  Close
-                                </IonButton>
-                              </IonToolbar>
-                            </IonHeader>
-                            <IonContent>
-                              <div className="preview-section" style={{ textAlign: 'center', padding: '20px' }}>
-                                <IonImg src={previewImage} alt="Preview" />
-                              </div>
-                            </IonContent>
-                          </IonModal>
-                        </>
+                        <img
+                          src={previewImage}
+                          alt="Preview"
+                          onClick={() => setIsModalOpen(true)}
+                          style={{ cursor: 'pointer' }}
+                        />
                       )}
-
-                      {selectedFile && (
-                        <IonButton style={{ '--background': '#ffffff', '--color': '#000000', color: '#000000', backgroundColor: '#ffffff' } as any} onClick={handleClearFile}>
-                          <IonIcon icon={trashSharp} slot="icon-only" />
-                        </IonButton>
-                      )}
+                      <span className="info-file-name">
+                        {selectedFile?.name || 'Captured image'}
+                      </span>
+                      <button
+                        type="button"
+                        className="recent-chip-remove"
+                        aria-label="Remove photo"
+                        onClick={handleClearFile}
+                      >
+                        <IonIcon icon={trashSharp} />
+                      </button>
                     </div>
+                  )}
+
+                  {previewImage && (
+                    <IonModal isOpen={isModalOpen} onDidDismiss={() => setIsModalOpen(false)}>
+                      <IonHeader>
+                        <IonToolbar>
+                          <IonTitle>View Photo</IonTitle>
+                          <IonButtons slot="end">
+                            <IonButton onClick={() => setIsModalOpen(false)}>Close</IonButton>
+                          </IonButtons>
+                        </IonToolbar>
+                      </IonHeader>
+                      <IonContent>
+                        <div className="preview-section" style={{ textAlign: 'center', padding: '20px' }}>
+                          <IonImg src={previewImage} alt="Preview" />
+                        </div>
+                      </IonContent>
+                    </IonModal>
+                  )}
+                </div>
      <div className="details-row">
                             <IonLabel>Scheme:</IonLabel>
                             <IonSelect
@@ -1130,19 +1366,32 @@ const handleSearchInputChange = (e: CustomEvent) => {
                       </IonModal>
                     )}
                   </div>)}</div>
-        
-      </>
-    )}
 
-              <div className="result-actions" style={{ paddingTop: 12 }}>
-                <IonButton
-                  className="btn-result-primary is-active"
-                  expand="block"
-                  onClick={handleEdit}
-                >
-                  {isEditable ? "Save" : "Edit"}
-                </IonButton>
-              </div>
+                </div>
+              )}
+
+              {viewAll && (
+                <div className="result-actions" style={{ paddingTop: 12 }}>
+                  <IonButton
+                    className={`btn-result-primary ${submitting ? 'is-loading' : 'is-active'}`}
+                    expand="block"
+                    disabled={submitting}
+                    onClick={handleEdit}
+                  >
+                    {submitting ? (
+                      <>
+                        <IonSpinner name="crescent" className="btn-spinner" />
+                        <span style={{ marginLeft: 8 }}>Saving...</span>
+                      </>
+                    ) : (
+                      <>
+                        <IonIcon icon={checkmarkCircleOutline} slot="start" />
+                        Save Changes
+                      </>
+                    )}
+                  </IonButton>
+                </div>
+              )}
 
             </div>
           </div>
@@ -1153,6 +1402,30 @@ const handleSearchInputChange = (e: CustomEvent) => {
           header={iserror ? "Error" : "Success"}
           message={message}
           buttons={['OK']}
+        />
+
+        {/* Non-blocking success toast — top position to clear floating UI */}
+        <IonToast
+          isOpen={showSuccessToast}
+          onDidDismiss={() => setShowSuccessToast(false)}
+          message={message || 'Saved successfully'}
+          duration={2800}
+          position="top"
+          color="success"
+          cssClass="app-toast app-toast--success"
+        />
+
+        {/* Confirm before clearing — prevents accidental data loss */}
+        <IonAlert
+          isOpen={showClearConfirm}
+          onDidDismiss={() => setShowClearConfirm(false)}
+          header="Clear data?"
+          message="This will clear the Fruits ID and any unsaved details. Continue?"
+          buttons={[
+            { text: 'Cancel', role: 'cancel' },
+            { text: 'Clear', role: 'destructive', handler: () => clearSearch() },
+          ]}
+          cssClass="app-alert app-alert--warning"
         />
       </IonContent>
     </IonPage>
