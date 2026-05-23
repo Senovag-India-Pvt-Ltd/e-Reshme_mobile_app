@@ -248,6 +248,33 @@ const DocPage: React.FC = () => {
 
   // New state for Reject Type
   const [rejectType, setRejectType] = useState<string>("");
+  // Web parity: when rejectType is "Objection", the Approval Stage dropdown
+  // shows the BEFORE-step stages (stages the application can be sent back to)
+  // — fetched from getRejectedBeforeStepDetailsAfterSubmitBySubSchemeIdAndApprovalStageId.
+  // For all other rejectTypes (incl. normal forward) we keep using `nextsteps`.
+  const [beforeStepList, setBeforeStepList] = useState<any[]>([]);
+
+  const fetchBeforeStepList = async () => {
+    try {
+      const response = await axios.post(
+        `${API_URL_DBT_}dbt/v1/service/getRejectedBeforeStepDetailsAfterSubmitBySubSchemeIdAndApprovalStageId?subSchemeId=${subSchemeId}&approvalStageId=${approvalStageId}`,
+        {},
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("jwtToken")}`,
+          },
+        }
+      );
+      if (response.data && response.data.content) {
+        setBeforeStepList(response.data.content || []);
+      } else {
+        setBeforeStepList([]);
+      }
+    } catch (error) {
+      console.error("Error fetching before-step list for Objection:", error);
+      setBeforeStepList([]);
+    }
+  };
   const [showRejectPanel, setShowRejectPanel] = useState<boolean>(false);
   const [validationErrorMessage, setValidationErrorMessage] = useState<string>("");
 
@@ -627,7 +654,13 @@ const DocPage: React.FC = () => {
         return;
       }
       setSubmitting(true);
-      callObjectionRejectAPI();
+      // Web parity: Objection sends the application BACK to a previous stage
+      // with a rejection reason and user. The same `inspectionUpdate` endpoint
+      // handles this — updateInspectionTaskStatus already builds the right
+      // payload (stepId + userId + rejectedReasonId + description), so we just
+      // route Objection through it instead of the legacy callObjectionRejectAPI
+      // which was incorrectly POSTing to a list-fetching URL.
+      updateInspectionTaskStatus();
       return;
     }
 
@@ -788,13 +821,16 @@ const DocPage: React.FC = () => {
               <IonSelect
                 className="docpage-select"
                 value={selectedNextstep}
-                placeholder="Select a NextStep"
+                placeholder={rejectType === "Objection" ? "Select stage to send back to" : "Select a NextStep"}
                 interface="action-sheet"
                 onIonChange={(e) => handleNextstepChange(e.detail.value!)}
                 disabled={rejectType === "Permanent"}
               >
                 <IonSelectOption value="">None</IonSelectOption>
-                {nextsteps.map((user) => (
+                {/* Web parity: for Objection use the BEFORE-step stages (stages the
+                    application can be sent back to). For everything else use the
+                    regular forward-next-step list (`nextsteps`). */}
+                {(rejectType === "Objection" ? beforeStepList : nextsteps).map((user) => (
                   <IonSelectOption
                     key={user.approvalStageId}
                     value={user.approvalStageId}
@@ -884,7 +920,21 @@ const DocPage: React.FC = () => {
                   value={rejectType}
                   placeholder="Select Reject Type"
                   interface="action-sheet"
-                  onIonChange={(e) => setRejectType(e.detail.value!)}
+                  onIonChange={(e) => {
+                    const next = e.detail.value!;
+                    setRejectType(next);
+                    // Clear stage/user selections so the user doesn't accidentally
+                    // submit a stale stepId/userId from the previous reject type.
+                    setSelectedNextstep("");
+                    setSelectedUsername("");
+                    if (next === "Objection") {
+                      // Web parity: load the BEFORE-step stages so the user can pick
+                      // a stage to send the application back to.
+                      fetchBeforeStepList();
+                    } else {
+                      setBeforeStepList([]);
+                    }
+                  }}
                 >
                   <IonSelectOption value="">None</IonSelectOption>
                   <IonSelectOption value="Permanent">Permanent</IonSelectOption>
