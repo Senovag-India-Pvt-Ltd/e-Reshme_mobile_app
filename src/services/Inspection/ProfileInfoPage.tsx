@@ -499,13 +499,13 @@ const ProfileInfoPage: React.FC = () => {
               onIonInput={handleInputChange}
               onKeyDown={handleInputKeyDown}
             />
-            {searchText.length > 0 && searchText.length < FRUITS_ID_LENGTH && (
-              <span className="input-warning">
-                <IonIcon icon={alertCircleOutline} />
-                Fruits ID must be {FRUITS_ID_LENGTH} characters ({FRUITS_ID_LENGTH - searchText.length} more)
-              </span>
-            )}
           </div>
+          {searchText.length > 0 && searchText.length < FRUITS_ID_LENGTH && (
+            <span className="input-warning">
+              <IonIcon icon={alertCircleOutline} />
+              Fruits ID must be {FRUITS_ID_LENGTH} characters ({FRUITS_ID_LENGTH - searchText.length} more)
+            </span>
+          )}
           <div className="search-action-row">
             <IonButton
               className={`btn-primary ${searching ? "is-loading" : (searchText.trim() ? "is-active" : "is-disabled-state")}`}
