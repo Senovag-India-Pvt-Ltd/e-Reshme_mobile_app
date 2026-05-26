@@ -371,7 +371,7 @@ const toggleViewAll = (i: number) => {
   
 
 
-  api.get(`chowkimanagement/getInspectioninfoForFarmerFromSaleDisposalOfDFls/${i}`, {
+  api.get(`chowkimanagement/getInspectioninfoForFarmerFromSaleDisposalOfDFlsForNewApp/${i}`, {
     headers: {
       "Content-Type": "application/json",
       accept: "*/*",

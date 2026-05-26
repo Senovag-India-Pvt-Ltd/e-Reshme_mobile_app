@@ -30,7 +30,7 @@ Body: { "fruitsId": "" }
 ```
 **Step 2:**
 ```
-GET /chowkimanagement/getInspectioninfoForFarmerFromSaleDisposalOfDFls/{fruitsId}
+GET /chowkimanagement/getInspectioninfoForFarmerFromSaleDisposalOfDFlsForNewApp/{fruitsId}
 ```
 Returns: `raceName`, `lotNumberCrc`, `numbersOfDfls`, `ratePer100Dfls`, `saleAndDisposalId`
 

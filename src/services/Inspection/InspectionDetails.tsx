@@ -261,7 +261,7 @@ const CropInspectionPage: React.FC = () => {
 
     api
       .get(
-        `chowkimanagement/getInspectioninfoForFarmerFromSaleDisposalOfDFls/${i}`,
+        `chowkimanagement/getInspectioninfoForFarmerFromSaleDisposalOfDFlsForNewApp/${i}`,
         {
           headers: {
             "Content-Type": "application/json",
