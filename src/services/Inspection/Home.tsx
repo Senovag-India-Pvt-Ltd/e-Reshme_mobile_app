@@ -7,11 +7,11 @@ import {
 import './Home.css';
 import {
   cloudDownloadOutline, images, trashSharp, logOutOutline,
-  leafOutline, cogOutline, gridOutline
+  leafOutline, cogOutline, gridOutline, eyeOutline, downloadOutline
 } from 'ionicons/icons';
 import {
   saveImageWithLocation, getSavedImages, readImageDataUrl,
-  deleteImage, SavedImageMeta
+  deleteImage, getImageFileAsBlob, SavedImageMeta
 } from '../imageStorage';
 import { useHistory } from 'react-router-dom';
 
@@ -69,6 +69,34 @@ const Home: React.FC = () => {
     const newMap = { ...imageDataUrls };
     delete newMap[fileName];
     setImageDataUrls(newMap);
+  };
+
+  // Trigger a browser/WebView download for the saved image. Works in dev
+  // and inside the Capacitor WebView (uses a temporary <a download> link).
+  const handleDownloadSaved = async (fileName: string) => {
+    try {
+      const blob = await getImageFileAsBlob(fileName);
+      if (!blob) {
+        setToastMsg('Image not available to download');
+        setToastOpen(true);
+        return;
+      }
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = fileName || 'image.jpg';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      // Revoke the URL on the next tick so the download has time to start.
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+      setToastMsg('Image saved to your device');
+      setToastOpen(true);
+    } catch (err) {
+      console.error('Download failed:', err);
+      setToastMsg('Failed to download image');
+      setToastOpen(true);
+    }
   };
 
   return (
@@ -209,6 +237,7 @@ const Home: React.FC = () => {
                 <div className="images-grid">
                   {savedImages.map((m) => (
                     <div key={m.fileName} className="image-card">
+                      {/* Thumbnail — whole tile opens the fullscreen preview */}
                       <button
                         type="button"
                         className="image-card-thumb"
@@ -227,19 +256,48 @@ const Home: React.FC = () => {
                             <IonIcon icon={images} />
                           </span>
                         )}
-                        {/* Floating delete chip — sits on the image so the card stays tight */}
-                        <span
-                          role="button"
+                      </button>
+
+                      {/* Clean 3-button action row — View / Download / Delete */}
+                      <div className="sav-action-row">
+                        <button
+                          type="button"
+                          className="sav-action-btn sav-action-view"
+                          aria-label="View image"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            const url = imageDataUrls[m.fileName];
+                            if (url) {
+                              setViewImageUrl(url);
+                              setViewModalOpen(true);
+                            }
+                          }}
+                        >
+                          <IonIcon icon={eyeOutline} />
+                        </button>
+                        <button
+                          type="button"
+                          className="sav-action-btn sav-action-download"
+                          aria-label="Download image"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleDownloadSaved(m.fileName);
+                          }}
+                        >
+                          <IonIcon icon={downloadOutline} />
+                        </button>
+                        <button
+                          type="button"
+                          className="sav-action-btn sav-action-delete"
                           aria-label="Delete image"
-                          className="image-card-delete"
                           onClick={(e) => {
                             e.stopPropagation();
                             handleDeleteSaved(m.fileName);
                           }}
                         >
                           <IonIcon icon={trashSharp} />
-                        </span>
-                      </button>
+                        </button>
+                      </div>
                     </div>
                   ))}
                 </div>

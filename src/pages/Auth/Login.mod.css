@@ -422,8 +422,10 @@
   z-index: 2;
   display: flex;
   gap: 12px;
-  padding: 20px 22px 8px;
-  margin-top: auto;
+  /* Sit just below the login card, not pinned to the bottom of the screen.
+     Previously had `margin-top: auto` which pushed it to the very bottom of
+     the flex parent and left a huge empty gap below the Sign In button. */
+  padding: 18px 22px 24px;
   animation: fade-up var(--duration-slow) var(--ease-out-soft) both;
   animation-delay: 200ms;
 }

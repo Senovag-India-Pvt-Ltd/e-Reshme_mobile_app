@@ -81,7 +81,10 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 16px 18px 6px;
+  /* Add the device's status-bar height so the brand mark + user chip never
+     sit under the Android battery/clock icons. IonContent uses `fullscreen`
+     here so the page does draw under the status bar by default. */
+  padding: calc(env(safe-area-inset-top, 0px) + 16px) 18px 6px;
   animation: fade-up 360ms var(--ease-out-soft) both;
 }
 
@@ -443,77 +446,165 @@
   padding: 12px 16px 24px;
 }
 
-.image-card {
-  position: relative;
-  background: var(--app-surface);
-  border: 1px solid var(--app-border);
-  border-radius: 16px;
-  overflow: hidden;
-  box-shadow: 0 4px 12px rgba(8, 32, 71, 0.06);
+/* All .image-card* rules below are scoped under .saved-images-content so
+   they have higher specificity than Login.css's global single-class rules
+   (which previously leaked in and rendered the chevron+folder row). */
+.saved-images-content .image-card {
+  position: relative !important;
+  background: var(--app-surface) !important;
+  border: 1px solid var(--app-border) !important;
+  border-radius: 16px !important;
+  overflow: hidden !important;
+  box-shadow: 0 4px 12px rgba(8, 32, 71, 0.06) !important;
+  width: 100% !important;
+  box-sizing: border-box !important;
+  padding: 0 !important;
+  transform: none !important;
   transition: transform var(--duration-fast) var(--ease-out-soft),
               box-shadow var(--duration-base) var(--ease-out-soft);
 }
-.image-card:hover { box-shadow: 0 8px 20px rgba(8, 32, 71, 0.10); }
+.saved-images-content .image-card:hover {
+  box-shadow: 0 8px 20px rgba(8, 32, 71, 0.10) !important;
+  transform: none !important;
+  border-color: var(--app-border) !important;
+}
 
-/* Make the thumbnail itself a clickable button so the whole tile opens preview */
-.image-card-thumb {
+/* Thumbnail — fixed 140px height, image covers full area */
+.saved-images-content .image-card-thumb {
   position: relative;
   display: block;
   width: 100%;
-  height: 130px;
+  height: 140px !important;
+  max-height: 140px !important;
+  min-height: 140px !important;
   padding: 0;
   margin: 0;
-  border: none;
+  border: 0;
   background: var(--app-surface-2);
   cursor: pointer;
   overflow: hidden;
+  -webkit-tap-highlight-color: transparent;
 }
-.image-card-thumb:active { transform: scale(0.98); }
-.image-card-thumb img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  display: block;
+.saved-images-content .image-card-thumb:active { transform: scale(0.98); }
+.saved-images-content .image-card-thumb img {
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: cover !important;
+  display: block !important;
+  border-radius: 0 !important;
 }
-.image-card-empty {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 100%;
-  height: 100%;
-  background: var(--app-surface-2);
-  color: var(--app-text-muted);
+.saved-images-content .image-card-empty {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 100% !important;
+  height: 100% !important;
+  background: var(--app-surface-2) !important;
+  color: var(--app-text-muted) !important;
+  font-size: inherit !important;
 }
-.image-card-empty ion-icon {
+.saved-images-content .image-card-empty ion-icon {
   font-size: 32px;
   color: var(--app-text-muted) !important;
+  opacity: 0.55;
 }
 
-/* Floating circular delete chip — sits in the top-right corner of the thumb.
-   No surrounding actions row, no clipping, no weird chevron leaks. */
-.image-card-delete {
-  position: absolute;
-  top: 8px;
-  right: 8px;
-  width: 30px;
-  height: 30px;
+/* Floating delete chip is no longer rendered — the new design uses a full
+   3-button action row underneath the thumbnail (see .sav-action-row below).
+   Hide the chip element defensively in case any leaked CSS tries to draw it. */
+.image-card-delete { display: none !important; }
+
+/* ──────────────────────────────────────────────────────────────────────
+   Action row — View / Download / Delete
+   - Lives BELOW the thumbnail (not overlaid) so icons can never be clipped
+   - 3 equal-width buttons in a flex row, each with its own accent color
+   - Uses unique `.sav-action-*` class names so no other CSS file collides
+   ────────────────────────────────────────────────────────────────────── */
+.saved-images-content .sav-action-row {
+  display: flex !important;
+  align-items: stretch !important;
+  justify-content: stretch !important;
+  gap: 0 !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  background: #ffffff !important;
+  border-top: 1px solid var(--app-border) !important;
+  /* Constrain to card width — Login.css's .circular-btn etc cannot push us out */
+  width: 100% !important;
+  max-width: 100% !important;
+  min-width: 0 !important;
+  height: 40px !important;
+  min-height: 40px !important;
+  max-height: 40px !important;
+  flex-shrink: 0 !important;
+  overflow: hidden !important;
+  box-sizing: border-box !important;
+}
+/* Force every child button to behave — exactly 1/3 width each, no rogue
+   --width/--height vars from .circular-btn or .image-card-actions ion-button */
+.saved-images-content .sav-action-row > .sav-action-btn {
+  flex: 1 1 33.333% !important;
+  width: 33.333% !important;
+  max-width: 33.333% !important;
+  min-width: 0 !important;
+  height: 100% !important;
+  max-height: 100% !important;
+  --width: auto !important;
+  --height: auto !important;
+  --border-radius: 0 !important;
+  --background: transparent !important;
+  --box-shadow: none !important;
+  --color: inherit !important;
+  --padding-start: 0 !important;
+  --padding-end: 0 !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  font-size: 14px !important;
+  text-transform: none !important;
+  transform: none !important;
+}
+.saved-images-content .sav-action-btn {
+  flex: 1 1 0;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  background: rgba(0, 0, 0, 0.55);
-  border-radius: 50%;
+  background: transparent;
+  border: 0;
+  padding: 0;
+  margin: 0;
   cursor: pointer;
-  backdrop-filter: blur(6px);
-  -webkit-backdrop-filter: blur(6px);
+  color: var(--app-text-muted);
   transition: background var(--duration-fast) var(--ease-out-soft),
-              transform var(--duration-fast) var(--ease-out-soft);
-  z-index: 2;
+              color var(--duration-base) var(--ease-out-soft);
+  -webkit-tap-highlight-color: transparent;
 }
-.image-card-delete:hover { background: rgba(220, 38, 38, 0.85); }
-.image-card-delete:active { transform: scale(0.92); }
-.image-card-delete ion-icon {
-  font-size: 16px;
-  color: #ffffff !important;
+.saved-images-content .sav-action-btn:not(:last-child) {
+  border-right: 1px solid var(--app-border);
+}
+.saved-images-content .sav-action-btn:active {
+  background: rgba(0, 0, 0, 0.04);
+}
+.saved-images-content .sav-action-btn ion-icon {
+  font-size: 18px;
+  color: inherit !important;
+}
+.saved-images-content .sav-action-view:hover {
+  color: var(--ion-color-primary);
+  background: rgba(37, 99, 235, 0.06);
+}
+.saved-images-content .sav-action-download:hover {
+  color: #047857;
+  background: rgba(16, 185, 129, 0.08);
+}
+.saved-images-content .sav-action-delete:hover {
+  color: var(--ion-color-danger);
+  background: rgba(239, 68, 68, 0.08);
+}
+
+/* Card must be a vertical flex stack so the action row sits below the thumb */
+.saved-images-content .image-card {
+  display: flex;
+  flex-direction: column;
 }
 
 /* Polished empty state */
