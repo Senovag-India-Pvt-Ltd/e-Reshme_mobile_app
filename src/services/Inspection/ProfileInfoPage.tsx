@@ -5,6 +5,7 @@ import {
   IonToolbar, IonTitle, IonButtons, IonMenuButton, IonIcon, IonSelect, IonSelectOption, IonBackButton, IonAlert, IonSpinner, IonToast
 } from '@ionic/react';
 import { trash, searchOutline, checkmarkCircle, refreshOutline, cameraOutline, imageOutline, alertCircleOutline, cloudOfflineOutline, timeOutline, closeCircle, eyeOutline, createOutline } from 'ionicons/icons';
+import SearchableSelect from '../../components/SearchableSelect';
 import './ProfileInfoPage.css';
 import axios from 'axios';
 import { API_URL_DBT } from '../auth.service';
@@ -629,19 +630,17 @@ const ProfileInfoPage: React.FC = () => {
                     {fetchError ? (
                       <p className="info-error">Failed to fetch TSC list. Please try again later.</p>
                     ) : (
-                      <IonSelect
-                        value={farmerOtherData?.tscMasterId}
+                      <SearchableSelect
+                        value={String(farmerOtherData?.tscMasterId ?? '')}
                         disabled={!isEditable}
                         placeholder="Select TSC"
-                        onIonChange={(e) => handleTscChange(e.detail.value!)}
-                      >
-                        <IonSelectOption value="">None</IonSelectOption>
-                        {tscListData.map((tsc) => (
-                          <IonSelectOption key={tsc.tscMasterId} value={tsc.tscMasterId}>
-                            {tsc.name}
-                          </IonSelectOption>
-                        ))}
-                      </IonSelect>
+                        modalTitle="Select TSC"
+                        options={tscListData.map((tsc) => ({
+                          value: String(tsc.tscMasterId),
+                          label: tsc.name,
+                        }))}
+                        onChange={(val) => handleTscChange(val)}
+                      />
                     )}
                   </div>
 
@@ -696,10 +695,27 @@ const ProfileInfoPage: React.FC = () => {
 
                     {selectedFile && (
                       <div className="info-file-preview">
-                        <span className="info-file-name">{selectedFile.name}</span>
                         {selectedFile.type.startsWith('image/') && (
                           <img src={URL.createObjectURL(selectedFile)} alt="Preview" />
                         )}
+                        <span className="info-file-name">{selectedFile.name}</span>
+                        <button
+                          type="button"
+                          className="recent-chip-remove"
+                          aria-label="Remove selected photo"
+                          title="Remove photo"
+                          onClick={() => {
+                            setSelectedFile(null);
+                            // Also clear the file input so re-selecting the same
+                            // file fires the change event again.
+                            const cam = document.getElementById('farmer-photo-camera') as HTMLInputElement | null;
+                            const gal = document.getElementById('farmer-photo-gallery') as HTMLInputElement | null;
+                            if (cam) cam.value = '';
+                            if (gal) gal.value = '';
+                          }}
+                        >
+                          <IonIcon icon={trash} />
+                        </button>
                       </div>
                     )}
                   </div>

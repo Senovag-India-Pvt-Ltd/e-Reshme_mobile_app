@@ -501,7 +501,7 @@ const toggleViewAll = (i: number) => {
           </div>
           <div className="search-action-row">
             <IonButton
-              className={`btn-primary ${searching ? "is-loading" : ""}`}
+              className={`btn-primary ${searching ? "is-loading" : (searchText.trim() ? "is-active" : "is-disabled-state")}`}
               id="searchButton"
               disabled={searching}
               onClick={() => {

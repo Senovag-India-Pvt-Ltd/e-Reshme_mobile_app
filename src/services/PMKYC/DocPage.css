@@ -357,6 +357,35 @@
   opacity: 0.7;
 }
 
+/* Ready state — required fields are filled, button gets the vibrant gradient
+   so the user knows submission is now possible. */
+.docpage-submit.is-ready {
+  --background: linear-gradient(135deg, #4f46e5 0%, #6366f1 50%, #8b5cf6 100%) !important;
+  --color: #ffffff !important;
+  --box-shadow: 0 10px 22px rgba(99, 102, 241, 0.34) !important;
+  color: #ffffff !important;
+  opacity: 1 !important;
+  cursor: pointer;
+}
+.docpage-submit.is-ready ion-icon {
+  color: #ffffff !important;
+}
+
+/* Empty state — required fields are NOT yet filled. Button is grey but still
+   clickable so the user can tap and see the helpful validation alert. */
+.docpage-submit.is-empty {
+  --background: #94A3B8 !important;
+  --color: #ffffff !important;
+  --box-shadow: none !important;
+  color: #ffffff !important;
+  opacity: 1 !important;
+  cursor: pointer;
+}
+.docpage-submit.is-empty ion-icon {
+  color: #ffffff !important;
+  opacity: 0.92;
+}
+
 /* Keep the gradient look during the loading spin so the button doesn't visually
    "go grey" the instant the user taps. Disabled cursor still applies via [disabled]. */
 .docpage-submit.is-submitting,

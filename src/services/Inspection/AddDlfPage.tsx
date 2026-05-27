@@ -311,7 +311,7 @@ const AddDlfPage: React.FC = () => {
           </div>
           <div className="search-action-row">
             <IonButton
-              className={`btn-primary ${searching ? "is-loading" : ""}`}
+              className={`btn-primary ${searching ? "is-loading" : (searchText.trim() ? "is-active" : "is-disabled-state")}`}
               disabled={searching}
               onClick={handleSearchClick}
             >

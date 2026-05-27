@@ -435,6 +435,35 @@
   border-radius: 10px;
 }
 
+/* Delete chip inside .info-file-preview — soft red circular button so the
+   user has an obvious way to remove a captured/selected photo before saving. */
+.info-file-preview .recent-chip-remove {
+  width: 32px;
+  height: 32px;
+  background: rgba(239, 68, 68, 0.10);
+  color: var(--ion-color-danger);
+  border: 1px solid rgba(239, 68, 68, 0.25);
+  flex-shrink: 0;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  padding: 0;
+  transition: background var(--duration-fast) var(--ease-out-soft),
+              border-color var(--duration-base) var(--ease-out-soft),
+              transform var(--duration-fast) var(--ease-out-soft);
+}
+.info-file-preview .recent-chip-remove:hover {
+  background: rgba(239, 68, 68, 0.20);
+  border-color: rgba(239, 68, 68, 0.45);
+}
+.info-file-preview .recent-chip-remove:active { transform: scale(0.96); }
+.info-file-preview .recent-chip-remove ion-icon {
+  font-size: 16px;
+  color: var(--ion-color-danger) !important;
+}
+
 /* ── Action footer ── */
 .result-actions {
   display: flex;
@@ -969,11 +998,15 @@ ion-button.btn-primary.is-active ion-icon {
   opacity: 1 !important;
 }
 
-/* SEARCH disabled (empty input) — clearly greyed out so user knows to type first.
-   Uses both the React-controlled .is-disabled-state class AND Ionic's internal
-   [disabled] / .button-disabled hooks, so it works in all hot-reload edge cases. */
+/* SEARCH disabled — grey when EXPLICITLY marked as disabled (either by the
+   React-controlled .is-disabled-state class used on Profile/Land Info, OR by
+   Ionic's reliable .button-disabled class which it adds when the disabled prop
+   is truthy at runtime).
+   IMPORTANT: do NOT use the [disabled] attribute selector here. IonButton
+   reflects the prop as an attribute even when it is `false`, so [disabled]
+   matches on always-enabled buttons (like AddDlfPage's Search) and incorrectly
+   greys them out. Only the runtime class matters. */
 ion-button.btn-primary.is-disabled-state,
-ion-button.btn-primary[disabled],
 ion-button.btn-primary.button-disabled {
   --background: #e2e8f0 !important;
   --background-hover: #e2e8f0 !important;
@@ -985,7 +1018,6 @@ ion-button.btn-primary.button-disabled {
   cursor: not-allowed;
 }
 ion-button.btn-primary.is-disabled-state ion-icon,
-ion-button.btn-primary[disabled] ion-icon,
 ion-button.btn-primary.button-disabled ion-icon {
   color: #94a3b8 !important;
   opacity: 1 !important;
@@ -993,8 +1025,7 @@ ion-button.btn-primary.button-disabled ion-icon {
 
 /* When React explicitly marks the button as active, override Ionic's residual
    button-disabled class so the color always reflects the real state. */
-ion-button.btn-primary.is-active.button-disabled,
-ion-button.btn-primary.is-active[disabled] {
+ion-button.btn-primary.is-active.button-disabled {
   --background: var(--grad-primary) !important;
   --color: #ffffff !important;
   background: var(--grad-primary) !important;

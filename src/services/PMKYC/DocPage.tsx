@@ -971,11 +971,27 @@ const DocPage: React.FC = () => {
             </section>
           )}
 
-          {/* Action row — Submit is the primary CTA, Reject is a subtle side button */}
+          {/* Compute whether the form has enough info to submit — drives the
+              vibrant/grey color so the user gets visual feedback the moment they
+              finish filling required fields. Click validation still runs in
+              handleSubmit, so clicking a "grey" button shows a helpful alert. */}
+          {(() => {
+            const canSubmit = (
+              rejectType === 'Permanent'
+                ? !!rejectionReason
+                : rejectType === 'Objection'
+                  ? !!(selectedNextstep && selectedUsername && rejectionReason)
+                  : !!(selectedNextstep && selectedUsername)
+            );
+            return (
           <div className="docpage-actions docpage-actions--row">
             <IonButton
               expand="block"
-              className={`docpage-submit${submitting ? ' is-submitting' : ''}`}
+              className={
+                `docpage-submit ${
+                  submitting ? 'is-submitting' : (canSubmit ? 'is-ready' : 'is-empty')
+                }`
+              }
               onClick={handleSubmit}
               disabled={isSubmitDisabled || submitting}
             >
@@ -1012,6 +1028,8 @@ const DocPage: React.FC = () => {
               </span>
             </IonButton>
           </div>
+            );
+          })()}
 
         </div>
       </IonContent>

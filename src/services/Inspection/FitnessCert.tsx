@@ -127,6 +127,10 @@ const FitnessPage: React.FC = () => {
 
   const [showAlert, setShowAlert] = useState<boolean>(false);
   const [searching, setSearching] = useState<boolean>(false);
+  // Locks the Submit button while the fitness-certificate API call is in flight
+  // so double-clicks don't create duplicate records (same pattern as
+  // Profile/Land/Mulberry/DocPage/Crop Inspection).
+  const [submitting, setSubmitting] = useState<boolean>(false);
 
   // Pending list modal state
   const [showModal, setShowModal] = useState<boolean>(false);
@@ -684,6 +688,9 @@ const FitnessPage: React.FC = () => {
   };
 
   const handleEdit = async (saleAndDisposalIdParam: number) => {
+    // Double-click guard — ignore further taps while an API call is in flight.
+    // Prevents duplicate fitness records from impatient double-tap users.
+    if (submitting) return;
     const api = axios.create({
       baseURL: API_URL_ChowkiManagment,
     });
@@ -706,6 +713,9 @@ const FitnessPage: React.FC = () => {
         }
       }
       // -------------------------------------------
+
+      // Validation passed — lock the button so further clicks are ignored.
+      setSubmitting(true);
 
       // STEP 1 — Add Fitness Info
       const fitnessResponse = await api.post(
@@ -870,6 +880,11 @@ const FitnessPage: React.FC = () => {
       setMessage("Failed to process fitness certificate or upload photo.");
       setIsError(true);
       setShowAlert(true);
+    } finally {
+      // Always release the submit lock — on success the form clears (so the
+      // button naturally becomes "is-disabled-state" again), on failure the
+      // user can correct input and retry without a permanent lockout.
+      setSubmitting(false);
     }
   };
 
@@ -906,7 +921,7 @@ const FitnessPage: React.FC = () => {
           </div>
           <div className="search-action-row">
             <IonButton
-              className={`btn-primary ${searching ? "is-loading" : ""}`}
+              className={`btn-primary ${searching ? "is-loading" : (searchText.trim() ? "is-active" : "is-disabled-state")}`}
               id="searchButton"
               disabled={searching}
               onClick={() => {
@@ -1433,12 +1448,23 @@ const FitnessPage: React.FC = () => {
                         !!inspectionData.noOfChandies;
                       return (
                         <IonButton
-                          className={`btn-result-primary ${fcReady ? "is-active" : "is-disabled-state"}`}
+                          className={`btn-result-primary ${
+                            submitting ? "is-loading" : (fcReady ? "is-active" : "is-disabled-state")
+                          }`}
                           expand="block"
-                          disabled={!fcReady}
+                          disabled={!fcReady || submitting}
                           onClick={() => handleEdit(data.saleAndDisposalId)}
                         >
-                          <IonIcon icon={ribbonOutline} slot="start" /> Submit FC
+                          {submitting ? (
+                            <>
+                              <IonSpinner name="crescent" className="btn-spinner" />
+                              <span style={{ marginLeft: 8 }}>Submitting...</span>
+                            </>
+                          ) : (
+                            <>
+                              <IonIcon icon={ribbonOutline} slot="start" /> Submit FC
+                            </>
+                          )}
                         </IonButton>
                       );
                     })()}

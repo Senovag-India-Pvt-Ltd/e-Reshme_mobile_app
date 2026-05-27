@@ -15,6 +15,7 @@ import {
   IonAlert,
   IonImg,
   IonModal,
+  IonSpinner,
 } from "@ionic/react";
 import {
   camera,
@@ -72,6 +73,10 @@ const CropInspectionPage: React.FC = () => {
     cropInspectionPath: "",
   });
   const [showAlert, setShowAlert] = useState<boolean>(false);
+  // Locks the Submit button while the inspection-save API is in flight to
+  // prevent double-clicks from creating duplicate records (same pattern as
+  // Profile/Land/Mulberry/DocPage).
+  const [submitting, setSubmitting] = useState<boolean>(false);
 
   // State variables for dropdown options
   const [raceOptions, setRaceOptions] = useState<string[]>([
@@ -454,6 +459,9 @@ const CropInspectionPage: React.FC = () => {
   };
 
   const handleEdit = async () => {
+    // Double-click guard — ignore further taps while an API call is in flight.
+    // Prevents duplicate inspection records from impatient double-tap users.
+    if (submitting) return;
     const cleaned = {
       cropInspectionTypeId: inspectionFields.cropInspectionTypeId
         ?.toString()
@@ -498,6 +506,7 @@ const CropInspectionPage: React.FC = () => {
     }
 
     if (chowkiDetailId) {
+      setSubmitting(true);
       const api = axios.create({
         baseURL: API_URL_ChowkiManagment,
       });
@@ -595,6 +604,10 @@ const CropInspectionPage: React.FC = () => {
         );
         setIsError(true);
         setShowAlert(true);
+      } finally {
+        // Always release the submit lock so a failed save doesn't leave the
+        // button permanently disabled — the user can correct and retry.
+        setSubmitting(false);
       }
     } else {
       setMessage("Chowki ID is not set. Please fetch the data first.");
@@ -782,12 +795,23 @@ const CropInspectionPage: React.FC = () => {
 
           <div className="result-actions">
             <IonButton
-              className={`btn-result-primary ${isFormReady ? "is-active" : "is-disabled-state"}`}
+              className={`btn-result-primary ${
+                submitting ? "is-loading" : (isFormReady ? "is-active" : "is-disabled-state")
+              }`}
               expand="block"
-              disabled={!isFormReady}
+              disabled={!isFormReady || submitting}
               onClick={handleEdit}
             >
-              <IonIcon icon={checkmarkCircle} slot="start" /> Submit Inspection
+              {submitting ? (
+                <>
+                  <IonSpinner name="crescent" className="btn-spinner" />
+                  <span style={{ marginLeft: 8 }}>Submitting...</span>
+                </>
+              ) : (
+                <>
+                  <IonIcon icon={checkmarkCircle} slot="start" /> Submit Inspection
+                </>
+              )}
             </IonButton>
           </div>
         </div>

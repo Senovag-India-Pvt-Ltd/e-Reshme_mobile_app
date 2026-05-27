@@ -5,6 +5,7 @@ import {
   IonSelect,IonSelectOption,IonDatetime,IonCol,IonAlert,IonItem,IonImg,IonModal,IonToast,
 } from "@ionic/react";
 import { camera, eyeSharp, trash, trashSharp, searchOutline, refreshOutline, leafOutline, alertCircleOutline, cloudOfflineOutline, timeOutline, closeCircle, checkmarkCircleOutline } from "ionicons/icons";
+import SearchableSelect from "../../components/SearchableSelect";
 import { IonSpinner } from "@ionic/react";
 import "./ProfileInfoPage.css";
 import axios from "axios";
@@ -1069,25 +1070,24 @@ useEffect(() => {
                     </button>
                   </div>
 
-                  {/* TSC dropdown — placed at the top of the editable section */}
+                  {/* TSC dropdown — searchable picker (long list, scroll is painful) */}
                   <div className="details-row">
                     <IonLabel>TSC:</IonLabel>
                     {tscFetchError ? (
                       <IonInput value={data.tsc} readonly={true} />
                     ) : (
-                      <IonSelect
-                        value={farmerOtherData?.tsc ?? data.tsc ?? ''}
+                      <SearchableSelect
+                        value={String(farmerOtherData?.tsc ?? data.tsc ?? '')}
                         placeholder="Select TSC"
-                        interface="action-sheet"
-                        onIonChange={(e) => handleChange(e, 'tsc')}
-                      >
-                        <IonSelectOption value="">None</IonSelectOption>
-                        {tscOptions.map((tsc: any) => (
-                          <IonSelectOption key={tsc.tscMasterId} value={tsc.name}>
-                            {tsc.name}
-                          </IonSelectOption>
-                        ))}
-                      </IonSelect>
+                        modalTitle="Select TSC"
+                        options={tscOptions.map((tsc: any) => ({
+                          value: String(tsc.name),
+                          label: tsc.name,
+                        }))}
+                        onChange={(val) =>
+                          setFarmerOtherData((prev: any) => ({ ...(prev || {}), tsc: val }))
+                        }
+                      />
                     )}
                   </div>
 

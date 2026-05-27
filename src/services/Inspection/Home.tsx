@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import {
   IonPage, IonHeader, IonToolbar, IonTitle, IonContent,
-  IonImg, IonButton, IonIcon,
-  IonModal, IonToast
+  IonImg, IonButton, IonButtons, IonIcon,
+  IonModal, IonToast, useIonViewWillEnter
 } from '@ionic/react';
 import './Home.css';
 import {
@@ -17,8 +17,17 @@ import { useHistory } from 'react-router-dom';
 
 const Home: React.FC = () => {
   const history = useHistory();
-  const username = localStorage.getItem('username') || 'User';
+  // IonRouterOutlet caches pages in memory, so reading localStorage at module
+  // evaluation captured the OLD/empty value before the user logged in. Use
+  // state + useIonViewWillEnter so the username refreshes every time the page
+  // becomes active — works after login, after a re-login, and after logout.
+  const [username, setUsername] = useState<string>(() => localStorage.getItem('username') || 'User');
   const firstLetter = (username[0] || 'U').toUpperCase();
+
+  useIonViewWillEnter(() => {
+    const fresh = localStorage.getItem('username') || 'User';
+    setUsername(fresh);
+  });
 
   const [showSavedModal, setShowSavedModal] = useState<boolean>(false);
   const [savedImages, setSavedImages] = useState<SavedImageMeta[]>([]);
@@ -178,46 +187,63 @@ const Home: React.FC = () => {
         {/* Saved Images Modal */}
         <IonModal isOpen={showSavedModal} onDidDismiss={() => setShowSavedModal(false)}>
           <IonHeader>
-            <IonToolbar>
+            <IonToolbar className="saved-images-toolbar">
               <IonTitle>Saved Images</IonTitle>
-              <IonButton slot="end" fill="clear" onClick={() => setShowSavedModal(false)}>
-                Close
-              </IonButton>
+              <IonButtons slot="end">
+                <IonButton onClick={() => setShowSavedModal(false)}>Close</IonButton>
+              </IonButtons>
             </IonToolbar>
           </IonHeader>
-          <IonContent>
+          <IonContent className="saved-images-content">
             {savedImages.length === 0 ? (
-              <p className="no-images-message">No saved images yet</p>
+              <div className="saved-images-empty">
+                <IonIcon icon={images} />
+                <h3>No saved images yet</h3>
+                <p>Captured photos will appear here.</p>
+              </div>
             ) : (
-              <div className="images-grid">
-                {savedImages.map((m) => (
-                  <div key={m.fileName} className="image-card">
-                    {imageDataUrls[m.fileName] ? (
-                      <IonImg
-                        src={imageDataUrls[m.fileName]}
+              <>
+                <div className="saved-images-count">
+                  {savedImages.length} {savedImages.length === 1 ? 'image' : 'images'} stored on this device
+                </div>
+                <div className="images-grid">
+                  {savedImages.map((m) => (
+                    <div key={m.fileName} className="image-card">
+                      <button
+                        type="button"
+                        className="image-card-thumb"
                         onClick={() => {
                           const url = imageDataUrls[m.fileName];
-                          setViewImageUrl(url);
-                          setViewModalOpen(true);
+                          if (url) {
+                            setViewImageUrl(url);
+                            setViewModalOpen(true);
+                          }
                         }}
-                      />
-                    ) : (
-                      <div className="image-card-empty">📷</div>
-                    )}
-                    <div className="image-card-actions">
-                      <IonButton
-                        title="Delete"
-                        size="small"
-                        fill="clear"
-                        color="danger"
-                        onClick={() => handleDeleteSaved(m.fileName)}
                       >
-                        <IonIcon icon={trashSharp} />
-                      </IonButton>
+                        {imageDataUrls[m.fileName] ? (
+                          <img src={imageDataUrls[m.fileName]} alt="" />
+                        ) : (
+                          <span className="image-card-empty">
+                            <IonIcon icon={images} />
+                          </span>
+                        )}
+                        {/* Floating delete chip — sits on the image so the card stays tight */}
+                        <span
+                          role="button"
+                          aria-label="Delete image"
+                          className="image-card-delete"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleDeleteSaved(m.fileName);
+                          }}
+                        >
+                          <IonIcon icon={trashSharp} />
+                        </span>
+                      </button>
                     </div>
-                  </div>
-                ))}
-              </div>
+                  ))}
+                </div>
+              </>
             )}
           </IonContent>
         </IonModal>

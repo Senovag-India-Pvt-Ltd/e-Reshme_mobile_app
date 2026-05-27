@@ -408,52 +408,145 @@
   --card-border: rgba(239, 68, 68, 0.32);
 }
 
-/* ---------- Saved-images modal ---------- */
+/* ---------- Saved-images modal (modern, no clipped icons) ---------- */
+.saved-images-toolbar {
+  --background: var(--grad-primary);
+  --color: #ffffff;
+}
+.saved-images-toolbar ion-title {
+  color: #ffffff;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+.saved-images-toolbar ion-button {
+  --color: #ffffff;
+  font-weight: 600;
+}
+
+.saved-images-content {
+  --background: #f8fafc;
+}
+
+.saved-images-count {
+  margin: 14px 16px 4px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--app-text-muted);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
 .images-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
   gap: 14px;
-  padding: 14px;
+  padding: 12px 16px 24px;
 }
 
 .image-card {
+  position: relative;
   background: var(--app-surface);
   border: 1px solid var(--app-border);
   border-radius: 16px;
   overflow: hidden;
-  box-shadow: var(--shadow-sm);
+  box-shadow: 0 4px 12px rgba(8, 32, 71, 0.06);
   transition: transform var(--duration-fast) var(--ease-out-soft),
               box-shadow var(--duration-base) var(--ease-out-soft);
 }
-.image-card:active { transform: scale(0.98); }
-.image-card:hover { box-shadow: var(--shadow-md); }
+.image-card:hover { box-shadow: 0 8px 20px rgba(8, 32, 71, 0.10); }
 
-.image-card img {
+/* Make the thumbnail itself a clickable button so the whole tile opens preview */
+.image-card-thumb {
+  position: relative;
+  display: block;
   width: 100%;
-  height: 110px;
+  height: 130px;
+  padding: 0;
+  margin: 0;
+  border: none;
+  background: var(--app-surface-2);
+  cursor: pointer;
+  overflow: hidden;
+}
+.image-card-thumb:active { transform: scale(0.98); }
+.image-card-thumb img {
+  width: 100%;
+  height: 100%;
   object-fit: cover;
   display: block;
 }
-
 .image-card-empty {
-  width: 100%;
-  height: 110px;
-  background: var(--app-surface-2);
-  display: flex;
+  display: inline-flex;
   align-items: center;
   justify-content: center;
-  font-size: 28px;
+  width: 100%;
+  height: 100%;
+  background: var(--app-surface-2);
+  color: var(--app-text-muted);
+}
+.image-card-empty ion-icon {
+  font-size: 32px;
+  color: var(--app-text-muted) !important;
+}
+
+/* Floating circular delete chip — sits in the top-right corner of the thumb.
+   No surrounding actions row, no clipping, no weird chevron leaks. */
+.image-card-delete {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 30px;
+  height: 30px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.55);
+  border-radius: 50%;
+  cursor: pointer;
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  transition: background var(--duration-fast) var(--ease-out-soft),
+              transform var(--duration-fast) var(--ease-out-soft);
+  z-index: 2;
+}
+.image-card-delete:hover { background: rgba(220, 38, 38, 0.85); }
+.image-card-delete:active { transform: scale(0.92); }
+.image-card-delete ion-icon {
+  font-size: 16px;
+  color: #ffffff !important;
+}
+
+/* Polished empty state */
+.saved-images-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 64px 24px;
+  text-align: center;
+  color: var(--app-text-muted);
+}
+.saved-images-empty ion-icon {
+  font-size: 56px;
+  color: var(--app-text-subtle) !important;
+  margin-bottom: 16px;
+  opacity: 0.55;
+}
+.saved-images-empty h3 {
+  margin: 0 0 6px;
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--app-text);
+  letter-spacing: -0.01em;
+}
+.saved-images-empty p {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 500;
   color: var(--app-text-muted);
 }
 
-.image-card-actions {
-  display: flex;
-  justify-content: center;
-  padding: 6px;
-  background: var(--app-surface);
-  border-top: 1px solid var(--app-border);
-}
-
+/* Legacy class — kept so any external CSS targeting it doesn't break */
 .no-images-message {
   text-align: center;
   padding: 56px 24px;
