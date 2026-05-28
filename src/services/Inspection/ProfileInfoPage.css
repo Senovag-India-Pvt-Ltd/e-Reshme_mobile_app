@@ -1786,3 +1786,97 @@ ion-toast.app-toast.app-toast--success::part(icon) {
   .records-toolbar-btn { padding: 7px 10px; font-size: 12.5px; }
   .records-toolbar-btn span { display: none; }
 }
+
+/* =========================================================================
+   Dark-mode contrast fix
+   ─────────────────────────────────────────────────────────────────────────
+   Many of our form inputs (Profile Info, Land Info, Mulberry, Track Cocoon,
+   Disinfectant, Fitness Cert, etc.) FORCE a white background so the field
+   doesn't look "disabled grey". In dark mode the text color inside the input
+   inherits Ionic's light --ion-text-color → light text on white = invisible.
+
+   The override below pins INPUT TEXT to dark and bumps LABEL/HELPER text
+   to bright values so everything stays legible when the OS is dark.
+   We do NOT touch any background — the white inputs and dark surrounding
+   chrome are preserved exactly as the light/dark themes intended.
+   ========================================================================= */
+@media (prefers-color-scheme: dark) {
+
+  /* --- Input VALUES inside any white-background field --- */
+  .info-row ion-input,
+  .info-row ion-textarea,
+  .info-row ion-select,
+  .details-row ion-input,
+  .details-row ion-textarea,
+  .details-row ion-select,
+  .mulberry-form ion-input,
+  .mulberry-form ion-textarea,
+  .mulberry-form ion-select,
+  .search-input-wrap ion-input,
+  .reeler-search-row ion-input {
+    --color: #0f172a !important;
+    --placeholder-color: #94a3b8 !important;
+    color: #0f172a !important;
+  }
+
+  /* Native <input> elements (modal search, file inputs) on white backgrounds */
+  .searchable-select-searchbar input,
+  .modal-search input {
+    color: #0f172a !important;
+  }
+  .searchable-select-searchbar input::placeholder,
+  .modal-search input::placeholder {
+    color: #94a3b8 !important;
+  }
+
+  /* Read-only date pills also have white backgrounds */
+  .details-row .date-display,
+  .mulberry-form .date-display,
+  .date-display.date-display--withIcon {
+    color: #0f172a !important;
+  }
+
+  /* --- Form LABELS on dark card surfaces — bump to a brighter gray so the
+     "RACE NAME", "NUMBER OF DFLS" etc. titles are clearly readable. --- */
+  .info-row .info-label,
+  .details-row ion-label,
+  .mulberry-form .details-row ion-label,
+  .search-label,
+  .searchable-select-trigger,
+  .info-hint {
+    color: #cbd5e1 !important;
+  }
+
+  /* Searchable-select trigger button (TSC picker) — white bg, force dark text */
+  .searchable-select-trigger {
+    color: #0f172a !important;
+    background: #ffffff !important;
+  }
+  .searchable-select-value {
+    color: #0f172a !important;
+  }
+  .searchable-select-placeholder {
+    color: #94a3b8 !important;
+  }
+
+  /* --- Searchable-select MODAL list items — white tiles on dark sheet --- */
+  .searchable-select-content { --background: #0f172a !important; }
+  .searchable-select-item {
+    color: #0f172a !important;
+  }
+
+  /* Recent-search chips — white pill, force dark label */
+  .recent-chip-text {
+    color: #0f172a !important;
+  }
+
+  /* Result-card body uses dark surface in dark mode; pin the read-only
+     IonInput values (which are just visual labels) to dark too because we
+     also forced their backgrounds to white in earlier rules. */
+  .result-body ion-input,
+  .result-body ion-textarea,
+  .result-body ion-select {
+    --color: #0f172a !important;
+    color: #0f172a !important;
+  }
+}
