@@ -497,17 +497,6 @@ const [isReadyToSubmit, setIsReadyToSubmit] = useState(false); // To control whe
               </span>
             </div>
             <div className="records-toolbar-actions">
-              {dataList.some(d => !d.auctionDate) && (
-                <button
-                  type="button"
-                  className="records-toolbar-btn records-toolbar-btn--ghost"
-                  onClick={() => add(saleAndDisposal)}
-                  disabled={searching}
-                >
-                  <IonIcon icon={addOutline} />
-                  <span>Add</span>
-                </button>
-              )}
               <button
                 type="button"
                 className="records-toolbar-btn records-toolbar-btn--primary"
