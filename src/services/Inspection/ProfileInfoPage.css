@@ -1091,8 +1091,7 @@ ion-button.btn-result-primary.is-disabled-state ion-icon {
   opacity: 0.85 !important;
 }
 
-/* Dark mode permanently disabled — light/white palette only */
-@media not all and (prefers-color-scheme: dark) {
+@media (prefers-color-scheme: dark) {
   ion-button.btn-result-primary.is-disabled-state {
     --background: #334155 !important;
     --color: #94A3B8 !important;

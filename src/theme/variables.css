@@ -157,10 +157,7 @@
 /* =========================================================================
    Dark mode — follows system preference
    ========================================================================= */
-/* Dark mode permanently disabled — app uses a single light/white palette.
-   Wrapper changed from `@media (prefers-color-scheme: dark)` to `@media not all`
-   so the block keeps its structure but never applies. */
-@media not all and (prefers-color-scheme: dark) {
+@media (prefers-color-scheme: dark) {
   :root {
     /* Slightly brighter blues for dark surfaces */
     --ion-color-primary: #60A5FA;
@@ -570,10 +567,7 @@ ion-modal {
   box-shadow: var(--shadow-lg);
 }
 
-/* Dark mode permanently disabled — app uses a single light/white palette.
-   Wrapper changed from `@media (prefers-color-scheme: dark)` to `@media not all`
-   so the block keeps its structure but never applies. */
-@media not all and (prefers-color-scheme: dark) {
+@media (prefers-color-scheme: dark) {
   .app-card--glass {
     background: rgba(30, 41, 59, 0.55);
     border: 1px solid rgba(148, 163, 184, 0.12);
@@ -608,10 +602,7 @@ ion-modal {
 @keyframes skeleton-shimmer {
   100% { transform: translateX(100%); }
 }
-/* Dark mode permanently disabled — app uses a single light/white palette.
-   Wrapper changed from `@media (prefers-color-scheme: dark)` to `@media not all`
-   so the block keeps its structure but never applies. */
-@media not all and (prefers-color-scheme: dark) {
+@media (prefers-color-scheme: dark) {
   .skeleton::after {
     background: linear-gradient(90deg, transparent 0%, rgba(148,163,184,0.18) 50%, transparent 100%);
   }
@@ -1035,10 +1026,7 @@ ion-modal {
 }
 .bottom-home-menu > * { pointer-events: auto; }
 
-/* Dark mode permanently disabled — app uses a single light/white palette.
-   Wrapper changed from `@media (prefers-color-scheme: dark)` to `@media not all`
-   so the block keeps its structure but never applies. */
-@media not all and (prefers-color-scheme: dark) {
+@media (prefers-color-scheme: dark) {
   .bottom-home-menu {
     background: linear-gradient(180deg, rgba(15, 23, 42, 0) 0%, rgba(15, 23, 42, 0.85) 50%, rgba(15, 23, 42, 1) 100%);
   }

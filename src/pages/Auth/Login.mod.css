@@ -252,16 +252,15 @@
   animation-delay: 120ms;
 }
 
-/* Light mode card chrome — was wrapped in `@media (prefers-color-scheme: light)`;
-   wrapper removed so this always applies regardless of system preference. */
-.auth-card {
-  background: rgba(255, 255, 255, 0.96);
-  backdrop-filter: blur(22px) saturate(180%);
-  -webkit-backdrop-filter: blur(22px) saturate(180%);
+@media (prefers-color-scheme: light) {
+  .auth-card {
+    background: rgba(255, 255, 255, 0.96);
+    backdrop-filter: blur(22px) saturate(180%);
+    -webkit-backdrop-filter: blur(22px) saturate(180%);
+  }
 }
 
-/* Dark mode permanently disabled — light/white palette only */
-@media not all and (prefers-color-scheme: dark) {
+@media (prefers-color-scheme: dark) {
   .auth-card {
     background: rgba(30, 41, 59, 0.86);
     backdrop-filter: blur(22px) saturate(160%);
@@ -330,8 +329,7 @@
   box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.14);
 }
 
-/* Dark mode permanently disabled — light/white palette only */
-@media not all and (prefers-color-scheme: dark) {
+@media (prefers-color-scheme: dark) {
   .login-form ion-item {
     --background: var(--app-surface-2);
     border-color: var(--app-border);
@@ -584,8 +582,7 @@
               transform var(--duration-fast) var(--ease-out-soft);
 }
 
-/* Dark mode permanently disabled — light/white palette only */
-@media not all and (prefers-color-scheme: dark) {
+@media (prefers-color-scheme: dark) {
   .otp-input {
     background: var(--app-surface-2);
     border-color: var(--app-border);
