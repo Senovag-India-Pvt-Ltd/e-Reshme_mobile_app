@@ -11,6 +11,7 @@ import './ProfileInfoPage.css';
 import axios from 'axios';
 import { API_URL_DBT } from '../auth.service';
 import { API_URL_Master_Data } from '../auth.service';
+import SearchableSelect from '../../components/SearchableSelect';
 
 const ReelerInfoPage: React.FC = () => {
   const [searchText, setSearchText] = useState<string>('');
@@ -358,23 +359,20 @@ const ReelerInfoPage: React.FC = () => {
                     {fetchError ? (
                       <p className="info-error">Failed to fetch TSC list. Please try again later.</p>
                     ) : (
-                      <IonSelect
-                        value={farmerOtherData?.tscMasterId}
+                      <SearchableSelect
+                        value={String(farmerOtherData?.tscMasterId ?? '')}
                         disabled={!isEditable}
                         placeholder="Select TSC"
-                        interface="action-sheet"
-                        onIonChange={(e) => setFarmerOtherData({
+                        modalTitle="Select TSC"
+                        options={tscListData.map((tsc) => ({
+                          value: String(tsc.tscMasterId),
+                          label: tsc.name,
+                        }))}
+                        onChange={(val) => setFarmerOtherData({
                           ...farmerOtherData,
-                          tscMasterId: e.detail.value
+                          tscMasterId: val,
                         })}
-                      >
-                        <IonSelectOption value="">None</IonSelectOption>
-                        {tscListData.map((tsc) => (
-                          <IonSelectOption key={tsc.tscMasterId} value={tsc.tscMasterId}>
-                            {tsc.name}
-                          </IonSelectOption>
-                        ))}
-                      </IonSelect>
+                      />
                     )}
                   </div>
 
