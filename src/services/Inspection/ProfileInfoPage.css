@@ -1788,95 +1788,98 @@ ion-toast.app-toast.app-toast--success::part(icon) {
 }
 
 /* =========================================================================
-   Dark-mode contrast fix
+   Dark-mode contrast fix (v2)
    ─────────────────────────────────────────────────────────────────────────
-   Many of our form inputs (Profile Info, Land Info, Mulberry, Track Cocoon,
-   Disinfectant, Fitness Cert, etc.) FORCE a white background so the field
-   doesn't look "disabled grey". In dark mode the text color inside the input
-   inherits Ionic's light --ion-text-color → light text on white = invisible.
+   Only force DARK TEXT where the background is FORCED WHITE elsewhere in
+   the codebase. For inputs that use theme tokens (`--app-surface-2` etc.),
+   we let them keep the theme's light text on dark surface — those rules
+   are NOT touched, so DFL's Page / AddDlf / .info-row fields display
+   light text on dark cards in dark mode, exactly as the theme intended.
 
-   The override below pins INPUT TEXT to dark and bumps LABEL/HELPER text
-   to bright values so everything stays legible when the OS is dark.
-   We do NOT touch any background — the white inputs and dark surrounding
-   chrome are preserved exactly as the light/dark themes intended.
+   For inputs that have `--background: #ffffff !important` we pin the
+   value/placeholder to dark so the field is readable.
+
+   We also brighten LABEL text in dark mode so titles like "RACE NAME"
+   are clearly visible on dark card surfaces.
    ========================================================================= */
 @media (prefers-color-scheme: dark) {
 
-  /* --- Input VALUES inside any white-background field --- */
-  .info-row ion-input,
-  .info-row ion-textarea,
-  .info-row ion-select,
-  .details-row ion-input,
-  .details-row ion-textarea,
-  .details-row ion-select,
+  /* --- A) Inputs with FORCED WHITE backgrounds — text must be dark --- */
+
+  /* .mulberry-form forces --background: #ffffff for every field inside */
+  .mulberry-form .details-row ion-input,
+  .mulberry-form .details-row ion-textarea,
+  .mulberry-form .details-row ion-select,
   .mulberry-form ion-input,
   .mulberry-form ion-textarea,
-  .mulberry-form ion-select,
-  .search-input-wrap ion-input,
-  .reeler-search-row ion-input {
+  .mulberry-form ion-select {
     --color: #0f172a !important;
     --placeholder-color: #94a3b8 !important;
     color: #0f172a !important;
   }
 
-  /* Native <input> elements (modal search, file inputs) on white backgrounds */
-  .searchable-select-searchbar input,
-  .modal-search input {
-    color: #0f172a !important;
-  }
-  .searchable-select-searchbar input::placeholder,
-  .modal-search input::placeholder {
-    color: #94a3b8 !important;
-  }
-
-  /* Read-only date pills also have white backgrounds */
-  .details-row .date-display,
+  /* Date pills inside mulberry form / Add Trac Cocoon */
   .mulberry-form .date-display,
   .date-display.date-display--withIcon {
     color: #0f172a !important;
   }
 
-  /* --- Form LABELS on dark card surfaces — bump to a brighter gray so the
-     "RACE NAME", "NUMBER OF DFLS" etc. titles are clearly readable. --- */
-  .info-row .info-label,
-  .details-row ion-label,
-  .mulberry-form .details-row ion-label,
-  .search-label,
-  .searchable-select-trigger,
-  .info-hint {
-    color: #cbd5e1 !important;
-  }
-
-  /* Searchable-select trigger button (TSC picker) — white bg, force dark text */
+  /* Searchable-select trigger (TSC picker) — white pill */
   .searchable-select-trigger {
     color: #0f172a !important;
     background: #ffffff !important;
   }
-  .searchable-select-value {
-    color: #0f172a !important;
-  }
-  .searchable-select-placeholder {
-    color: #94a3b8 !important;
-  }
+  .searchable-select-value { color: #0f172a !important; }
+  .searchable-select-placeholder { color: #94a3b8 !important; }
 
-  /* --- Searchable-select MODAL list items — white tiles on dark sheet --- */
+  /* Searchable-select modal — white list items on dark sheet */
   .searchable-select-content { --background: #0f172a !important; }
-  .searchable-select-item {
-    color: #0f172a !important;
-  }
+  .searchable-select-searchbar input { color: #0f172a !important; }
+  .searchable-select-searchbar input::placeholder { color: #94a3b8 !important; }
+  .searchable-select-item { color: #0f172a !important; }
 
-  /* Recent-search chips — white pill, force dark label */
-  .recent-chip-text {
-    color: #0f172a !important;
-  }
+  /* Recent-search chips — white pill with dark label */
+  .recent-chip-text { color: #0f172a !important; }
 
-  /* Result-card body uses dark surface in dark mode; pin the read-only
-     IonInput values (which are just visual labels) to dark too because we
-     also forced their backgrounds to white in earlier rules. */
-  .result-body ion-input,
-  .result-body ion-textarea,
-  .result-body ion-select {
+  /* Inline reeler-search input (Add Trac Cocoon) — forced white in its CSS */
+  .reeler-search-row > ion-input {
     --color: #0f172a !important;
+    --placeholder-color: #94a3b8 !important;
     color: #0f172a !important;
+  }
+
+  /* Modal plain-input search (TSC picker, list filters) */
+  .modal-search input { color: #0f172a !important; }
+  .modal-search input::placeholder { color: #94a3b8 !important; }
+
+  /* --- B) LABEL text on dark card surfaces — brighten so titles like
+     "RACE NAME", "NUMBER OF DFLS", "FATHER / HUSBAND NAME" are
+     clearly readable. The default --app-text-muted (#94A3B8) was
+     too faint in your screenshots. --- */
+  .info-row .info-label,
+  .details-row ion-label,
+  .mulberry-form .details-row ion-label,
+  .mulberry-form-divider > span,
+  .info-hint {
+    color: #cbd5e1 !important;
+  }
+
+  /* --- C) Theme-following inputs in dark mode
+     EXPLICITLY restore --color to the theme's light text so any other CSS
+     rule that may have clamped it (Ionic defaults, leaked rules, etc.) is
+     overridden. These inputs use --app-surface-2 (dark) in dark mode, so
+     they need light text to remain readable. Keep backgrounds untouched. */
+  .info-row ion-input,
+  .info-row ion-textarea,
+  .info-row ion-select,
+  .details-row:not(.mulberry-form .details-row) ion-input,
+  .details-row:not(.mulberry-form .details-row) ion-textarea,
+  .details-row:not(.mulberry-form .details-row) ion-select,
+  .search-input-wrap ion-input,
+  .result-body ion-input,
+  .result-body ion-textarea {
+    --color: #F1F5F9 !important;
+    --placeholder-color: #64748B !important;
+    color: #F1F5F9 !important;
   }
 }
