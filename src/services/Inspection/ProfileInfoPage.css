@@ -1970,3 +1970,63 @@ ion-toast.app-toast.app-toast--success::part(icon) {
     color: #475569 !important;
   }
 }
+
+/* =========================================================================
+   Sweep — hardcoded dark text colors on dark-mode card surfaces
+   ─────────────────────────────────────────────────────────────────────────
+   Many page-specific CSS files (AddDlf, UpdateDlf, FitnessCert, Doc,
+   SubMenu, Home.mod, PMKYC/ListPage, PMKYC/DocPage, etc.) hardcode dark
+   text like `color: #0d2137`, `#333`, `#0f172a`, `#1e293b`. When the
+   surrounding IonCard / page background flips to dark in dark mode, those
+   labels and values disappear. Override them all to light here so we
+   don't have to edit each individual file.
+   ========================================================================= */
+@media (prefers-color-scheme: dark) {
+
+  /* ── AddDlfPage / UpdateDlfPage / FitnessCert details-row labels ── */
+  .details-row ion-label,
+  .fruits-id-label,
+  .file-upload-section ion-label {
+    color: #cbd5e1 !important;
+  }
+
+  /* ── Doc.css (Doc page) ── */
+  .location-container input { color: #F1F5F9 !important; }
+  .location-label,
+  .capture-label { color: #cbd5e1 !important; }
+  .custom-searchbar { color: #F1F5F9 !important; }
+
+  /* ── SubMenuPage descriptive text ── */
+  .subpage-text { color: #cbd5e1 !important; }
+
+  /* ── Home.mod.css (legacy) — user info chip + Sericulture heading ── */
+  .user-info { color: #0f172a !important; }   /* sits on white pill background */
+  .text-container h2 { color: #F1F5F9 !important; }  /* sits on card surface */
+
+  /* ── PMKYC/ListPage.css — list cards become invisible ── */
+  .listpage-name { color: #F1F5F9 !important; }
+  .listpage-row-value { color: #F1F5F9 !important; }
+  .listpage-empty h3 { color: #cbd5e1 !important; }
+
+  /* ── PMKYC/DocPage.css — every label/input pinned dark previously ── */
+  .docpage-card-title { color: #F1F5F9 !important; }
+  .docpage-input {
+    color: #F1F5F9 !important;
+    --color: #F1F5F9 !important;
+  }
+  .docpage-select::part(text),
+  .docpage-select::part(placeholder) {
+    color: #F1F5F9 !important;
+  }
+  .docpage-upload-card ion-card-content {
+    color: #F1F5F9 !important;
+  }
+  /* DocPage searchbar & textarea internal text */
+  .docpage-textarea {
+    color: #F1F5F9 !important;
+    --color: #F1F5F9 !important;
+  }
+
+  /* ── Mulberry Activity submenu inline-style buttons (white bg) keep their
+     forced black text — already visible on white; nothing to do. ── */
+}

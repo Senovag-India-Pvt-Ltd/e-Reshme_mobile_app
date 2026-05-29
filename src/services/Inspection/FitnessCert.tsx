@@ -1506,7 +1506,7 @@ const FitnessPage: React.FC = () => {
               className="custom-searchbar"
               showClearButton="focus"
             />
-            <div style={{ padding: '0 16px 8px', fontSize: '0.9rem', color: '#666' }}>
+            <div className="list-modal-total" style={{ padding: '0 16px 8px', fontSize: '0.9rem' }}>
               Total pending: {pendingCount}
             </div>
             <IonList>

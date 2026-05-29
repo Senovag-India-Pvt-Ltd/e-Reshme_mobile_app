@@ -124,3 +124,59 @@
   background: #ffffff;
   border-top: 1px solid #d0e4f7;
 }
+
+/* =========================================================================
+   Dark-mode contrast fix for the "Pending …" list modal (UpdateDlf,
+   FitnessCert, etc.). The hardcoded text colors above (#333 / #0d2137)
+   become invisible on the dark IonCard background in dark mode.
+   ========================================================================= */
+@media (prefers-color-scheme: dark) {
+  /* Force the IonCard surface to a known dark color so we can pick a
+     readable text color against it (Ionic's default dark step is OK but
+     varies between releases — pinning it makes the fix predictable). */
+  .list-card {
+    --background: #1E293B !important;
+    background: #1E293B !important;
+    border-left-color: #60A5FA;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.40);
+  }
+  .list-card ion-card-content {
+    --background: #1E293B !important;
+    background: #1E293B !important;
+  }
+
+  /* All inline IonText inside the card — values like "BVDH", "23", "500", "4" */
+  .list-card ion-text,
+  .list-card ion-text * {
+    color: #F1F5F9 !important;
+  }
+  .list-card ion-text b {
+    color: #cbd5e1 !important;
+  }
+
+  /* The Fruits ID row uses .list-item which had even darker text */
+  .list-item ion-text,
+  .list-item ion-text * {
+    color: #F1F5F9 !important;
+  }
+  .list-item ion-text b {
+    color: #93C5FD !important;
+  }
+
+  /* Copy-icon button inside the row keeps the white forced background but
+     needs a dark icon for visibility */
+  .list-item ion-button ion-icon {
+    color: #0f172a !important;
+  }
+
+  /* "Total pending: 3" subtitle (now wears `.list-modal-total`) */
+  .list-modal-total {
+    color: #cbd5e1 !important;
+  }
+}
+
+/* Base style for the "Total pending" subtitle (light mode) — keeps the
+   original dim gray look so the heading doesn't compete with the cards. */
+.list-modal-total {
+  color: #666;
+}
