@@ -1027,8 +1027,12 @@ ion-modal {
 .bottom-home-menu > * { pointer-events: auto; }
 
 @media (prefers-color-scheme: dark) {
+  /* Removed the dark gradient fade behind the floating home button.
+     It was rendering as a visible black strip at the bottom of dark-mode
+     pages — looked like a UI seam. We let the floating home button float
+     over the natural page background instead. */
   .bottom-home-menu {
-    background: linear-gradient(180deg, rgba(15, 23, 42, 0) 0%, rgba(15, 23, 42, 0.85) 50%, rgba(15, 23, 42, 1) 100%);
+    background: transparent !important;
   }
 }
 
