@@ -1838,8 +1838,17 @@ ion-toast.app-toast.app-toast--success::part(icon) {
   .searchable-select-searchbar input::placeholder { color: #94a3b8 !important; }
   .searchable-select-item { color: #0f172a !important; }
 
-  /* Recent-search chips — white pill with dark label */
-  .recent-chip-text { color: #0f172a !important; }
+  /* Recent-search chips — REMOVED forced dark text.
+     The chip uses `background: var(--app-surface)` which in dark mode is
+     `#1E293B` (dark), so we keep the THEME's light --app-text on dark
+     surface. Forcing dark text was making the FID invisible (e.g. the
+     Supply of Disinfectants screenshot). */
+  .recent-chip {
+    background: var(--app-surface) !important;
+  }
+  .recent-chip-text {
+    color: var(--app-text) !important;
+  }
 
   /* Inline reeler-search input (Add Trac Cocoon) — forced white in its CSS */
   .reeler-search-row > ion-input {
@@ -1881,5 +1890,83 @@ ion-toast.app-toast.app-toast--success::part(icon) {
     --color: #F1F5F9 !important;
     --placeholder-color: #64748B !important;
     color: #F1F5F9 !important;
+  }
+
+  /* --- D) Home page user-chip (white pill in both modes) ---
+     The chip background stays white via .home-bg::before/light styles, so
+     the WELCOME label + username need dark text in dark mode. */
+  .user-chip {
+    background: rgba(255, 255, 255, 0.96) !important;
+  }
+  .user-chip .user-name {
+    color: #0f172a !important;
+  }
+  .user-chip .user-label {
+    color: #64748B !important;
+  }
+
+  /* --- E) IonSelect action-sheet / popover options ---
+     The popup uses Ionic step tokens that don't always invert correctly,
+     resulting in dark-on-dark option text (e.g. "New Plantation",
+     "Mulberry Extension", TSC list items). Pin the values to light. */
+  ion-action-sheet,
+  ion-select-popover,
+  ion-popover,
+  ion-alert {
+    --color: #F1F5F9 !important;
+    --background: #1E293B !important;
+  }
+  .action-sheet-button,
+  .action-sheet-button-inner,
+  .select-interface-option,
+  .alert-radio-label,
+  .alert-checkbox-label,
+  .alert-button {
+    color: #F1F5F9 !important;
+  }
+  /* Cancel/OK rows commonly use --ion-color-primary; keep them bright */
+  .action-sheet-cancel,
+  .alert-button.alert-button-role-cancel {
+    color: #94A3B8 !important;
+  }
+
+  /* --- F) IonDatetime calendar (date picker modal) ---
+     The calendar surface stays white; ensure all day numbers, the
+     month/year dropdown, weekday labels, and the "Time" / time-button
+     text are dark so they're readable. */
+  ion-datetime {
+    --background: #ffffff !important;
+    --background-rgb: 255, 255, 255 !important;
+    --title-color: #0f172a !important;
+    --wheel-fade-background-rgb: 255, 255, 255 !important;
+    color: #0f172a !important;
+  }
+  ion-datetime::part(calendar-day),
+  ion-datetime::part(calendar-day active),
+  ion-datetime::part(calendar-day today),
+  ion-datetime::part(month-year-button),
+  ion-datetime::part(time-button),
+  ion-datetime::part(week-day) {
+    color: #0f172a !important;
+  }
+
+  /* --- G) Home "Quick Actions" eyebrow & greeting subtitle ---
+     The greeting subtitle uses a soft white-on-blue which is fine; the
+     section title was rendering very faint on the dark page background. */
+  .section-title > span {
+    color: #cbd5e1 !important;
+  }
+
+  /* --- H) Search button on disabled state should still be readable.
+     The `is-disabled-state` rule sets background #e2e8f0 + color #94a3b8,
+     which on dark mode pages looks washed out. Bump the contrast a notch
+     (still clearly a "not ready" state — gray bg, dimmed text — but
+     readable enough to identify as the Search button). */
+  ion-button.btn-primary.is-disabled-state {
+    --color: #475569 !important;
+    color: #475569 !important;
+  }
+  ion-button.btn-primary.is-disabled-state ion-icon {
+    color: #475569 !important;
   }
 }

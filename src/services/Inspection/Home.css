@@ -178,6 +178,18 @@
   white-space: nowrap;
 }
 
+/* DARK MODE: the .user-chip pill stays WHITE in both light/dark themes
+   (background: rgba(255,255,255,0.92) from the base rule above). But in
+   dark mode `var(--app-text)` and `var(--app-text-muted)` resolve to LIGHT
+   colors → invisible on the white pill. Pin both to dark explicitly so
+   the username and "WELCOME" eyebrow stay readable on the pill. */
+@media (prefers-color-scheme: dark) {
+  .user-chip { background: rgba(255, 255, 255, 0.96) !important; }
+  .user-chip .user-name { color: #0f172a !important; }
+  .user-chip .user-label { color: #64748B !important; }
+  .user-chip .avatar { color: #ffffff !important; }
+}
+
 /* Right-side cluster on the topbar */
 .home-topbar-right {
   display: inline-flex;
