@@ -1,6 +1,5 @@
 {
-  "short_name": "Ionic App",
-  "name": "My Ionic App",
+
   "icons": [
     {
       "src": "assets/icon/favicon.png",

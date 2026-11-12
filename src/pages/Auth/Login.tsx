@@ -451,8 +451,9 @@ const Login: React.FC = () => {
                 alt="Department of Sericulture"
               />
             </div>
-            <h1 className="brand-title">Department of Sericulture</h1>
-            <p className="brand-subtitle">Government of Karnataka</p>
+            <h1 className="brand-title">e-Reshme</h1>
+            <p className="brand-subline">Department of Sericulture</p>
+            <p className="brand-subline">Government of Karnataka</p>
           </div>
 
           {showLoginSection && (

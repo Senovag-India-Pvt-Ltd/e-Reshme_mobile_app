@@ -152,6 +152,14 @@
   text-shadow: 0 4px 16px rgba(8, 32, 71, 0.25);
 }
 
+.brand-subline {
+  font-size: 14px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.92);
+  margin: 4px 0 0;
+  letter-spacing: 0.02em;
+}
+
 .brand-subtitle {
   font-size: 13px;
   font-weight: 500;
